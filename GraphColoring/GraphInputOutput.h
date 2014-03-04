@@ -123,6 +123,7 @@ namespace ColPack
 		int PrintGraph();
 
 		int PrintGraphStructure();
+		int PrintGraphStructure2();
 
 		int PrintMatrix();
 

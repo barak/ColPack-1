@@ -1142,6 +1142,36 @@ namespace ColPack
 		return(_TRUE);
 	}
 
+	int GraphInputOutput::PrintGraphStructure2()
+	{
+		int i;
+
+		int i_VertexCount, i_EdgeCount;
+
+		i_VertexCount = (signed) m_vi_Vertices.size();
+
+		cout<<endl;
+		cout<<"PrintGraphStructure2() for graph: "<<m_s_InputFile<<endl;
+		cout<<"Format: Vertex id (# of edges): D1 neighbor #1, D1 neighbor #2, ... (all vertices is displayed using 1-based index)"<<endl;
+		cout<<endl;
+
+		for(i=0; i<i_VertexCount-1; i++)
+		{
+			cout<<"Vertex "<<STEP_UP(i)<<" ("<<m_vi_Vertices[i+1] - m_vi_Vertices[i]<<"): ";
+			
+			for(int j=m_vi_Vertices[i]; j<m_vi_Vertices[i+1]; j++)
+			{
+				cout<<STEP_UP(m_vi_Edges[j])<<", ";
+			}
+			cout<<endl;
+		}
+
+		
+		cout<<endl;
+
+		return(_TRUE);
+	}
+
 
 	//Public Function 1262
 	int GraphInputOutput::PrintMatrix()

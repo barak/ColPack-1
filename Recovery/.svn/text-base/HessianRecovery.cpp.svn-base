@@ -21,7 +21,7 @@
 #include "ColPackHeaders.h"
 
 using namespace std;
-
+//#define DEBUG 5103
 namespace ColPack
 {
 
@@ -569,13 +569,13 @@ namespace ColPack
 				{
 					if(k == STEP_DOWN(i_SetSize))
 					{
-						cout<<STEP_UP(*lit_ListIterator)<<" ("<<i_SetSize<<")"<<endl;
+						cout<<STEP_UP(*lit_ListIterator)<<"{"<<vd_IncludedVertices[*lit_ListIterator]<<"} ("<<i_SetSize<<")"<<endl;
 					}
 					else
 					{
-						cout<<STEP_UP(*lit_ListIterator)<<", ";
+						cout<<STEP_UP(*lit_ListIterator)<<"{"<<vd_IncludedVertices[*lit_ListIterator]<<"}, ";
 					}
-
+					
 					k++;
 				}
 			}
@@ -1181,6 +1181,7 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 		return (returnValue);
 	}
 	
+		// !!! Note: the speed of this function could be improved by reserve the vectors size for (RowIndex, ColumnIndex, HessianValue) ahead of time
 	int HessianRecovery::IndirectRecover_CoordinateFormat_vectors(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue) {
 		int i=0,j=0;
 		int i_VertexCount = _UNKNOWN;
@@ -1208,7 +1209,7 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 			for(j=vi_Vertices[i]; j<vi_Vertices[STEP_UP(i)]; j++) // for each of the vertex B that connect to A
 			{
 				if(i < vi_Edges[j]) // if the index of A (i) is less than the index of B (vi_Edges[j])
-										//basic each edge is represented by (vertex with smaller ID, vertex with larger ID). This way, we don't insert a specific edge twice
+										//basically each edge is represented by (vertex with smaller ID, vertex with larger ID). This way, we don't insert a specific edge twice
 				{
 					i_EdgeID = mimi2_VertexEdgeMap[i][vi_Edges[j]];
 
@@ -1327,6 +1328,7 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 				i_PresentVertex = mivi_VertexSets[vi_Sets[i]][j];
 
 				vb_IncludedVertices[i_PresentVertex] = true;
+				vd_IncludedVertices[i_PresentVertex] = 0;
 
 				if(vi_InducedVertexDegrees[i_PresentVertex] != _FALSE)
 				{
@@ -1371,11 +1373,11 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 				{
 					if(k == STEP_DOWN(i_SetSize))
 					{
-						cout<<STEP_UP(*lit_ListIterator)<<" ("<<i_SetSize<<")"<<endl;
+						cout<<STEP_UP(*lit_ListIterator)<<"{"<<vd_IncludedVertices[*lit_ListIterator]<<"} ("<<i_SetSize<<")"<<endl;
 					}
 					else
 					{
-						cout<<STEP_UP(*lit_ListIterator)<<", ";
+						cout<<STEP_UP(*lit_ListIterator)<<"{"<<vd_IncludedVertices[*lit_ListIterator]<<"}, ";
 					}
 
 					k++;
@@ -1503,6 +1505,7 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 		vector<unsigned int> RowIndex;
 		vector<unsigned int> ColumnIndex;
 		vector<double> HessianValue;
+		
 
 		int returnValue = IndirectRecover_CoordinateFormat_vectors(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, RowIndex, ColumnIndex, HessianValue);
 

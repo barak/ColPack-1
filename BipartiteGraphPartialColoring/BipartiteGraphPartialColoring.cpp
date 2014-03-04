@@ -280,6 +280,122 @@ namespace ColPack
 
 		return;
 	}
+	
+	int f(int x) {return x;}
+
+	int BipartiteGraphPartialColoring::PartialDistanceTwoRowColoring_OMP()
+	{
+		if(CheckVertexColoring("ROW_PARTIAL_DISTANCE_TWO"))
+		{
+			return(_TRUE);
+		}
+
+		int i_LeftVertexCount, i_RightVertexCount, i_CurrentVertex;
+		bool cont=false;
+		vector<int> vi_forbiddenColors, vi_VerticesToBeColored, vi_verticesNeedNewColor;
+		i_LeftVertexCount = (int) m_vi_LeftVertices.size() - 1;
+		i_RightVertexCount = (int)m_vi_RightVertices.size () - 1;
+
+		// !!! do sections for this part ? forbiddenColors may need to be private for each thread
+		// resize the colors
+		m_vi_LeftVertexColors.resize ( i_LeftVertexCount, _UNKNOWN );
+		// resize the forbidden colors. !!! should be resize to max D2 degree instead
+		vi_forbiddenColors.resize ( i_LeftVertexCount, _UNKNOWN );
+		//Algo 4 - Line 2: U <- V . U is vi_VerticesToBeColored
+		vi_VerticesToBeColored.reserve(i_LeftVertexCount);
+		for(int i=0; i<i_LeftVertexCount; i++) {
+			vi_VerticesToBeColored.push_back(i);
+		}
+		// !!! pick reasonable amount to reserve 
+		vi_verticesNeedNewColor.reserve(i_LeftVertexCount);
+
+		int i_NumOfVerticesToBeColored = vi_VerticesToBeColored.size();
+
+		//Algo 4 - Line 3: while U != 0 ; do
+		while(i_NumOfVerticesToBeColored!=0) {
+		  cout<<"i_NumOfVerticesToBeColored = "<<i_NumOfVerticesToBeColored<<endl;
+			//Phase 1: tentative coloring
+			//Algo 4 - Line 4: for each right vertex v in U (in parallel) do
+#pragma omp parallel for default(none) schedule(dynamic) shared(i_NumOfVerticesToBeColored, vi_VerticesToBeColored) firstprivate(vi_forbiddenColors)
+			for(int i=0; i<i_NumOfVerticesToBeColored; i++) {
+				int v = vi_VerticesToBeColored[i];
+				//Algo 4 - Line 5: for each left vertex w in adj (v) do
+				for (int w=m_vi_LeftVertices [v]; w<m_vi_LeftVertices [v+1]; w++ ) {
+					//Algo 4 - Line 6: mark color [w] as forbidden to vertex v. NOTE: !!! Not needed
+					//Algo 4 - Line 7: for each right vertex x in adj (w) and x != v do
+					for (int x=m_vi_LeftVertices [m_vi_Edges [w]]; x<m_vi_LeftVertices [m_vi_Edges [w]+1]; x++ ) {
+						//Algo 4 - Line 8: mark color [x] as forbidden to vertex v
+						if ( m_vi_LeftVertexColors [m_vi_Edges [x]] != _UNKNOWN ) {
+							// !!! each thread should has their own vi_forbiddenColors[] vector just to make sure the don't override each other
+							vi_forbiddenColors [m_vi_LeftVertexColors [m_vi_Edges [x]]] = v;
+						}
+					}
+				}
+				//Algo 4 - Line 9: Pick a permissible color c for vertex v using some strategy
+				int i_cadidateColor;
+				// First fit
+				{
+					i_cadidateColor = 0;
+					while(vi_forbiddenColors[i_cadidateColor]==v) i_cadidateColor++;
+				}
+				m_vi_LeftVertexColors[v] = i_cadidateColor;
+			}
+			
+			//Algo 4 - Line 10: R.clear()   ; R denotes the set of vertices to be recolored
+			vi_verticesNeedNewColor.clear();
+					
+			//Phase 2: conflict detection. For each vertex v in U, check and see if v need to be recolored
+			//Algo 4 - Line 11: for each vertex v in U (in parallel) do
+#pragma omp parallel for default(none) schedule(dynamic) shared(i_NumOfVerticesToBeColored, vi_VerticesToBeColored,vi_verticesNeedNewColor, cout) private(cont)
+			for(int i=0; i<i_NumOfVerticesToBeColored; i++) {
+				//Algo 4 - Line 12: cont  <- true ; cont is used to break from the outer loop below
+				cont = true;
+				int v = vi_VerticesToBeColored[i];
+				//Algo 4 - Line 13: for each vertex w in adj (v) and cont = true do
+				for (int w=m_vi_LeftVertices [v]; (w<m_vi_LeftVertices [v+1]) && (cont == true); w++ ) {
+					//Algo 4 - Line 14: if color [v] = color [w] and f (v) > f (w) then . NOTE: !!! Not needed
+						//Algo 4 - Line 15: add [v] to R ; break . NOTE: !!! Not needed
+					//Algo 4 - Line 16: for each vertex x in adj (w) and v != x do
+					for (int x=m_vi_LeftVertices [m_vi_Edges [w]]; x<m_vi_LeftVertices [m_vi_Edges [w]+1]; x++ ) {
+					  //cout<<" m_vi_LeftVertexColors [m_vi_Edges [x]="<<x<<"]"<< m_vi_LeftVertexColors [m_vi_Edges [x]] <<endl;
+					  // cout<<" m_vi_LeftVertexColors [v="<<v<<"]"<< m_vi_LeftVertexColors [v] <<endl;
+					  //cout<<"f(v="<<v<<")="<<f(v)<<endl;
+					  //cout<<"f(m_vi_Edges [x]="<<x<<")="<<f(m_vi_Edges [x])<<endl;
+						//Algo 4 - Line 17: if color [v] = color [x] and f (v) > f (x) then
+					  if ( m_vi_LeftVertexColors [m_vi_Edges [x]] == m_vi_LeftVertexColors[v] && f(v) > f(m_vi_Edges [x]) ) {
+							//Algo 4 - Line 18: add [v] to R ; cont <- false; break
+#pragma omp critical
+							vi_verticesNeedNewColor.push_back(v);
+#pragma omp end critical
+							cont = false;
+							break;
+						}
+					}
+				}
+			}
+			
+			//Algo 4 - Line 19: U <- R , i.e., vi_VerticesToBeColored <- vi_verticesNeedNewColor
+			vi_VerticesToBeColored.clear();
+			i_NumOfVerticesToBeColored = vi_verticesNeedNewColor.size(); 
+
+			vi_VerticesToBeColored.reserve(vi_verticesNeedNewColor.size());
+			for(int i=0; i<vi_verticesNeedNewColor.size(); i++) {
+			  vi_VerticesToBeColored.push_back(vi_verticesNeedNewColor[i]);
+			}
+
+			/*
+			vi_VerticesToBeColored.resize(vi_verticesNeedNewColor.size());
+#pragma omp parallel for default(none) schedule(static) shared(i_NumOfVerticesToBeColored,vi_VerticesToBeColored,vi_verticesNeedNewColor) 
+			for(int i=0; i<i_NumOfVerticesToBeColored; i++) {
+				vi_VerticesToBeColored[i]=vi_verticesNeedNewColor[i];
+			}
+			//*/
+
+		}
+		
+		return _TRUE;
+	  
+	}
 
 	//Public Function 2455
 	int BipartiteGraphPartialColoring::PartialDistanceTwoRowColoring()
@@ -337,6 +453,117 @@ namespace ColPack
 		m_i_VertexColorCount = m_i_LeftVertexColorCount;
 
 		return ( _TRUE );
+	}
+
+	int BipartiteGraphPartialColoring::PartialDistanceTwoColumnColoring_OMP() {
+		if(CheckVertexColoring("COLUMN_PARTIAL_DISTANCE_TWO"))
+		{
+		  return(_TRUE);
+		}
+
+		int i_LeftVertexCount, i_RightVertexCount, i_CurrentVertex;
+		bool cont=false;
+		vector<int> vi_forbiddenColors, vi_VerticesToBeColored, vi_verticesNeedNewColor;
+		i_LeftVertexCount = (int) m_vi_LeftVertices.size() - 1;
+		i_RightVertexCount = (int)m_vi_RightVertices.size () - 1;
+
+		// !!! do sections for this part ? forbiddenColors may need to be private for each thread
+		// resize the colors
+		m_vi_RightVertexColors.resize ( i_RightVertexCount, _UNKNOWN );
+		// resize the forbidden colors. !!! should be resize to max D2 degree instead
+		vi_forbiddenColors.resize ( i_RightVertexCount, _UNKNOWN );
+		//Algo 4 - Line 2: U <- V . U is vi_VerticesToBeColored
+		vi_VerticesToBeColored.reserve(i_RightVertexCount);
+		for(int i=0; i<i_RightVertexCount; i++) {
+			vi_VerticesToBeColored.push_back(i);
+		}
+		// !!! pick reasonable amount to reserve 
+		vi_verticesNeedNewColor.reserve(i_RightVertexCount);
+
+		int i_NumOfVerticesToBeColored = vi_VerticesToBeColored.size();
+
+		//Algo 4 - Line 3: while U != 0 ; do
+		while(i_NumOfVerticesToBeColored!=0) {
+		  cout<<"i_NumOfVerticesToBeColored = "<<i_NumOfVerticesToBeColored<<endl;
+			//Phase 1: tentative coloring
+			//Algo 4 - Line 4: for each right vertex v in U (in parallel) do
+#pragma omp parallel for default(none) schedule(dynamic) shared(i_NumOfVerticesToBeColored, vi_VerticesToBeColored) firstprivate(vi_forbiddenColors)
+			for(int i=0; i<i_NumOfVerticesToBeColored; i++) {
+				int v = vi_VerticesToBeColored[i];
+				//Algo 4 - Line 5: for each left vertex w in adj (v) do
+				for (int w=m_vi_RightVertices [v]; w<m_vi_RightVertices [v+1]; w++ ) {
+					//Algo 4 - Line 6: mark color [w] as forbidden to vertex v. NOTE: !!! Not needed
+					//Algo 4 - Line 7: for each right vertex x in adj (w) and x != v do
+					for (int x=m_vi_LeftVertices [m_vi_Edges [w]]; x<m_vi_LeftVertices [m_vi_Edges [w]+1]; x++ ) {
+						//Algo 4 - Line 8: mark color [x] as forbidden to vertex v
+						if ( m_vi_RightVertexColors [m_vi_Edges [x]] != _UNKNOWN ) {
+							// !!! each thread should has their own vi_forbiddenColors[] vector just to make sure the don't override each other
+							vi_forbiddenColors [m_vi_RightVertexColors [m_vi_Edges [x]]] = v;
+						}
+					}
+				}
+				//Algo 4 - Line 9: Pick a permissible color c for vertex v using some strategy
+				int i_cadidateColor;
+				// First fit
+				{
+					i_cadidateColor = 0;
+					while(vi_forbiddenColors[i_cadidateColor]==v) i_cadidateColor++;
+				}
+				m_vi_RightVertexColors[v] = i_cadidateColor;
+			}
+			
+			//Algo 4 - Line 10: R.clear()   ; R denotes the set of vertices to be recolored
+			vi_verticesNeedNewColor.clear();
+					
+			//Phase 2: conflict detection. For each vertex v in U, check and see if v need to be recolored
+			//Algo 4 - Line 11: for each vertex v in U (in parallel) do
+#pragma omp parallel for default(none) schedule(dynamic) shared(i_NumOfVerticesToBeColored, vi_VerticesToBeColored,vi_verticesNeedNewColor, cout) private(cont)
+			for(int i=0; i<i_NumOfVerticesToBeColored; i++) {
+				//Algo 4 - Line 12: cont  <- true ; cont is used to break from the outer loop below
+				cont = true;
+				int v = vi_VerticesToBeColored[i];
+				//Algo 4 - Line 13: for each vertex w in adj (v) and cont = true do
+				for (int w=m_vi_RightVertices [v]; (w<m_vi_RightVertices [v+1]) && (cont == true); w++ ) {
+					//Algo 4 - Line 14: if color [v] = color [w] and f (v) > f (w) then . NOTE: !!! Not needed
+						//Algo 4 - Line 15: add [v] to R ; break . NOTE: !!! Not needed
+					//Algo 4 - Line 16: for each vertex x in adj (w) and v != x do
+					for (int x=m_vi_LeftVertices [m_vi_Edges [w]]; x<m_vi_LeftVertices [m_vi_Edges [w]+1]; x++ ) {
+					  //cout<<" m_vi_RightVertexColors [m_vi_Edges [x]="<<x<<"]"<< m_vi_RightVertexColors [m_vi_Edges [x]] <<endl;
+					  // cout<<" m_vi_RightVertexColors [v="<<v<<"]"<< m_vi_RightVertexColors [v] <<endl;
+					  //cout<<"f(v="<<v<<")="<<f(v)<<endl;
+					  //cout<<"f(m_vi_Edges [x]="<<x<<")="<<f(m_vi_Edges [x])<<endl;
+						//Algo 4 - Line 17: if color [v] = color [x] and f (v) > f (x) then
+					  if ( m_vi_RightVertexColors [m_vi_Edges [x]] == m_vi_RightVertexColors[v] && f(v) > f(m_vi_Edges [x]) ) {
+							//Algo 4 - Line 18: add [v] to R ; cont <- false; break
+#pragma omp critical
+							vi_verticesNeedNewColor.push_back(v);
+#pragma omp end critical
+							cont = false;
+							break;
+						}
+					}
+				}
+			}
+			
+			//Algo 4 - Line 19: U <- R , i.e., vi_VerticesToBeColored <- vi_verticesNeedNewColor
+			vi_VerticesToBeColored.clear();
+			i_NumOfVerticesToBeColored = vi_verticesNeedNewColor.size(); 
+
+			vi_VerticesToBeColored.reserve(vi_verticesNeedNewColor.size());
+			for(int i=0; i<vi_verticesNeedNewColor.size(); i++) {
+			  vi_VerticesToBeColored.push_back(vi_verticesNeedNewColor[i]);
+			}
+
+			/*
+			vi_VerticesToBeColored.resize(vi_verticesNeedNewColor.size());
+#pragma omp parallel for default(none) schedule(static) shared(i_NumOfVerticesToBeColored,vi_VerticesToBeColored,vi_verticesNeedNewColor) 
+			for(int i=0; i<i_NumOfVerticesToBeColored; i++) {
+				vi_VerticesToBeColored[i]=vi_verticesNeedNewColor[i];
+			}
+			//*/
+
+		}
+
 	}
 
 	//Public Function 2456

@@ -18,6 +18,9 @@
     along with ColPack.  If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************************/
 
+#ifndef EXTRA_CPP
+#define EXTRA_CPP
+
 #include "extra.h"
 #include "Pause.h"
 #include "mmio.h"
@@ -201,6 +204,189 @@ int ConvertHarwellBoeingDouble(string & num_string) {
   }
   return 0;
 }
+
+string itoa(int i) {
+  string s;
+  stringstream out;
+  out << i;
+  s = out.str();
+  
+  return s;
+}
+
+vector<string> getListOfColors(string s_InputFile) {
+  if (s_InputFile.size()==0 || s_InputFile == "" ) s_InputFile="list_of_colors.txt";
+  ifstream InputStream (s_InputFile.c_str());
+  if(!InputStream){
+    cout<<"Not Found File "<<s_InputFile<<endl;
+  } else {
+    cout<<"Found File "<<s_InputFile<<endl;
+  }
+  
+  string line;
+  getline(InputStream, line);
+  vector<string> ListOfColors;
+  
+  while(!InputStream.eof() && line != "*") {
+    ListOfColors.push_back(line);
+    getline(InputStream, line);
+  }
+  
+  return ListOfColors;
+}
+
+int displayGraph(ColPack::GraphColoring &g) {
+  static int ranNum = rand();
+  static int seq = 0;
+  seq++;
+  vector<string> ListOfColors = getListOfColors("");
+  string fileName = "/tmp/.";
+  fileName = fileName + "ColPack_"+ itoa(ranNum)+"_"+itoa(seq)+".dot";
+  
+  //build the dot file of the graph
+  string m_s_VertexColoringVariant = g.GetVertexColoringVariant();
+  if(m_s_VertexColoringVariant.empty()) {
+    //build dot file represents graph without color info
+    buildDotWithoutColor(g, ListOfColors, fileName);
+  } else {
+    //build dot file represents graph with color
+    buildDotWithColor(g, ListOfColors, fileName);
+  }
+  
+  //display the graph using xdot
+  string command;
+  command="xdot -f dot ";
+  //command="xdot -f neato ";
+  //command="xdot -f twopi ";
+  //command="xdot -f circo ";
+  //command="xdot -f fdp ";
+  command = command + fileName;
+  system(command.c_str());
+}
+
+int buildDotWithoutColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, string fileName) {
+  cerr<<"IN buildDotWithoutColor"<<endl;
+  ofstream OutputStream (fileName.c_str());
+  if(!OutputStream){
+    cout<<"CAN'T create File "<<fileName<<endl;
+    return 1;
+  } else {
+    cout<<"Create File "<<fileName<<endl;
+  }
+  
+  vector<int> m_vi_Vertices, m_vi_Edges;
+  g.GetVertices(m_vi_Vertices);
+  g.GetEdges(m_vi_Edges);
+  int i_VertexCount = STEP_DOWN((signed) m_vi_Vertices.size());
+  string line="";
+  
+  //build header
+  OutputStream<<"graph g {"<<endl;
+  
+  //build body
+  for(int i=0; i < i_VertexCount; i++) {
+    for(int j=m_vi_Vertices[i] ; j< m_vi_Vertices[i + 1]; j++) {
+      if(m_vi_Edges[j]<=i) continue;
+      line = "";
+      line = line + "v"+itoa(i)+" -- v"+ itoa(m_vi_Edges[j]) +" ;";
+      OutputStream<<line<<endl;
+    }
+  }
+  
+  //build footer
+  OutputStream<<"}"<<endl;
+  
+  OutputStream.close();
+  cout<<"\t File created"<<endl;
+  
+  return 0;
+}
+
+int buildDotWithColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, string fileName) {
+  cerr<<"IN buildDotWithoutColor"<<endl;
+  ofstream OutputStream (fileName.c_str());
+  if(!OutputStream){
+    cout<<"CAN'T create File "<<fileName<<endl;
+    return 1;
+  } else {
+    cout<<"Create File "<<fileName<<endl;
+  }
+  
+  vector<int> m_vi_Vertices, m_vi_Edges, m_vi_VertexColors;
+  g.GetVertices(m_vi_Vertices);
+  g.GetEdges(m_vi_Edges);
+  g.GetVertexColors(m_vi_VertexColors);
+  int i_VertexCount = STEP_DOWN((signed) m_vi_Vertices.size());
+  int i_NumberOfColors = ListOfColors.size();
+  string line="", color_str="";
+  
+  //build header
+  OutputStream<<"graph g {"<<endl;
+  
+  //build node colors
+  for(int i=0; i < i_VertexCount; i++) {
+    line="";
+    color_str = ListOfColors[m_vi_VertexColors[i]%i_NumberOfColors];
+    //a_1 [color=aliceblue]
+    line = line + "v"+itoa(i)+"_c"+itoa(m_vi_VertexColors[i])+" [style=filled fillcolor="+color_str+"]";
+    OutputStream<<line<<endl;
+  }
+  cout<<endl<<endl;
+  
+  //Find conflicts
+  vector<vector<int> > ListOfConflicts;
+  g.GetStarColoringConflicts(ListOfConflicts);
+  
+  //Mark conflict edge
+  vector<bool> m_vi_ConflictEdges;
+  m_vi_ConflictEdges.resize(m_vi_Edges.size(),false);
+  if(ListOfConflicts.size()>0) {
+    for(int i=0; i<ListOfConflicts.size();i++) {
+      for(int j=0; j<ListOfConflicts[i].size()-1;j++) {
+	int Vertex1 = ListOfConflicts[i][j];
+	int Vertex2 = ListOfConflicts[i][j+1];
+	if(Vertex1 > Vertex2) { //swap order
+	  for(int k=m_vi_Vertices[Vertex2]; k < m_vi_Vertices[Vertex2+1]; k++) {
+	    if(m_vi_Edges[k] == Vertex1) {
+	      m_vi_ConflictEdges[ k ]=true;
+	      break;
+	    }
+	  }
+	}
+	else {
+	  for(int k=m_vi_Vertices[Vertex1]; k < m_vi_Vertices[Vertex1+1]; k++) {
+	    if(m_vi_Edges[k] == Vertex2) {
+	      m_vi_ConflictEdges[ k ]=true;
+	      break;
+	    }
+	  }
+	}
+	
+      }
+    }
+  }
+  
+  //build body
+  for(int i=0; i < i_VertexCount; i++) {
+    for(int j=m_vi_Vertices[i] ; j< m_vi_Vertices[i + 1]; j++) {
+      if(m_vi_Edges[j]<=i) continue;
+      line = "";
+      line = line + "v"+itoa(i)+"_c"+itoa(m_vi_VertexColors[i])+" -- v"+ itoa(m_vi_Edges[j])+"_c"+itoa(m_vi_VertexColors[m_vi_Edges[j]]) ;
+      if(m_vi_ConflictEdges.size()>0 && m_vi_ConflictEdges[j]) { // make the line bolder if the edge is conflict
+	line = line + "[style=\"setlinewidth(3)\"]";
+      }
+      OutputStream<<line<<" ;"<<endl;
+    }
+  }
+  
+  //build footer
+  OutputStream<<"}"<<endl;
+  
+  OutputStream.close();
+  cout<<"\t File created"<<endl;
+  return 0;
+}
+
 
 bool isValidOrdering(vector<int> & ordering, int offset) {
   vector<bool> isExist, index;
@@ -576,7 +762,10 @@ int ConvertMatrixMarketFormat2RowCompressedFormat(string s_InputFile, unsigned i
 	printf("Graph of Market Market type: [%s]\n", result);
 	free(result);
 	if (b_getValue) printf("\t Graph structure and VALUES will be read\n");
-	else printf("\t Read graph struture only. Values will NOT be read\n");
+	else {
+	  printf("\t Read graph struture only. Values will NOT be read. dp3_Value will NOT be allocated memory, so don't try to use it!!!\n");
+	  Pause();
+	}
 	if( !( mm_is_coordinate(matcode) && (mm_is_symmetric(matcode) || mm_is_general(matcode) ) && ( mm_is_real(matcode) || mm_is_pattern(matcode) || mm_is_integer(matcode) ) ) ) {
 	  printf("Sorry, this application does not support this type.");
 	  exit(1);
@@ -737,7 +926,9 @@ int MatrixMultiplication_VxS__usingVertexPartialColors(std::list<std::set<int> >
 int MatrixMultiplication_VxS(unsigned int ** uip3_SparsityPattern, double** dp3_Value, int rowCount, int columnCount, double** dp2_seed, int colorCount, double*** dp3_CompressedMatrix) {
 
 	//Allocate memory for (*dp3_CompressedMatrix)[rowCount][colorCount]
-	//cout<<"Allocate memory for (*dp3_CompressedMatrix)[rowCount][colorCount]"<<endl;
+#if DEBUG == 2
+	cout<<"Allocate memory for (*dp3_CompressedMatrix)[rowCount][colorCount]"<<endl;
+#endif
 	(*dp3_CompressedMatrix) = new double*[rowCount];
 	for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
 		(*dp3_CompressedMatrix)[i] = new double[colorCount];
@@ -747,12 +938,21 @@ int MatrixMultiplication_VxS(unsigned int ** uip3_SparsityPattern, double** dp3_
 	}
 
 	//do the multiplication
-	//cout<<"Do the multiplication"<<endl;
+#if DEBUG == 2
+	cout<<"Do the multiplication"<<endl;
+	Pause();
+#endif
 	for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
 		unsigned int numOfNonZeros = uip3_SparsityPattern[i][0];
 		for(unsigned int j=1; j <= numOfNonZeros; j++) {
 		  for(unsigned int k=0; k < (unsigned int)colorCount; k++) {
-				//printf("i=%d\tj=%d\tuip3_SparsityPattern[i][j]=%d\tk=%d\n", i, j, uip3_SparsityPattern[i][j], k);
+#if DEBUG == 2
+				printf("i=%d\tj=%d\tuip3_SparsityPattern[i][j]=%d\tk=%d\n", i, j, uip3_SparsityPattern[i][j], k);
+				  cout<<"\trowCount="<<rowCount<<"; numOfNonZeros="<<numOfNonZeros<<"; colorCount="<<colorCount<<endl;
+				if(i==256 && j==1 && k==0) {
+				  cout<<"blah"<<endl;
+				}
+#endif
 				(*dp3_CompressedMatrix)[i][k] += dp3_Value[i][j]*dp2_seed[uip3_SparsityPattern[i][j]][k];
 			}
 		}
@@ -962,5 +1162,5 @@ int DisplayADICFormat_Value(std::list<std::vector<double> > &lvd_Value) {
 	return 0;
 }
 
-
+#endif
 

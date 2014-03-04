@@ -332,6 +332,213 @@ namespace ColPack
 
 
 
+	//Line 1: procedure SMALLESTLASTORDERING-EASY(G = (V;E))
+	int BipartiteGraphPartialOrdering::RowSmallestLastOrdering_OMP()
+	{
+		cout<<"IN ROW_SMALLEST_LAST_OMP()"<<endl<<flush;
+		if(CheckVertexOrdering("ROW_SMALLEST_LAST_OMP"))
+		{
+			return(_TRUE);
+		}
+		
+		PrintBipartiteGraph(); 
+		
+		int j, k, l, u;
+		int i_LeftVertexCount = (signed) m_vi_LeftVertices.size() - 1;
+		int i_RightVertexCount = (signed) m_vi_RightVertices.size() - 1;
+		vector<int> vi_Visited;
+		vi_Visited.clear();
+		vi_Visited.resize ( i_LeftVertexCount, _UNKNOWN );
+		m_vi_OrderedVertices.clear();
+		vector<int> d; // current distance-2 degree of each Left vertex
+		d.resize(i_LeftVertexCount, _UNKNOWN);
+		vector<int> VertexThreadGroup;
+		VertexThreadGroup.resize(i_LeftVertexCount, _UNKNOWN);
+		int i_MaxNumThreads;
+#ifdef _OPENMP
+		i_MaxNumThreads = omp_get_max_threads();
+#else
+		i_MaxNumThreads = 1;
+#endif
+		int i_MaxDegree = 0;
+		int* i_MaxDegree_Private = new int[i_MaxNumThreads];
+		int* i_MinDegree_Private = new int[i_MaxNumThreads];
+		// ??? is this really neccessary ? => #pragma omp parallel for default(none) schedule(static) shared()
+		for(int i=0; i < i_MaxNumThreads; i++) {
+			i_MaxDegree_Private[i] = 0;
+			i_MinDegree_Private[i] = i_LeftVertexCount;
+		}
+		int* delta = new int[i_MaxNumThreads];
+				
+		vector<int>** B; //private buckets. Each thread i will have their own buckets B[i][]
+		B = new vector<int>*[i_MaxNumThreads];
+#ifdef _OPENMP
+		#pragma omp parallel for default(none) schedule(static) shared(B, i_MaxDegree, i_MaxNumThreads)
+#endif
+		for(int i=0; i < i_MaxNumThreads; i++) {
+			B[i] = new vector<int>[i_MaxDegree];
+		}
+
+		//DONE Line 2: for each vertex v in V in parallel do
+#ifdef _OPENMP
+		#pragma omp parallel for default(none) schedule(static) shared(B, d, i_LeftVertexCount, i_MaxDegree_Private, i_MinDegree_Private) firstprivate(vi_Visited)
+#endif
+		for(int v=0; v < i_LeftVertexCount; v++) {
+			//DONE Line 3: d(v) <- d2(v,G) . Also find i_MaxDegree_Private
+			d[v] = 0;
+			for(int i=m_vi_LeftVertices[v]; i<m_vi_LeftVertices[v+1];i++) {
+				int i_Current = m_vi_Edges[i];
+				for(int j=m_vi_RightVertices [i_Current]; j<m_vi_RightVertices [i_Current+1]; j++) {
+					if ( m_vi_Edges [j] != v && vi_Visited [m_vi_Edges [j]] != v ) {
+						d[v]++;
+						vi_Visited [m_vi_Edges [j]] = v;
+					}
+				}
+			}
+			
+			int i_thread_num;
+#ifdef _OPENMP
+			i_thread_num = omp_get_thread_num();
+#else
+			i_thread_num = 0;
+#endif
+			if(i_MaxDegree_Private[i_thread_num]<d[v]) i_MaxDegree_Private[i_thread_num]=d[v];
+			if(i_MinDegree_Private[i_thread_num]>d[v]) {
+				i_MinDegree_Private[i_thread_num]=d[v];
+			}
+		}
+		// find i_MaxDegree; populate delta
+		for(int i=0; i < i_MaxNumThreads; i++) {
+			if(i_MaxDegree<i_MaxDegree_Private[i] ) i_MaxDegree = i_MaxDegree_Private[i];
+			delta[i] = i_MinDegree_Private[i];
+		}
+		
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(B, i_MaxDegree, i_MaxNumThreads)
+#endif
+		for(int i=0; i < i_MaxNumThreads; i++) {
+			int i_thread_num;
+#ifdef _OPENMP
+			i_thread_num = omp_get_thread_num();
+#else
+			i_thread_num = 0;
+#endif
+			B[i_thread_num] = new vector<int>[i_MaxDegree+1];
+		}
+
+		//DONE Line 2: for each vertex v in V in parallel do
+#ifdef _OPENMP
+		#pragma omp parallel for default(none) schedule(static) shared(B, d, i_LeftVertexCount, VertexThreadGroup)
+#endif
+		for(int v=0; v < i_LeftVertexCount; v++) {
+ 			int i_thread_num;
+#ifdef _OPENMP
+			i_thread_num = omp_get_thread_num();
+#else
+			i_thread_num = 0;
+#endif
+			//DONE Line 4: add v to B_t(v) [d (v)] 
+			B[ i_thread_num ][ d[v] ].push_back(v);
+			
+			//record that v is in B_t(v)
+			VertexThreadGroup[v] = i_thread_num;
+
+		}
+
+		//DONE Line 5: i_NumOfVerticesToBeColored <- |V|
+		int i_NumOfVerticesToBeColored = i_LeftVertexCount;
+		
+		//Line 6: for k = 1 to p in parallel do
+#ifdef _OPENMP
+		#pragma omp parallel for default(none) schedule(static) shared(i_MaxNumThreads, i_NumOfVerticesToBeColored, B, delta, VertexThreadGroup, d, cout, i_MaxDegree, i_MaxDegree_Private ) firstprivate(vi_Visited)
+#endif
+		for(int k=0; k< i_MaxNumThreads; k++) {
+			//reset vi_Visited
+			for(int i=0; i< vi_Visited.size();i++) vi_Visited[i] = _UNKNOWN;
+
+			//Line 7: while i_NumOfVerticesToBeColored >= 0 do // !!! ??? why not i_NumOfVerticesToBeColored > 0
+			while(i_NumOfVerticesToBeColored > 0) {
+			  int i_thread_num;
+#ifdef _OPENMP
+			  i_thread_num = omp_get_thread_num();
+#else
+			  i_thread_num = 0;
+#endif
+				//Line 8: Let delta be the smallest index j such that B_k [j] is non-empty
+				//update delta
+				cout<<"delta[i_thread_num] 1="<< delta[i_thread_num] <<endl;
+				cout<<"B[i_thread_num]:"<<endl<<'\t';
+				for(int i=0; i<=i_MaxDegree; i++) {cout<<B[i_thread_num][i].size()<<' ';}
+				cout<<'*'<<endl;
+				if(delta[i_thread_num]!=0 && B[ i_thread_num ][ delta[i_thread_num] - 1 ].size() != 0) delta[i_thread_num] --;
+				cout<<"delta[i_thread_num] 2="<< delta[i_thread_num] <<endl;
+				
+				//Line 9: Let v be a vertex drawn from B_k [delta]
+				int v; 
+				
+				for(int i=delta[i_thread_num] ; i<i_MaxDegree_Private[i_thread_num]; i++) {
+					if(B[ i_thread_num ][ i ].size()!=0) {
+						v = B[ i_thread_num ][ delta[i_thread_num] ][ B[ i_thread_num ][ delta[i_thread_num] ].size() - 1 ];
+						d[v]= -1; // mark v as selected
+
+						//Line 10: remove v from B_k [delta]
+						B[ i_thread_num ][ delta[i_thread_num] ].pop_back();
+						
+						break;
+					}
+					else delta[i_thread_num]++;
+				}
+				cout<<"Select vertex v="<<v<<" ; d[v]="<< d[v]<<endl;
+				cout<<"delta[i_thread_num] 3="<< delta[i_thread_num] <<endl;
+				
+				//Line 11: for each vertex w which is distance-2-neighbor of (v) do
+				for(int l = m_vi_LeftVertices[v]; l < m_vi_LeftVertices[v+1]; l++) {
+					int i_D1Neighbor = m_vi_Edges[l];
+					for(int m = m_vi_RightVertices[i_D1Neighbor]; m < m_vi_RightVertices[i_D1Neighbor+1]; m++ ) {
+						int w = m_vi_Edges[m];
+
+						//Line 12: if w in B_k then
+						if( VertexThreadGroup[w] != i_thread_num || vi_Visited [w] == v || d[w] < 1 || w == v ) continue;
+						
+						//Line 13: remove w from B_k [d (w)]
+						// find location of w in B_k [d (w)] and pop it . !!! naive, improvable by keeping extra data. See if the extra data affacts concurrency
+						int i_w_location = B[ i_thread_num ][ d[w] ].size() - 1;
+						cout<<"d[w]="<<d[w]<<endl;
+						cout<<"i_w_location before="<<i_w_location<<endl;
+						for(int ii = 0; ii <= i_w_location; ii++) {cout<<' '<< B[ i_thread_num ][ d[w] ][ii] ;}
+						cout<<"find w="<<w<<endl;
+						while(i_w_location>=0 && B[ i_thread_num ][ d[w] ][i_w_location] != w) i_w_location--;
+						if(i_w_location<0) {
+							cout<<"*** i_w_location<0"<<endl<<flush;
+						}
+						cout<<"i_w_location after="<<i_w_location<<endl;
+						if(i_w_location != (B[ i_thread_num ][ d[w] ].size() - 1) ) B[ i_thread_num ] [ d[w] ][i_w_location] = B[ i_thread_num ] [ d[w] ][ B[ i_thread_num ][ d[w] ].size() - 1 ];
+						B[ i_thread_num ] [ d[w] ].pop_back();
+						
+						//Line 14: d (w) <- d (w) - 1
+						d[w]--;
+						
+						//Line 15: add w to B_k [d (w)]
+						B[ i_thread_num ] [ d[w] ].push_back(w);
+						
+					}
+				}
+						
+				//DONE Line 16: W [i_NumOfVerticesToBeColored] <- v; i_NumOfVerticesToBeColored <- i_NumOfVerticesToBeColored - 1 . critical statements
+#ifdef _OPENMP
+				#pragma omp critical
+#endif
+				{
+					//!!! improvable
+					m_vi_OrderedVertices.push_back(v);
+					i_NumOfVerticesToBeColored--;
+					cout<<"i_NumOfVerticesToBeColored="<<i_NumOfVerticesToBeColored<<endl;
+				}
+			}
+		}
+		cout<<"OUT ROW_SMALLEST_LAST_OMP()"<<endl<<flush;
+	}
+
 	//Public Function 2359
 	int BipartiteGraphPartialOrdering::RowSmallestLastOrdering()
 	{
@@ -512,6 +719,213 @@ namespace ColPack
                 vvi_GroupedInducedVertexDegree.clear();
 
 		return(_TRUE);
+	}
+
+	//Line 1: procedure SMALLESTLASTORDERING-EASY(G = (V;E))
+	int BipartiteGraphPartialOrdering::ColumnSmallestLastOrdering_OMP()
+	{
+	  cout<<"IN COLUMN_SMALLEST_LAST_OMP()"<<endl<<flush;
+		if(CheckVertexOrdering("COLUMN_SMALLEST_LAST_OMP"))
+		{
+			return(_TRUE);
+		}
+		
+		PrintBipartiteGraph(); 
+		
+		int j, k, l, u;
+		int i_LeftVertexCount = (signed) m_vi_LeftVertices.size() - 1;
+		int i_RightVertexCount = (signed) m_vi_RightVertices.size() - 1;
+		vector<int> vi_Visited;
+		vi_Visited.clear();
+		vi_Visited.resize ( i_RightVertexCount, _UNKNOWN );
+		m_vi_OrderedVertices.clear();
+		vector<int> d; // current distance-2 degree of each right vertex
+		d.resize(i_RightVertexCount, _UNKNOWN);
+		vector<int> VertexThreadGroup;
+		VertexThreadGroup.resize(i_RightVertexCount, _UNKNOWN);
+		int i_MaxNumThreads;
+#ifdef _OPENMP
+		i_MaxNumThreads = omp_get_max_threads();
+#else
+		i_MaxNumThreads = 1;
+#endif
+		int i_MaxDegree = 0;
+		int* i_MaxDegree_Private = new int[i_MaxNumThreads];
+		int* i_MinDegree_Private = new int[i_MaxNumThreads];
+		// ??? is this really neccessary ? => #pragma omp parallel for default(none) schedule(static) shared()
+		for(int i=0; i < i_MaxNumThreads; i++) {
+			i_MaxDegree_Private[i] = 0;
+			i_MinDegree_Private[i] = i_RightVertexCount;
+		}
+		int* delta = new int[i_MaxNumThreads];
+				
+		vector<int>** B; //private buckets. Each thread i will have their own buckets B[i][]
+		B = new vector<int>*[i_MaxNumThreads];
+#ifdef _OPENMP
+		#pragma omp parallel for default(none) schedule(static) shared(B, i_MaxDegree, i_MaxNumThreads)
+#endif
+		for(int i=0; i < i_MaxNumThreads; i++) {
+			B[i] = new vector<int>[i_MaxDegree];
+		}
+
+		//DONE Line 2: for each vertex v in V in parallel do
+#ifdef _OPENMP
+		#pragma omp parallel for default(none) schedule(static) shared(B, d, i_RightVertexCount, i_MaxDegree_Private, i_MinDegree_Private) firstprivate(vi_Visited)
+#endif
+		for(int v=0; v < i_RightVertexCount; v++) {
+			//DONE Line 3: d(v) <- d2(v,G) . Also find i_MaxDegree_Private
+			d[v] = 0;
+			for(int i=m_vi_RightVertices[v]; i<m_vi_RightVertices[v+1];i++) {
+				int i_Current = m_vi_Edges[i];
+				for(int j=m_vi_LeftVertices [i_Current]; j<m_vi_LeftVertices [i_Current+1]; j++) {
+					if ( m_vi_Edges [j] != v && vi_Visited [m_vi_Edges [j]] != v ) {
+						d[v]++;
+						vi_Visited [m_vi_Edges [j]] = v;
+					}
+				}
+			}
+			
+			int i_thread_num;
+#ifdef _OPENMP
+			i_thread_num = omp_get_thread_num();
+#else
+			i_thread_num = 0;
+#endif
+			if(i_MaxDegree_Private[i_thread_num]<d[v]) i_MaxDegree_Private[i_thread_num]=d[v];
+			if(i_MinDegree_Private[i_thread_num]>d[v]) {
+				i_MinDegree_Private[i_thread_num]=d[v];
+			}
+		}
+		// find i_MaxDegree; populate delta
+		for(int i=0; i < i_MaxNumThreads; i++) {
+			if(i_MaxDegree<i_MaxDegree_Private[i] ) i_MaxDegree = i_MaxDegree_Private[i];
+			delta[i] = i_MinDegree_Private[i];
+		}
+		
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(B, i_MaxDegree, i_MaxNumThreads)
+#endif
+		for(int i=0; i < i_MaxNumThreads; i++) {
+			int i_thread_num;
+#ifdef _OPENMP
+			i_thread_num = omp_get_thread_num();
+#else
+			i_thread_num = 0;
+#endif
+			B[i_thread_num] = new vector<int>[i_MaxDegree+1];
+		}
+
+		//DONE Line 2: for each vertex v in V in parallel do
+#ifdef _OPENMP
+		#pragma omp parallel for default(none) schedule(static) shared(B, d, i_RightVertexCount, VertexThreadGroup)
+#endif
+		for(int v=0; v < i_RightVertexCount; v++) {
+ 			int i_thread_num;
+#ifdef _OPENMP
+			i_thread_num = omp_get_thread_num();
+#else
+			i_thread_num = 0;
+#endif
+			//DONE Line 4: add v to B_t(v) [d (v)] 
+			B[ i_thread_num ][ d[v] ].push_back(v);
+			
+			//record that v is in B_t(v)
+			VertexThreadGroup[v] = i_thread_num;
+
+		}
+
+		//DONE Line 5: i_NumOfVerticesToBeColored <- |V|
+		int i_NumOfVerticesToBeColored = i_RightVertexCount;
+		
+		//Line 6: for k = 1 to p in parallel do
+#ifdef _OPENMP
+		#pragma omp parallel for default(none) schedule(static) shared(i_MaxNumThreads, i_NumOfVerticesToBeColored, B, delta, VertexThreadGroup, d, cout, i_MaxDegree, i_MaxDegree_Private ) firstprivate(vi_Visited)
+#endif
+		for(int k=0; k< i_MaxNumThreads; k++) {
+			//reset vi_Visited
+			for(int i=0; i< vi_Visited.size();i++) vi_Visited[i] = _UNKNOWN;
+
+			//Line 7: while i_NumOfVerticesToBeColored >= 0 do // !!! ??? why not i_NumOfVerticesToBeColored > 0
+			while(i_NumOfVerticesToBeColored > 0) {
+			  int i_thread_num;
+#ifdef _OPENMP
+			  i_thread_num = omp_get_thread_num();
+#else
+			  i_thread_num = 0;
+#endif
+				//Line 8: Let delta be the smallest index j such that B_k [j] is non-empty
+				//update delta
+				cout<<"delta[i_thread_num] 1="<< delta[i_thread_num] <<endl;
+				cout<<"B[i_thread_num]:"<<endl<<'\t';
+				for(int i=0; i<=i_MaxDegree; i++) {cout<<B[i_thread_num][i].size()<<' ';}
+				cout<<'*'<<endl;
+				if(delta[i_thread_num]!=0 && B[ i_thread_num ][ delta[i_thread_num] - 1 ].size() != 0) delta[i_thread_num] --;
+				cout<<"delta[i_thread_num] 2="<< delta[i_thread_num] <<endl;
+				
+				//Line 9: Let v be a vertex drawn from B_k [delta]
+				int v; 
+				
+				for(int i=delta[i_thread_num] ; i<i_MaxDegree_Private[i_thread_num]; i++) {
+					if(B[ i_thread_num ][ i ].size()!=0) {
+						v = B[ i_thread_num ][ delta[i_thread_num] ][ B[ i_thread_num ][ delta[i_thread_num] ].size() - 1 ];
+						d[v]= -1; // mark v as selected
+
+						//Line 10: remove v from B_k [delta]
+						B[ i_thread_num ][ delta[i_thread_num] ].pop_back();
+						
+						break;
+					}
+					else delta[i_thread_num]++;
+				}
+				cout<<"Select vertex v="<<v<<" ; d[v]="<< d[v]<<endl;
+				cout<<"delta[i_thread_num] 3="<< delta[i_thread_num] <<endl;
+				
+				//Line 11: for each vertex w which is distance-2-neighbor of (v) do
+				for(int l = m_vi_RightVertices[v]; l < m_vi_RightVertices[v+1]; l++) {
+					int i_D1Neighbor = m_vi_Edges[l];
+					for(int m = m_vi_LeftVertices[i_D1Neighbor]; m < m_vi_LeftVertices[i_D1Neighbor+1]; m++ ) {
+						int w = m_vi_Edges[m];
+
+						//Line 12: if w in B_k then
+						if( VertexThreadGroup[w] != i_thread_num || vi_Visited [w] == v || d[w] < 1 || w == v ) continue;
+						
+						//Line 13: remove w from B_k [d (w)]
+						// find location of w in B_k [d (w)] and pop it . !!! naive, improvable by keeping extra data. See if the extra data affacts concurrency
+						int i_w_location = B[ i_thread_num ][ d[w] ].size() - 1;
+						cout<<"d[w]="<<d[w]<<endl;
+						cout<<"i_w_location before="<<i_w_location<<endl;
+						for(int ii = 0; ii <= i_w_location; ii++) {cout<<' '<< B[ i_thread_num ][ d[w] ][ii] ;}
+						cout<<"find w="<<w<<endl;
+						while(i_w_location>=0 && B[ i_thread_num ][ d[w] ][i_w_location] != w) i_w_location--;
+						if(i_w_location<0) {
+							cout<<"*** i_w_location<0"<<endl<<flush;
+						}
+						cout<<"i_w_location after="<<i_w_location<<endl;
+						if(i_w_location != (B[ i_thread_num ][ d[w] ].size() - 1) ) B[ i_thread_num ] [ d[w] ][i_w_location] = B[ i_thread_num ] [ d[w] ][ B[ i_thread_num ][ d[w] ].size() - 1 ];
+						B[ i_thread_num ] [ d[w] ].pop_back();
+						
+						//Line 14: d (w) <- d (w) - 1
+						d[w]--;
+						
+						//Line 15: add w to B_k [d (w)]
+						B[ i_thread_num ] [ d[w] ].push_back(w);
+						
+					}
+				}
+						
+				//DONE Line 16: W [i_NumOfVerticesToBeColored] <- v; i_NumOfVerticesToBeColored <- i_NumOfVerticesToBeColored - 1 . critical statements
+#ifdef _OPENMP
+				#pragma omp critical
+#endif
+				{
+					//!!! improvable
+					m_vi_OrderedVertices.push_back(v);
+					i_NumOfVerticesToBeColored--;
+					cout<<"i_NumOfVerticesToBeColored="<<i_NumOfVerticesToBeColored<<endl;
+				}
+			}
+		}
+		cout<<"OUT COLUMN_SMALLEST_LAST_OMP()"<<endl<<flush;
 	}
 
 

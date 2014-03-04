@@ -21,7 +21,7 @@
 #include "ColPackHeaders.h"
 
 using namespace std;
-
+//#define DEBUG 5103
 namespace ColPack
 {
 
@@ -250,6 +250,111 @@ namespace ColPack
 		return (returnValue);
 	}
 
+	int HessianRecovery::DirectRecover_CoordinateFormat_vectors_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue) {
+		int rowCount = g->GetVertexCount();
+		int colorCount = g->GetVertexColorCount();
+		//cout<<"colorCount="<<colorCount<<endl;
+		vector<int> vi_VertexColors;
+		g->GetVertexColors(vi_VertexColors);
+
+		//Do (column-)color statistic for each row, i.e., see how many elements in that row has color 0, color 1 ...
+		int** colorStatistic = new int*[rowCount];	//color statistic for each row. For example, colorStatistic[0] is color statistic for row 0
+													//If row 0 has 5 columns with color 3 => colorStatistic[0][3] = 5;
+		//Allocate memory for colorStatistic[rowCount][colorCount] and initilize the matrix
+		#pragma omp parallel for default(none) schedule(static) shared(colorStatistic, colorCount, rowCount)
+		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+			colorStatistic[i] = new int[colorCount];
+			for(unsigned int j=0; j < (unsigned int)colorCount; j++) colorStatistic[i][j] = 0;
+		}
+
+		//populate colorStatistic
+		#pragma omp parallel for default(none) schedule(static) shared(rowCount, uip2_HessianSparsityPattern, colorStatistic, vi_VertexColors)
+		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+			int numOfNonZeros = uip2_HessianSparsityPattern[i][0];
+			for(unsigned int j=1; j <= (unsigned int)numOfNonZeros; j++) {
+				//non-zero in the Hessian: [i][uip2_HessianSparsityPattern[i][j]]
+				//color of that column: vi_VertexColors[uip2_HessianSparsityPattern[i][j]]
+				colorStatistic[i][vi_VertexColors[uip2_HessianSparsityPattern[i][j]]]++;
+			}
+		}
+		
+		int* row_size = new int[rowCount];
+		int total_length;
+		row_size[0]=0;
+		
+		#pragma omp parallel for default(none) schedule(static) shared(rowCount,row_size, uip2_HessianSparsityPattern) reduction(+:total_length) 
+		// Find out the number of elements in each  rows. Note: row_size[1] will has the number of elements in the first row (!!!NOT the 2nd row)
+		for(unsigned int i=0; i < (unsigned int)rowCount-1; i++) {
+			unsigned int numOfNonZeros = uip2_HessianSparsityPattern[i][0];
+			int rsize=0;
+			for(unsigned int j=1; j <= numOfNonZeros; j++) {
+			  if(uip2_HessianSparsityPattern[i][j]<i) continue;
+			  rsize++;
+			}
+			total_length = total_length + rsize;
+			row_size[i+1]=rsize;
+		}
+		for(unsigned int j=1; j <= uip2_HessianSparsityPattern[rowCount-1][0]; j++) {
+		  if(uip2_HessianSparsityPattern[rowCount-1][j]<rowCount-1) continue;
+		  total_length++;
+		}
+		
+		// Allocate memory for RowIndex,  ColumnIndex and HessianValue. Also modify row_size
+		#pragma omp sections
+		{
+		  #pragma omp section
+		  {
+		    RowIndex.resize(total_length);
+		  }
+		  #pragma omp section
+		  {
+		    ColumnIndex.resize(total_length);
+		  }
+		  #pragma omp section
+		  {
+		    HessianValue.resize(total_length);
+		  }
+		  #pragma omp section
+		  {
+		    //Modify row_size so that each element will keep the starting index of RowIndex,  ColumnIndex and HessianValue
+		    for(unsigned int i=1; i < (unsigned int)rowCount; i++) {
+		      row_size[i] += row_size[i-1];
+		    }
+		  }
+		}
+		
+		//Now, go to the main part, recover the values of non-zero entries in the Hessian
+		//!!! Working
+		#pragma omp parallel for default(none) schedule(static) shared(rowCount, uip2_HessianSparsityPattern, HessianValue, RowIndex, ColumnIndex, dp2_CompressedMatrix, vi_VertexColors, colorStatistic, row_size)
+		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+			unsigned int numOfNonZeros = uip2_HessianSparsityPattern[i][0];
+			int index = 0;
+			for(unsigned int j=1; j <= numOfNonZeros; j++) {
+				if(uip2_HessianSparsityPattern[i][j]<i) continue;
+
+				if(i == uip2_HessianSparsityPattern[i][j]) { // the non-zero is in the diagonal of the matrix
+					HessianValue.push_back(dp2_CompressedMatrix[i][vi_VertexColors[i]]);
+				}
+				else {// i != uip2_HessianSparsityPattern[i][j] // the non-zero is NOT in the diagonal of the matrix
+					if(colorStatistic[i][vi_VertexColors[uip2_HessianSparsityPattern[i][j]]]==1) {
+						HessianValue[row_size[i]+index] =dp2_CompressedMatrix[i][vi_VertexColors[uip2_HessianSparsityPattern[i][j]]];
+					}
+					else {
+						HessianValue[row_size[i]+index] =dp2_CompressedMatrix[uip2_HessianSparsityPattern[i][j]][vi_VertexColors[i]];
+					}
+				}
+				RowIndex[row_size[i]+index] = i;
+				ColumnIndex[row_size[i]+index] = uip2_HessianSparsityPattern[i][j];
+				index++;
+			}
+		}
+
+		free_2DMatrix(colorStatistic, rowCount);
+		colorStatistic = NULL;
+		
+		return (RowIndex.size());
+	}
+	
 	int HessianRecovery::DirectRecover_CoordinateFormat_vectors(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue) {
 		int rowCount = g->GetVertexCount();
 		int colorCount = g->GetVertexColorCount();
@@ -304,6 +409,30 @@ namespace ColPack
 		return (RowIndex.size());
 	}
 	
+	int HessianRecovery::DirectRecover_CoordinateFormat_usermem_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
+		if(g==NULL) {
+			cerr<<"g==NULL"<<endl;
+			return _FALSE;
+		}
+
+		vector<unsigned int> RowIndex;
+		vector<unsigned int> ColumnIndex;
+		vector<double> HessianValue;
+
+		int returnValue = DirectRecover_CoordinateFormat_vectors_OMP(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, RowIndex, ColumnIndex, HessianValue);
+
+		unsigned int numOfNonZeros = RowIndex.size();
+
+		#pragma omp parallel for default(none) schedule(static) shared(numOfNonZeros, ip2_RowIndex, ip2_ColumnIndex, dp2_HessianValue, RowIndex, ColumnIndex, HessianValue) 
+		for(int i=0; i < numOfNonZeros; i++) {
+			(*ip2_RowIndex)[i] = RowIndex[i];
+			(*ip2_ColumnIndex)[i] = ColumnIndex[i];
+			(*dp2_HessianValue)[i] = HessianValue[i];
+		}
+
+		return (returnValue);
+	}
+	
 	int HessianRecovery::DirectRecover_CoordinateFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
@@ -324,6 +453,45 @@ namespace ColPack
 			(*dp2_HessianValue)[i] = HessianValue[i];
 		}
 
+		return (returnValue);
+	}
+
+	int HessianRecovery::DirectRecover_CoordinateFormat_unmanaged_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
+		if(g==NULL) {
+			cerr<<"g==NULL"<<endl;
+			return _FALSE;
+		}
+
+		vector<unsigned int> RowIndex;
+		vector<unsigned int> ColumnIndex;
+		vector<double> HessianValue;
+
+		int returnValue = DirectRecover_CoordinateFormat_vectors_OMP(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, RowIndex, ColumnIndex, HessianValue);
+		
+		unsigned int numOfNonZeros = RowIndex.size();
+		#pragma omp sections
+		{
+		  #pragma omp section
+		  {
+		    (*ip2_RowIndex) = (unsigned int*) malloc(numOfNonZeros * sizeof(unsigned int));
+		  }
+		  #pragma omp section
+		  {
+		    (*ip2_ColumnIndex) = (unsigned int*) malloc(numOfNonZeros * sizeof(unsigned int));
+		  }
+		  #pragma omp section
+		  {
+		    (*dp2_HessianValue) = (double*) malloc(numOfNonZeros * sizeof(double)); //allocate memory for *dp2_HessianValue.
+		  }
+		}
+		
+		#pragma omp parallel for default(none) schedule(static) shared(numOfNonZeros, ip2_RowIndex, ip2_ColumnIndex, dp2_HessianValue, RowIndex, ColumnIndex, HessianValue) 
+		for(int i=0; i < numOfNonZeros; i++) {
+			(*ip2_RowIndex)[i] = RowIndex[i];
+			(*ip2_ColumnIndex)[i] = ColumnIndex[i];
+			(*dp2_HessianValue)[i] = HessianValue[i];
+		}
+		
 		return (returnValue);
 	}
 
@@ -351,6 +519,20 @@ namespace ColPack
 		}
 		
 		return (returnValue);
+	}
+	
+	int HessianRecovery::DirectRecover_CoordinateFormat_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
+		int numOfNonZeros = DirectRecover_CoordinateFormat_unmanaged_OMP(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, ip2_RowIndex,ip2_ColumnIndex, dp2_HessianValue);
+
+		if(CF_available) reset();
+
+		CF_available = true;
+		i_CF_rowCount = g->GetVertexCount();
+		ip_CF_RowIndex = *ip2_RowIndex;
+		ip_CF_ColumnIndex = *ip2_ColumnIndex;
+		dp_CF_Value = *dp2_HessianValue;
+
+		return (numOfNonZeros);
 	}
 	
 	int HessianRecovery::DirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
@@ -569,13 +751,13 @@ namespace ColPack
 				{
 					if(k == STEP_DOWN(i_SetSize))
 					{
-						cout<<STEP_UP(*lit_ListIterator)<<" ("<<i_SetSize<<")"<<endl;
+						cout<<STEP_UP(*lit_ListIterator)<<"{"<<vd_IncludedVertices[*lit_ListIterator]<<"} ("<<i_SetSize<<")"<<endl;
 					}
 					else
 					{
-						cout<<STEP_UP(*lit_ListIterator)<<", ";
+						cout<<STEP_UP(*lit_ListIterator)<<"{"<<vd_IncludedVertices[*lit_ListIterator]<<"}, ";
 					}
-
+					
 					k++;
 				}
 			}
@@ -1139,6 +1321,7 @@ namespace ColPack
 
 	int HessianRecovery::IndirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue) {
 #ifdef	_COLPACK_CHECKPOINT_	
+		cout<<"IN 1 HessianRecovery::IndirectRecover_CoordinateFormat_unmanaged()"<<endl;
 		string s_postfix = "-IndirectRecover_CoordinateFormat_vectors";
 cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 1, uip2_HessianSparsityPattern, "<< g->GetVertexCount() <<", " << g->GetVertexCount() <<", dp2_CompressedMatrix, " << g->GetVertexCount() <<", "  << g->GetVertexColorCount() <<endl;
 		WriteMatrixMarket_ADOLCInput(s_postfix, 1, uip2_HessianSparsityPattern, g->GetVertexCount(), g->GetVertexCount() , dp2_CompressedMatrix, g->GetVertexCount(), g->GetVertexColorCount() );
@@ -1166,11 +1349,12 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 1, uip2_HessianSparsityPat
 		}
 
 #ifdef	_COLPACK_CHECKPOINT_	
+		cout<<"IN 2 HessianRecovery::IndirectRecover_CoordinateFormat_unmanaged()"<<endl;
 		unsigned int*** dp3_Pattern = (unsigned int***) malloc( sizeof(unsigned int**) ); 
 		double*** dp3_Values = (double***) malloc( sizeof(double**) ); 
 		ConvertCoordinateFormat2RowCompressedFormat((*uip2_RowIndex), (*uip2_ColumnIndex), (*dp2_HessianValue), g->GetVertexCount(), numOfNonZeros, dp3_Pattern, dp3_Values );
 		
-		string s_postfix = "-IndirectRecover_CoordinateFormat_vectors";
+		s_postfix = "-IndirectRecover_CoordinateFormat_vectors";
 cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPattern, "<< g->GetVertexCount() <<", " << g->GetVertexCount() <<", dp2_CompressedMatrix, " << g->GetVertexCount() <<", "  << g->GetVertexColorCount()<<", dp3_Values" <<endl;
 		WriteMatrixMarket_ADOLCInput(s_postfix, 2, uip2_HessianSparsityPattern, g->GetVertexCount(), g->GetVertexCount() , dp2_CompressedMatrix, g->GetVertexCount(), g->GetVertexColorCount(), dp3_Values );
 		
@@ -1181,6 +1365,7 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 		return (returnValue);
 	}
 	
+		// !!! Note: the speed of this function could be improved by reserve the vectors size for (RowIndex, ColumnIndex, HessianValue) ahead of time
 	int HessianRecovery::IndirectRecover_CoordinateFormat_vectors(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue) {
 		int i=0,j=0;
 		int i_VertexCount = _UNKNOWN;
@@ -1208,7 +1393,7 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 			for(j=vi_Vertices[i]; j<vi_Vertices[STEP_UP(i)]; j++) // for each of the vertex B that connect to A
 			{
 				if(i < vi_Edges[j]) // if the index of A (i) is less than the index of B (vi_Edges[j])
-										//basic each edge is represented by (vertex with smaller ID, vertex with larger ID). This way, we don't insert a specific edge twice
+										//basically each edge is represented by (vertex with smaller ID, vertex with larger ID). This way, we don't insert a specific edge twice
 				{
 					i_EdgeID = mimi2_VertexEdgeMap[i][vi_Edges[j]];
 
@@ -1327,6 +1512,7 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 				i_PresentVertex = mivi_VertexSets[vi_Sets[i]][j];
 
 				vb_IncludedVertices[i_PresentVertex] = true;
+				vd_IncludedVertices[i_PresentVertex] = 0;
 
 				if(vi_InducedVertexDegrees[i_PresentVertex] != _FALSE)
 				{
@@ -1371,11 +1557,11 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 				{
 					if(k == STEP_DOWN(i_SetSize))
 					{
-						cout<<STEP_UP(*lit_ListIterator)<<" ("<<i_SetSize<<")"<<endl;
+						cout<<STEP_UP(*lit_ListIterator)<<"{"<<vd_IncludedVertices[*lit_ListIterator]<<"} ("<<i_SetSize<<")"<<endl;
 					}
 					else
 					{
-						cout<<STEP_UP(*lit_ListIterator)<<", ";
+						cout<<STEP_UP(*lit_ListIterator)<<"{"<<vd_IncludedVertices[*lit_ListIterator]<<"}, ";
 					}
 
 					k++;
@@ -1503,6 +1689,7 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 		vector<unsigned int> RowIndex;
 		vector<unsigned int> ColumnIndex;
 		vector<double> HessianValue;
+		
 
 		int returnValue = IndirectRecover_CoordinateFormat_vectors(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, RowIndex, ColumnIndex, HessianValue);
 

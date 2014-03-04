@@ -13,8 +13,9 @@ AR = ar
 
 RANLIB = ranlib
 
+FLAGS = -fPIC $(EXTRA_FLAGS)
 #FLAGS = -g -fPIC $(EXTRA_FLAGS)
-FLAGS = -O5 -fPIC $(EXTRA_FLAGS)
+#FLAGS = -O5 -fPIC $(EXTRA_FLAGS)
 #FLAGS = -O5 -Wall $(EXTRA_FLAGS)
 #FLAGS = -fast -tp amd64 $(EXTRA_FLAGS)
 #FLAGS = -pg $(EXTRA_FLAGS)

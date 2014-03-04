@@ -55,6 +55,16 @@ namespace ColPack
 	{
 		return(m_s_InputFile);
 	}
+	
+	vector<int>* BipartiteGraphCore::GetLeftVerticesPtr()
+	{
+		return &m_vi_LeftVertices;
+	}
+
+	vector<int>* BipartiteGraphCore::GetRightVerticesPtr()
+	{
+		return &m_vi_RightVertices;
+	}
 
 
 	//Public Function 2104:3104

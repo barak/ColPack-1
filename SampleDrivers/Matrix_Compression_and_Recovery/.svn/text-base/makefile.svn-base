@@ -27,11 +27,11 @@ banner:
 
 run-test:
 	@for i in $(SUBDIRS) ; do \
-	( export TOP_DIR=$(PWD); cd $$i && $(MAKE) run-test) ; \
+	( export TOP_DIR; cd $$i && $(MAKE) run-test) ; \
 	done
 
 run-extra:
-	@export TOP_DIR=$(PWD); $(MAKE) -C Basic run-extra
+	@export TOP_DIR; $(MAKE) -C Basic run-extra
 
 clean:
 	@for i in $(SUBDIRS) ; do \

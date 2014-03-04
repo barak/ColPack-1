@@ -158,6 +158,7 @@ namespace ColPack
 		  return;
 		}
 #ifdef	_COLPACK_CHECKPOINT_
+		cout<<"IN BipartiteGraphPartialColoringInterface::BipartiteGraphPartialColoringInterface(int i_type, ...)"<<endl;
 		string s_OutputFile = "-ColPack_debug.mtx";
 		s_OutputFile = "BipartiteGraphPartialColoringInterface-InternalBPGraph"+s_OutputFile;
 		WriteMatrixMarket(s_OutputFile);

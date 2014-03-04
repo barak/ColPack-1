@@ -175,6 +175,43 @@ namespace ColPack
 		return returnValue;
 	}
 
+	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_usermem_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+		if(g==NULL) {
+			cerr<<"g==NULL"<<endl;
+			return _FALSE;
+		}
+
+		int rowCount = g->GetRowVertexCount();
+		vector<int> vi_LeftVertexColors;
+		g->GetLeftVertexColors(vi_LeftVertexColors);
+
+		int numOfNonZeros;
+		vector<int>* LeftVerticesPtr = g->GetLeftVerticesPtr();
+		
+		//Recover value of the Jacobian
+		#pragma omp parallel for default(none) schedule(static) shared(rowCount,LeftVerticesPtr,dp2_JacobianValue, ip2_RowIndex, ip2_ColumnIndex, uip2_JacobianSparsityPattern, dp2_CompressedMatrix, vi_LeftVertexColors) private(numOfNonZeros)
+		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+			numOfNonZeros = uip2_JacobianSparsityPattern[i][0];
+			for(int j=1; j <= numOfNonZeros; j++) {
+				(*dp2_JacobianValue)[(*LeftVerticesPtr)[i]+j-1] = dp2_CompressedMatrix[vi_LeftVertexColors[i]][uip2_JacobianSparsityPattern[i][j]];
+				(*ip2_RowIndex)[(*LeftVerticesPtr)[i]+j-1] = i;
+				(*ip2_ColumnIndex)[(*LeftVerticesPtr)[i]+j-1] = uip2_JacobianSparsityPattern[i][j];
+				
+			}
+		}
+		/*
+		if(numOfNonZeros_count != g->GetEdgeCount()) {
+			cout<<"**Something fishing going on"<<endl;
+			cout<<"numOfNonZeros_count="<<numOfNonZeros_count<<endl;
+			cout<<"numOfNonZeros="<<g->GetEdgeCount()<<endl;
+		}
+		else cout<<"**Good!!!"<<endl;
+		Pause();
+		//*/
+		
+		return (*LeftVerticesPtr)[rowCount];
+	}
+	
 	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
@@ -211,6 +248,34 @@ namespace ColPack
 		return numOfNonZeros_count;
 	}
 
+	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_unmanaged_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+	  
+		if(g==NULL) {
+			cerr<<"g==NULL"<<endl;
+			return _FALSE;
+		}
+
+		unsigned int numOfNonZeros =  g->GetEdgeCount();
+
+		// !!! test the effectiveness of this sections. Will I really get any improvement
+		#pragma omp sections
+		{
+		  #pragma omp section
+		  {
+		    (*ip2_RowIndex) = (unsigned int*) malloc(numOfNonZeros * sizeof(unsigned int));
+		  }
+		  #pragma omp section
+		  {
+		    (*ip2_ColumnIndex) = (unsigned int*) malloc(numOfNonZeros * sizeof(unsigned int));
+		  }
+		  #pragma omp section
+		  {
+		    (*dp2_JacobianValue) = (double*) malloc(numOfNonZeros * sizeof(double)); //allocate memory for *dp2_JacobianValue.
+		  }
+		}
+		return RecoverD2Row_CoordinateFormat_usermem_OMP(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+	}
+	
 	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
@@ -224,6 +289,20 @@ namespace ColPack
 		(*dp2_JacobianValue) = (double*) malloc(numOfNonZeros * sizeof(double)); //allocate memory for *dp2_JacobianValue.
 
 		return RecoverD2Row_CoordinateFormat_usermem(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+	}
+	
+	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+		int returnValue = RecoverD2Row_CoordinateFormat_unmanaged_OMP(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern,  ip2_RowIndex,  ip2_ColumnIndex,  dp2_JacobianValue);
+		
+		if(CF_available) reset();
+
+		CF_available = true;
+		i_CF_rowCount = g->GetRowVertexCount();
+		ip_CF_RowIndex = *ip2_RowIndex;
+		ip_CF_ColumnIndex = *ip2_ColumnIndex;
+		dp_CF_Value = *dp2_JacobianValue;
+
+		return returnValue;
 	}
 	
 	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
@@ -414,6 +493,33 @@ namespace ColPack
 		return returnValue;
 	}
 
+	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_usermem_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+		if(g==NULL) {
+			cerr<<"g==NULL"<<endl;
+			return _FALSE;
+		}
+
+		int rowCount = g->GetRowVertexCount();
+		vector<int> vi_RightVertexColors;
+		g->GetRightVertexColors(vi_RightVertexColors);
+		unsigned int numOfNonZeros = 0;
+		vector<int>* LeftVerticesPtr = g->GetLeftVerticesPtr();
+
+		//Recover value of the Jacobian
+		//cout<<"Recover value of the Jacobian"<<endl;
+		#pragma omp parallel for default(none) schedule(static) shared(rowCount,LeftVerticesPtr,dp2_JacobianValue, ip2_RowIndex, ip2_ColumnIndex, uip2_JacobianSparsityPattern, dp2_CompressedMatrix, vi_RightVertexColors) private(numOfNonZeros)
+		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+			numOfNonZeros = uip2_JacobianSparsityPattern[i][0];
+			for(unsigned int j=1; j <= numOfNonZeros; j++) {
+				(*dp2_JacobianValue)[(*LeftVerticesPtr)[i]+j-1] = dp2_CompressedMatrix[i][vi_RightVertexColors[uip2_JacobianSparsityPattern[i][j]]];
+				(*ip2_RowIndex)[(*LeftVerticesPtr)[i]+j-1] = i;
+				(*ip2_ColumnIndex)[(*LeftVerticesPtr)[i]+j-1] = uip2_JacobianSparsityPattern[i][j];
+			}
+		}
+		
+		return (*LeftVerticesPtr)[rowCount];
+	}
+	
 	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
@@ -440,6 +546,34 @@ namespace ColPack
 		
 		return numOfNonZeros_count;
 	}
+
+	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_unmanaged_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+		if(g==NULL) {
+			cerr<<"g==NULL"<<endl;
+			return _FALSE;
+		}
+		
+		unsigned int numOfNonZeros = g->GetEdgeCount();
+
+		// !!! test the effectiveness of this sections. Will I really get any improvement?
+		#pragma omp sections
+		{
+		  #pragma omp section
+		  {
+		    (*ip2_RowIndex) = (unsigned int*) malloc(numOfNonZeros * sizeof(unsigned int));
+		  }
+		  #pragma omp section
+		  {
+		    (*ip2_ColumnIndex) = (unsigned int*) malloc(numOfNonZeros * sizeof(unsigned int));
+		  }
+		  #pragma omp section
+		  {
+		    (*dp2_JacobianValue) = (double*) malloc(numOfNonZeros * sizeof(double)); //allocate memory for *dp2_JacobianValue.
+		  }
+		}
+		
+		return RecoverD2Cln_CoordinateFormat_usermem_OMP(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+	}
 	
 	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
 		if(g==NULL) {
@@ -454,6 +588,20 @@ namespace ColPack
 		(*dp2_JacobianValue) = (double*) malloc(numOfNonZeros * sizeof(double)); //allocate memory for *dp2_JacobianValue.
 
 		return RecoverD2Cln_CoordinateFormat_usermem(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+	}
+	
+	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+		int returnValue = RecoverD2Cln_CoordinateFormat_unmanaged_OMP(g,  dp2_CompressedMatrix,  uip2_JacobianSparsityPattern,  ip2_RowIndex,  ip2_ColumnIndex,  dp2_JacobianValue);
+		
+		if(CF_available) reset();
+
+		CF_available = true;
+		i_CF_rowCount = g->GetRowVertexCount();
+		ip_CF_RowIndex = *ip2_RowIndex;
+		ip_CF_ColumnIndex = *ip2_ColumnIndex;
+		dp_CF_Value = *dp2_JacobianValue;
+
+		return returnValue;
 	}
 	
 	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {

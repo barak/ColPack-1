@@ -37,6 +37,8 @@
 #include <string>
 #include <vector>
 
+#include "ColPackHeaders.h"
+
 using namespace std;
 
 /*
@@ -68,6 +70,14 @@ Return value:
 - 1 if latter D is found and replace by letter E
 */
 int ConvertHarwellBoeingDouble(string & num_string);
+
+string itoa(int i);
+
+vector<string> getListOfColors(string s_InputFile);
+
+int displayGraph(ColPack::GraphColoring &g);
+int buildDotWithoutColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, string fileName);
+int buildDotWithColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, string fileName);
 
 /// Read a Row Compressed Format file
 /** Read a Row Compressed Format file

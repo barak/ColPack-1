@@ -166,6 +166,9 @@ clean: clean-banner clean-SampleDrivers
 	@for i in $(SUBDIRS) ; do \
 	( export TOP_DIR=$(PWD);cd $$i && $(MAKE) clean) ; \
 	done
+	for i in $(EXTRA_DRIVERS) ; do \
+	rm -rf $$i ; \
+	done
 
 clean-banner:
 	@echo
@@ -179,13 +182,13 @@ clean-SampleDrivers:
 
 ship: wipe
 	-rm -rf *.vcproj* *.ncb *.sln *.suo debug Debug core ColPack.exe libColPack.a libColPack.so build
-	fr "common_variables.in" "FLAGS = -g -fPIC" "#FLAGS = -g -fPIC"
-	fr "common_variables.in" "#FLAGS = -O5 -fPIC" "FLAGS = -O5 -fPIC"
+	#fr "common_variables.in" "FLAGS = -g -fPIC" "#FLAGS = -g -fPIC"
+	#fr "common_variables.in" "#FLAGS = -O5 -fPIC" "FLAGS = -O5 -fPIC"
 	d2ua
 	(cd .. && dz ColPack;chmod 755 ColPack.tar.gz;)
 
 ship-dev: ship
-	doxygen /home/nguyend/Desktop/Working_U/research_Assefaw/doxygen/ColPack_svn
+	doxygen /home/nguyend/Desktop/Working/Research/doxygen/ColPack_svn
 	chmod -R 755 ~/public_html/dox/
 	#scp -r ~/public_html/dox/ColPack wiki:/home/csp-wiki/htdocs/dox/
 

@@ -175,6 +175,7 @@ namespace ColPack
 
 		//Public Function 1457
 		int RestrictedStarColoring();
+		int RestrictedStarColoring_OMP();
 
 		//Public Function 1458
 		int StarColoring();
@@ -184,6 +185,7 @@ namespace ColPack
 
 		//Public Function 1460
 		int CheckStarColoring();
+		int GetStarColoringConflicts(vector<vector<int> > &ListOfConflicts);
 
 		//Public Function 1461
 		/**

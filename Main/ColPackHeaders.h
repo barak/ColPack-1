@@ -57,10 +57,13 @@
 #include <iterator>
 #include <utility>	//for pair<dataType1, dataType2>
 
+#ifdef _OPENMP
+	#include <omp.h>
+#endif
+
 #include "Pause.h"
 #include "File.h"
 #include "Timer.h"
-#include "extra.h"
 #include "MatrixDeallocation.h"
 #include "mmio.h"
 #include "current_time.h"
@@ -88,5 +91,7 @@
 #include "HessianRecovery.h"
 #include "JacobianRecovery1D.h"
 #include "JacobianRecovery2D.h"
+
+#include "extra.h"
 
 #endif

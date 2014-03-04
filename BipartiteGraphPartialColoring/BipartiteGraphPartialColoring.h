@@ -160,9 +160,11 @@ namespace ColPack
 
 		//Public Function 2455
 		int PartialDistanceTwoRowColoring();
+		int PartialDistanceTwoRowColoring_OMP();
 
 		//Public Function 2456
 		int PartialDistanceTwoColumnColoring();
+		int PartialDistanceTwoColumnColoring_OMP();
 
 		//Public Function 2457
 		int CheckPartialDistanceTwoRowColoring();

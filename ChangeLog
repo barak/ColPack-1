@@ -1,3 +1,8 @@
+2011-09-01 Duc Nguyen
+  Add "int displayGraph(ColPack::GraphColoring &g);" in extra.cpp to support debugging
+    this function will create the DOT-file that describe the graph (with or without color) , and then utilize GraphViz to display the graph in image.
+    In the case of Star Coloring, if there are conflict(s), the conflict(s) will be highlighted in bold edges.
+    Each node in the graph will have name in this form "v#_c#" (vertex ID follow by color ID (0-based indexing))
 2011-03-22 Duc Nguyen
   Version 1.0.3
   Fixed HessianRecovery::IndirectRecover_CoordinateFormat_vectors() bug that cause ColPack to crash

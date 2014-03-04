@@ -1,16 +1,5 @@
-// An example of Column compression and recovery for Jacobian
-/* How to compile this driver manually:
-	Please make sure that "baseDir" point to the directory (folder) containing the input matrix file, and
-		s_InputFile should point to the input file that you want to use
-	To compile the code, replace the Main.cpp file in Main directory with this file
-		and run "make" in ColPack installation directory. Make will generate "ColPack.exe" executable
-	Run "ColPack.exe"
-
-Note: If you got "symbol lookup error ... undefined symbol "
-  Please make sure that your LD_LIBRARY_PATH contains libColPack.so
-
-Return by recovery routine: a matrix
-double*** dp3_NewValue;
+/* Notes:
+ * - This code will crash if the matrix only has patterns (no value)
 //*/
 
 #include "ColPackHeaders.h"
@@ -27,13 +16,16 @@ string baseDir=TOP_DIR;
 
 #include "extra.h" //This .h file contains functions that are used in the below examples:
 					//ReadMM(), MatrixMultiplication...(), Times2Plus1point5(), displayMatrix() and displayCompressedRowMatrix()
+#include "stat.h"
 
-int main()
-{
+int test_graph(string s_InputFile);
+
+int main(int argc, const char* argv[]) {
+  
 	// s_InputFile = baseDir + <name of the input file>
 	string s_InputFile; //path of the input file
-	s_InputFile = baseDir;
-	s_InputFile += DIR_SEPARATOR; s_InputFile += "Graphs"; s_InputFile += DIR_SEPARATOR; s_InputFile += "column-compress.mtx";
+	//s_InputFile = baseDir;
+	//s_InputFile += DIR_SEPARATOR; s_InputFile += "Graphs"; s_InputFile += DIR_SEPARATOR; s_InputFile += "column-compress.mtx";
 
 	// Step 1: Determine sparsity structure of the Jacobian.
 	// This step is done by an AD tool. For the purpose of illustration here, we read the structure from a file,
@@ -43,20 +35,22 @@ int main()
 	int rowCount, columnCount;
 	ConvertMatrixMarketFormat2RowCompressedFormat(s_InputFile, uip3_SparsityPattern, dp3_Value,rowCount, columnCount);
 
-	cout<<"just for debugging purpose, display the 2 matrices: the matrix with SparsityPattern only and the matrix with Value"<<endl;
-	cout<<fixed<<showpoint<<setprecision(2); //formatting output
-	cout<<"(*uip3_SparsityPattern)"<<endl;
-	displayCompressedRowMatrix((*uip3_SparsityPattern),rowCount);
-	cout<<"(*dp3_Value)"<<endl;
-	displayCompressedRowMatrix((*dp3_Value),rowCount);
-	cout<<"Finish ConvertMatrixMarketFormatToRowCompressedFormat()"<<endl;
-	Pause();
+	//cout<<"just for debugging purpose, display the 2 matrices: the matrix with SparsityPattern only and the matrix with Value"<<endl;
+	//cout<<fixed<<showpoint<<setprecision(2); //formatting output
+	//cout<<"(*uip3_SparsityPattern)"<<endl;
+	//displayCompressedRowMatrix((*uip3_SparsityPattern),rowCount);
+	//cout<<"(*dp3_Value)"<<endl;
+	//displayCompressedRowMatrix((*dp3_Value),rowCount);
+	//cout<<"Finish ConvertMatrixMarketFormat2RowCompressedFormat()"<<endl;
+	//Pause();
 
 	//Step 2: Obtain the seed matrix via coloring.
 	double*** dp3_Seed = new double**;
 	int *ip1_SeedRowCount = new int;
 	int *ip1_SeedColumnCount = new int;
 	int *ip1_ColorCount = new int; //The number of distinct colors used to color the graph
+	
+	// !!! START TIMING HERE
 
 	//Step 2.1: Read the sparsity pattern of the given Jacobian matrix (compressed sparse rows format)
 	//and create the corresponding bipartite graph
@@ -72,13 +66,13 @@ int main()
 		vector<int> vi_VertexPartialColors;
 		g->GetVertexPartialColors(vi_VertexPartialColors);
 	*/
-	cout<<"Finish GenerateSeed()"<<endl;
+	//cout<<"Finish GenerateSeed()"<<endl;
 	*ip1_ColorCount = *ip1_SeedColumnCount;
 
 	//Display results of step 2
-	printf(" dp3_Seed %d x %d \n", *ip1_SeedRowCount, *ip1_SeedColumnCount);
-	displayMatrix(*dp3_Seed, *ip1_SeedRowCount, *ip1_SeedColumnCount);
-	Pause();
+	//printf(" dp3_Seed %d x %d \n", *ip1_SeedRowCount, *ip1_SeedColumnCount);
+	//displayMatrix(*dp3_Seed, *ip1_SeedRowCount, *ip1_SeedColumnCount);
+	//Pause();
 
 	// Step 3: Obtain the Jacobian-seed matrix product.
 	// This step will also be done by an AD tool. For the purpose of illustration here, the orginial matrix V
@@ -88,24 +82,68 @@ int main()
 	MatrixMultiplication_VxS(*uip3_SparsityPattern, *dp3_Value, rowCount, columnCount, *dp3_Seed, *ip1_ColorCount, dp3_CompressedMatrix);
 	cout<<"Finish MatrixMultiplication()"<<endl;
 
-	displayMatrix(*dp3_CompressedMatrix,rowCount,*ip1_ColorCount);
-	Pause();
+	//displayMatrix(*dp3_CompressedMatrix,rowCount,*ip1_ColorCount);
+	//Pause();
 
 	//Step 4: Recover the numerical values of the original matrix from the compressed representation.
-	// The new values are store in "dp3_NewValue"
-	double*** dp3_NewValue = new double**;
+	// The new values are store in "dp2_JacobianValue"
+	unsigned int** ip2_RowIndex = new unsigned int*;
+	unsigned int** ip2_ColumnIndex = new unsigned int*;
+	double** dp2_JacobianValue = new double*;
 	JacobianRecovery1D* jr1d = new JacobianRecovery1D;
-	jr1d->RecoverD2Cln_RowCompressedFormat(g, *dp3_CompressedMatrix, *uip3_SparsityPattern, dp3_NewValue);
-	cout<<"Finish Recover()"<<endl;
+	Timer timer;
+	timer.Start();
+	int i_rowCount = jr1d->RecoverD2Cln_CoordinateFormat(g, *dp3_CompressedMatrix, *uip3_SparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+	timer.Stop();
+	cout<<"Finish Recover() time="<<timer.GetWallTime()<<endl;
 
-	displayCompressedRowMatrix(*dp3_NewValue,rowCount);
-	Pause();
+	unsigned int** ip2_RowIndex2 = new unsigned int*;
+	unsigned int** ip2_ColumnIndex2 = new unsigned int*;
+	double** dp2_JacobianValue2 = new double*;
+	JacobianRecovery1D* jr1d2 = new JacobianRecovery1D;
+	Timer timer2;
+	timer2.Start();
+	jr1d2->RecoverD2Cln_CoordinateFormat_OMP(g, *dp3_CompressedMatrix, *uip3_SparsityPattern, ip2_RowIndex2, ip2_ColumnIndex2, dp2_JacobianValue2);
+	timer2.Stop();
+	cout<<"Finish Recover2() time="<<timer2.GetWallTime()<<endl;
+	
+	// !!! END TIMING HERE
+	
+	bool fail_flag=false;
+	for(int i=0;i<i_rowCount;i++) {
+	  if((*ip2_RowIndex)[i]!=(*ip2_RowIndex2)[i]) {
+	    cout<<"i="<<i<<" (*ip2_RowIndex)[i] ("<< (*ip2_RowIndex)[i] <<")!=(*ip2_RowIndex2)[i] ("<< (*ip2_RowIndex2)[i] <<")"<<endl;
+	    fail_flag=true;
+	    Pause();
+	  }
 
-	//Check for consistency, make sure the values in the 2 matrices are the same.
-	if (CompressedRowMatricesAreEqual(*dp3_Value, *dp3_NewValue, rowCount,0)) cout<< "*dp3_Value == dp3_NewValue"<<endl;
-	else cout<< "*dp3_Value != dp3_NewValue"<<endl;
+	  if((*ip2_ColumnIndex)[i]!=(*ip2_ColumnIndex2)[i]) {
+	    cout<<"i="<<i<<" (*ip2_ColumnIndex)[i] ("<< (*ip2_ColumnIndex)[i] <<")!=(*ip2_ColumnIndex2)[i] ("<< (*ip2_ColumnIndex2)[i] <<")"<<endl;
+	    fail_flag=true;
+	    Pause();
+	  }
 
-	Pause();
+	  if((*dp2_JacobianValue)[i]!=(*dp2_JacobianValue2)[i]) {
+	    cout<<"i="<<i<<" (*dp2_JacobianValue)[i] ("<< (*dp2_JacobianValue)[i] <<")!=(*dp2_JacobianValue2)[i] ("<< (*dp2_JacobianValue2)[i] <<")"<<endl;
+	    fail_flag=true;
+	    Pause();
+	  }
+
+	}
+	if(fail_flag) {
+	  cout<<"FAIL"<<endl;
+	  Pause();
+	}
+	cout<<"SUCCESS!"<<endl;
+
+	//cout<<endl<<"Display result, the structure and values should be similar to the original one"<<endl;
+	//cout<<"Display *ip2_RowIndex"<<endl;
+	//displayVector(*ip2_RowIndex,g->GetEdgeCount());
+	//cout<<"Display *ip2_ColumnIndex"<<endl;
+	//displayVector(*ip2_ColumnIndex, g->GetEdgeCount());
+	//cout<<"Display *dp2_JacobianValue"<<endl;
+	//displayVector(*dp2_JacobianValue, g->GetEdgeCount());
+	//Pause();
 
 	//Deallocate memory using functions in Utilities/MatrixDeallocation.h
 
@@ -129,15 +167,20 @@ int main()
 
 	delete ip1_ColorCount;
 	ip1_ColorCount = NULL;
-
+	
 	delete jr1d;
 	jr1d = NULL;
 
-	delete dp3_NewValue;
-	dp3_NewValue=NULL;
+	delete ip2_RowIndex;
+	delete ip2_ColumnIndex;
+	delete dp2_JacobianValue;
+	ip2_RowIndex=NULL;
+	ip2_ColumnIndex=NULL;
+	dp2_JacobianValue=NULL;
 
 	delete g;
 	g=NULL;
 
 	return 0;
 }
+

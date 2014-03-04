@@ -585,7 +585,7 @@ namespace ColPack
 
 		int i_VertexCount;
 
-		m_i_VertexColorCount = 0;
+		m_i_VertexColorCount = _UNKNOWN;
 
 		i_VertexCount = STEP_DOWN((signed) m_vi_Vertices.size());
 
@@ -620,25 +620,8 @@ namespace ColPack
 
 		do { // the loop will keep running until there is no conflict in coloring
 		// !!! test for the best schedule
-		
-		  vector<int> *vi_PrivateColoringStat = new vector<int>[i_MaxNumThreads];
-		  unsigned int i_PrivateColoringStatSize = i_NumOfVerticesToBeColored+m_i_VertexColorCount;
-
-		  #pragma omp parallel for default(none) schedule(static) shared(vi_PrivateColoringStat, i_PrivateColoringStatSize, i_MaxNumThreads)
-		  for(i=0; i<i_MaxNumThreads; i++)
-		  {
-		    vi_PrivateColoringStat[i].clear();
-		    vi_PrivateColoringStat[i].resize(i_PrivateColoringStatSize, 0);
-		  }
-		  
-		  bool *b_hasD1NeighborUNKNOWN = new bool[i_MaxNumThreads];
-		  for(i=0; i<i_MaxNumThreads; i++)
-		  {
-		    b_hasD1NeighborUNKNOWN[i] = false;
-		  }
-		
   #ifdef _OPENMP
-		  #pragma omp parallel for default(none) schedule(static,5) shared(   i_PrivateColoringStatSize, vi_PrivateColoringStat, b_hasD1NeighborUNKNOWN, i_NumOfVerticesToBeColored, vi_PrivateCandidateColors, vi_VerticesToBeColored, i_VertexCount) private(j, k, i_PresentVertex)
+		  #pragma omp parallel for default(none) schedule(static,5) shared(i_NumOfVerticesToBeColored, vi_PrivateCandidateColors, vi_VerticesToBeColored, i_VertexCount) private(j, k, i_PresentVertex)
   #endif
 		  for(i=0; i<i_NumOfVerticesToBeColored; i++)
 		  {
@@ -651,30 +634,18 @@ namespace ColPack
   #endif
 			  
 			  i_PresentVertex = vi_VerticesToBeColored[i];
-		    //init vi_PrivateColoringStat
-		    for(j=0; j<i_PrivateColoringStatSize;j++) {
-		      vi_PrivateColoringStat[i_thread_num][j]=0;
-		    }
-		    //init b_hasD1NeighborUNKNOWN
-		    b_hasD1NeighborUNKNOWN[i_thread_num] = false;
 
   #if VERBOSE == _TRUE
 			  cout<<"DEBUG 1457 | Restricted Star Coloring | Coloring Vertex "<<STEP_UP(i_PresentVertex)<<"/"<<i_NumOfVerticesToBeColored<<endl;
   #endif
 
-			  //look around and collecting D1 coloring result
 			  for(j=m_vi_Vertices[i_PresentVertex]; j<m_vi_Vertices[STEP_UP(i_PresentVertex)]; j++)
 			  {
 				  if(m_vi_VertexColors[m_vi_Edges[j]] != _UNKNOWN)
 				  {
 					  vi_PrivateCandidateColors[i_thread_num][m_vi_VertexColors[m_vi_Edges[j]]] = i_PresentVertex;
-					  vi_PrivateColoringStat[i_thread_num][m_vi_VertexColors[m_vi_Edges[j]]]++;
 				  }
-				  else b_hasD1NeighborUNKNOWN[i_thread_num]=true;
-			  }
 
-			  for(j=m_vi_Vertices[i_PresentVertex]; j<m_vi_Vertices[STEP_UP(i_PresentVertex)]; j++)
-			  {
 				  for(k=m_vi_Vertices[m_vi_Edges[j]]; k<m_vi_Vertices[STEP_UP(m_vi_Edges[j])]; k++)
 				  {
 					  if(m_vi_Edges[k] == i_PresentVertex)
@@ -687,13 +658,13 @@ namespace ColPack
 						  continue;
 					  }
 
-					  //if(m_vi_VertexColors[m_vi_Edges[j]] == _UNKNOWN)
-					  //{
-					//	  //mark as forbidden
-					//	  vi_PrivateCandidateColors[i_thread_num][m_vi_VertexColors[m_vi_Edges[k]]] = i_PresentVertex;
-					  //}
-					  //else
-					  if(b_hasD1NeighborUNKNOWN[i_thread_num] || m_vi_VertexColors[m_vi_Edges[k]] < m_vi_VertexColors[m_vi_Edges[j]] || vi_PrivateColoringStat[i_thread_num][m_vi_VertexColors[m_vi_Edges[j]]] >1 )
+					  if(m_vi_VertexColors[m_vi_Edges[j]] == _UNKNOWN)
+					  {
+						  //mark as forbidden
+						  vi_PrivateCandidateColors[i_thread_num][m_vi_VertexColors[m_vi_Edges[k]]] = i_PresentVertex;
+					  }
+					  else
+					  if(m_vi_VertexColors[m_vi_Edges[k]] < m_vi_VertexColors[m_vi_Edges[j]])
 					  {
 						  //mark as forbidden
 						  vi_PrivateCandidateColors[i_thread_num][m_vi_VertexColors[m_vi_Edges[k]]] = i_PresentVertex;
@@ -721,54 +692,48 @@ namespace ColPack
 		  }
 		  
 		  // Now and make sure that the colors are valid restricted star
+		  vb_verticesNeedToBeChecked = vb_verticesNeedToBeCheckedNEXT;
+  #ifdef _OPENMP
+		  #pragma omp parallel for default(none) schedule(static) shared(vb_verticesNeedToBeCheckedNEXT) 
+  #endif
+		  for( i=0; i<vb_verticesNeedToBeCheckedNEXT.size();i++) {
+		    vb_verticesNeedToBeCheckedNEXT[i] = false;
+		  }
 		  
 		  vi_verticesNeedNewColor.clear();	
+		  i_verticesNeedToBeCheckedCount=0;
   #ifdef _OPENMP
-		  #pragma omp parallel for default(none) schedule(static) shared(cout,   vi_PrivateColoringStat, i_PrivateColoringStatSize, i_NumOfVerticesToBeColored, vi_verticesNeedNewColor, vi_VerticesToBeColored,i_VertexCount) private(j, k, i_PresentVertex)
+		  #pragma omp parallel for default(none) schedule(static) shared(cout,  i_verticesNeedToBeCheckedCount, vb_verticesNeedToBeChecked, vb_verticesNeedToBeCheckedNEXT, i_NumOfVerticesToBeColored, vi_verticesNeedNewColor, vi_VerticesToBeColored,i_VertexCount) private(j, k, i_PresentVertex)
   #endif
-		  for(i=0; i<i_NumOfVerticesToBeColored; i++)
+		  for(i=0; i<i_VertexCount; i++)
 		  {
-		    int i_thread_num;
-#ifdef _OPENMP
-		    i_thread_num = omp_get_thread_num();
-#else
-		    i_thread_num = 0;
-  #endif
-			  
+		    if(!vb_verticesNeedToBeChecked[i]) continue;
 		    bool is_not_done=true;
-		    i_PresentVertex = vi_VerticesToBeColored[i];
-		    //init vi_PrivateColoringStat
-		    for(j=0; j<i_PrivateColoringStatSize;j++) {
-		      vi_PrivateColoringStat[i_thread_num][j]=0;
-		    }
-		    
-		    //look around and collecting D1 coloring result
-		    for(j=m_vi_Vertices[i_PresentVertex]; j<m_vi_Vertices[STEP_UP(i_PresentVertex)] ; j++) {
-		      if(m_vi_VertexColors[i_PresentVertex] == m_vi_VertexColors[m_vi_Edges[j]] ) { 
-			//if(i_PresentVertex < m_vi_Edges[j]) { //this part is just to make sure that we only recolor 1 end of the conflict edge
-			  #pragma omp critical
-			  {
-			    cout<<"m_vi_VertexColors[i_PresentVertex("<< i_PresentVertex <<")] ("<< m_vi_VertexColors[i_PresentVertex] <<") == m_vi_VertexColors[m_vi_Edges[j]("<< m_vi_Edges[j] <<")] ("<< m_vi_VertexColors[m_vi_Edges[j]] <<")"<<endl<<flush;
-			    vi_verticesNeedNewColor.push_back(i_PresentVertex);
-			  }
-			//}
+		    //i_PresentVertex = vi_VerticesToBeColored[i];
+		    i_PresentVertex = i;
+		    for(j=m_vi_Vertices[i_PresentVertex]; j<m_vi_Vertices[STEP_UP(i_PresentVertex)] && is_not_done; j++) {
+		      if(m_vi_VertexColors[i_PresentVertex] == m_vi_VertexColors[m_vi_Edges[j]] && i_PresentVertex < m_vi_Edges[j]) { // (&& i_PresentVertex < m_vi_Edges[j]): this part is just to make sure that we only recolor 1 end of the conflict edge
+			vb_verticesNeedToBeCheckedNEXT[i_PresentVertex] = true;
+			vb_verticesNeedToBeCheckedNEXT[m_vi_Edges[j]] = true;
+			i_verticesNeedToBeCheckedCount +=2;
+			#pragma omp critical
+			{
+			  cout<<"m_vi_VertexColors[i_PresentVertex("<< i_PresentVertex <<")] ("<< m_vi_VertexColors[i_PresentVertex] <<") == m_vi_VertexColors[m_vi_Edges[j]("<< m_vi_Edges[j] <<")] ("<< m_vi_VertexColors[m_vi_Edges[j]] <<")"<<endl<<flush;
+			  vi_verticesNeedNewColor.push_back(i_PresentVertex);
+			}
 			break;
 		      }
-		      vi_PrivateColoringStat[i_thread_num][m_vi_VertexColors[m_vi_Edges[j]]]++;
-		    }
-		      
-		    // now look at D2 neighbors
-		    for(j=m_vi_Vertices[i_PresentVertex]; j<m_vi_Vertices[STEP_UP(i_PresentVertex)] && is_not_done; j++) {
 		      for(k=m_vi_Vertices[m_vi_Edges[j]]; k<m_vi_Vertices[STEP_UP(m_vi_Edges[j])] && is_not_done; k++) {
-			if(m_vi_Edges[k] == i_PresentVertex) continue; // if D2 neighbor is actually i_PresentVertex, skip
-			if( m_vi_VertexColors[m_vi_Edges[k]] == m_vi_VertexColors[i_PresentVertex] && ( m_vi_VertexColors[m_vi_Edges[j]] > m_vi_VertexColors[m_vi_Edges[k]] || vi_PrivateColoringStat[i_thread_num][m_vi_VertexColors[m_vi_Edges[j]]] >1) ) { 
-			  //if(i_PresentVertex < m_vi_Edges[k]) { //this part is just to make sure that we only recolor 1 end of the conflict edge
-			    #pragma omp critical
-			    {
-			      cout<<"m_vi_VertexColors[m_vi_Edges[j]("<< m_vi_Edges[j] <<")] ("<< m_vi_VertexColors[m_vi_Edges[j]] <<") > m_vi_VertexColors[m_vi_Edges[k]("<< m_vi_Edges[k] <<")] ("<< m_vi_VertexColors[m_vi_Edges[k]] <<") && m_vi_VertexColors[m_vi_Edges[k]("<< m_vi_Edges[k] <<")] ("<< m_vi_VertexColors[m_vi_Edges[k]] <<") == m_vi_VertexColors[i_PresentVertex("<< i_PresentVertex <<")] ("<< m_vi_VertexColors[i_PresentVertex] <<")"<<endl<<flush;
-			      vi_verticesNeedNewColor.push_back(i_PresentVertex);
-			    }
-			  //}
+			if(m_vi_Edges[k] != i_PresentVertex && m_vi_VertexColors[m_vi_Edges[j]] > m_vi_VertexColors[m_vi_Edges[k]] && m_vi_VertexColors[m_vi_Edges[k]] == m_vi_VertexColors[i_PresentVertex]  && i_PresentVertex < m_vi_Edges[k]) { // ( && i_PresentVertex < m_vi_Edges[k]): : this part is just to make sure that we only recolor 1 end of the conflict line
+			  vb_verticesNeedToBeCheckedNEXT[i_PresentVertex] = true;
+			  vb_verticesNeedToBeCheckedNEXT[m_vi_Edges[j]] = true;
+			  vb_verticesNeedToBeCheckedNEXT[m_vi_Edges[k]] = true; // !!! may not need to add this line, try to remove and see if the code still work correctly
+			  i_verticesNeedToBeCheckedCount +=3;
+			  #pragma omp critical
+			  {
+			    cout<<"m_vi_VertexColors[m_vi_Edges[j]("<< m_vi_Edges[j] <<")] ("<< m_vi_VertexColors[m_vi_Edges[j]] <<") > m_vi_VertexColors[m_vi_Edges[k]("<< m_vi_Edges[k] <<")] ("<< m_vi_VertexColors[m_vi_Edges[k]] <<") && m_vi_VertexColors[m_vi_Edges[k]("<< m_vi_Edges[k] <<")] ("<< m_vi_VertexColors[m_vi_Edges[k]] <<") == m_vi_VertexColors[i_PresentVertex("<< i_PresentVertex <<")] ("<< m_vi_VertexColors[i_PresentVertex] <<")"<<endl<<flush;
+			    vi_verticesNeedNewColor.push_back(i_PresentVertex);
+			  }
 			  is_not_done = false;
 			}
 		      }
@@ -776,22 +741,22 @@ namespace ColPack
 		  }
 		  
 		  vi_VerticesToBeColored.resize(vi_verticesNeedNewColor.size());
-		  for( i=0; i < vi_verticesNeedNewColor.size(); i++) {
+		  for(int i=0; i < vi_verticesNeedNewColor.size(); i++) {
 		    vi_VerticesToBeColored[i] = vi_verticesNeedNewColor[i];
 		  }
 		  i_NumOfVerticesToBeColored = vi_VerticesToBeColored.size();
 		  
 		  cout<<"i_NumOfVerticesToBeColored="<<i_NumOfVerticesToBeColored<<" / m_i_VertexColorCount="<<m_i_VertexColorCount<<endl<<flush;
+		  cout<<"i_verticesNeedToBeCheckedCount (estimate) = "<<i_verticesNeedToBeCheckedCount<<endl;
 		  cout<<"\t vertices: ";
 		  vector<int> vi_VerticesToBeColored_sorted = vi_VerticesToBeColored;
 		  sort(vi_VerticesToBeColored_sorted.begin(), vi_VerticesToBeColored_sorted.end());
-		  for( i=0;i<vi_VerticesToBeColored_sorted.size(); i++) {
+		  for(int i=0;i<vi_VerticesToBeColored_sorted.size(); i++) {
 		    cout<<vi_VerticesToBeColored_sorted[i]<<" ";
 		  }
 		  cout<<endl;
 		  
-	//*
-	if(i_NumOfVerticesToBeColored==0 && CheckStarColoring() > 0 ) {
+	if(i_NumOfVerticesToBeColored<3 && CheckStarColoring() > 0 ) {
 	  printf("PrintGraphStructure(); \n");
 	  PrintGraphStructure2();
 	  
@@ -801,7 +766,6 @@ namespace ColPack
 	  displayGraph(*this);
 	  Pause();
 	}
-	//*/
 		  cout<<"\n\n\n\n\n\n\n";
 		} while(i_NumOfVerticesToBeColored > 0);
 

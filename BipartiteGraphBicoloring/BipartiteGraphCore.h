@@ -78,6 +78,9 @@ namespace ColPack
 		virtual void Clear();
 		
 		string GetInputFile();
+		
+		vector<int>* GetLeftVerticesPtr() ;
+		vector<int>* GetRightVerticesPtr() ;
 
 		void GetRowVertices(vector<int> &output) const;
 		void GetLeftVertices(vector<int> &output) const;
