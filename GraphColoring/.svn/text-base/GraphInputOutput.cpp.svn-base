@@ -150,12 +150,12 @@ namespace ColPack
 		int entry_counter = 0, num_of_entries = 0;
 		bool value_not_specified = false;
 		//int num=0, numCount=0;
-		float value;
+		double value;
 		bool b_getValue = !b_getStructureOnly, b_symmetric;
 		istringstream in2;
 		string line="";
 		map<int,vector<int> > nodeList;
-		map<int,vector<float> > valueList;
+		map<int,vector<double> > valueList;
 
 		//READ IN BANNER
 		MM_typecode matcode;
@@ -328,386 +328,180 @@ namespace ColPack
 	}
 
 
-	//Public Function 1258
-	int GraphInputOutput::ReadHarwellBoeingAdjacencyGraph(string s_InputFile)
-	{
-		int i, j;
-
-		int i_VertexCount, i_VertexDegree;
-
-		int LineCount;
-
-		int AssemblyCount, ColumnCount, DataCount, RowCount;
-
-		int ColumnFormatWidth, RowFormatWidth, DataFormatWidth;
-
-		int ColumnStartLine, DataStartLine, RowStartLine;
-
-		int IndexCount;
-
-		int RightCount, RightIndexCount;
-
-		int RightHeader;
-
-		int TotalColumnLines, TotalDataLines, TotalEntryLines, TotalRowLines;
-
-		int TotalRightDataLines;
-
-		string InputLine;
-
-		string MatrixTitle, MatrixKey, MatrixType;
-
-		string ColumnFormat, RowFormat, DataFormat;
-
-		string RightFormat;
-
-		string RightType;
-
-		string __GAP(" ");
-
-		ifstream InputStream;
-
-		vector<int> ColumnIndices, RowIndices;
-
-		vector<double> DataValues;
-
-		vector<string> InputTokens;
-
-		vector< vector<int> > v2i_VertexAdjacency;
-
+	int GraphInputOutput::ReadHarwellBoeingAdjacencyGraph(string s_InputFile) {
 		Clear();
 
-		ColumnIndices.clear();
-		RowIndices.clear();
-		DataValues.clear();
+		m_s_InputFile=s_InputFile;
+		ifstream in (m_s_InputFile.c_str());
 
-		m_s_InputFile = s_InputFile;
-
-		InputStream.open(m_s_InputFile.c_str());
-		if(!InputStream) {
-			cout<<m_s_InputFile<<" not Found!"<<endl;
-			return (_FALSE);
-		}
-		else cout<<"Found file "<<m_s_InputFile<<endl;
-
-		TotalColumnLines = TotalRowLines = TotalDataLines = _FALSE;
-
-		ColumnFormatWidth = RowFormatWidth = DataFormatWidth = _FALSE;
-
-		TotalRightDataLines = _FALSE;
-
-		RightHeader = _FALSE;
-
-		LineCount = _FALSE;
-
-		do
+		if(!in)
 		{
-			InputLine.clear();
-
-			getline(InputStream, InputLine);
-
-			if(!InputStream)
-			{
-				break;
-			}
-
-			if(LineCount == 0)
-			{
-				MatrixTitle = InputLine.substr(0, 72);
-
-				MatrixKey = InputLine.substr(72, 8);
-			}
-
-			if(LineCount == 1)
-			{
-				TotalEntryLines = atoi(InputLine.substr(0, 14).c_str());
-				TotalColumnLines = atoi(InputLine.substr(14, 14).c_str());
-				TotalRowLines = atoi(InputLine.substr(28, 14).c_str());
-				TotalDataLines = atoi(InputLine.substr(42, 14).c_str());
-				TotalRightDataLines = atoi(InputLine.substr(56, 14).c_str());
-			}
-
-			if(LineCount == 2)
-			{
-				MatrixType = InputLine.substr(0, 3);
-
-				RowCount = atoi(InputLine.substr(14, 14).c_str());
-				ColumnCount = atoi(InputLine.substr(28, 14).c_str());
-				DataCount = atoi(InputLine.substr(42, 14).c_str());
-				AssemblyCount = atoi(InputLine.substr(56, 14).c_str());
-			}
-
-			if(LineCount == 3)
-			{
-				ColumnFormat = InputLine.substr(0, 16);
-				RowFormat = InputLine.substr(16, 16);
-				DataFormat = InputLine.substr(32, 20);
-				RightFormat= InputLine.substr(52, 20);
-
-				ColumnFormatWidth = ParseWidth(ColumnFormat);
-				RowFormatWidth = ParseWidth(RowFormat);
-				DataFormatWidth = ParseWidth(DataFormat);
-			}
-
-			if(LineCount == 4)
-			{
-				if(TotalRightDataLines != _FALSE)
-				{
-					RightType = InputLine.substr(0, 3);
-					RightCount = atoi(InputLine.substr(14, 14).c_str());
-					RightIndexCount = atoi(InputLine.substr(28, 14).c_str());
-
-					RightHeader = _TRUE;
-				}
-			}
-
-			ColumnStartLine = RightHeader + 4;
-
-			if(LineCount >= ColumnStartLine  && LineCount < ColumnStartLine + TotalColumnLines)
-			{
-				IndexCount = _FALSE;
-
-				while(IndexCount <(signed) InputLine.size())
-				{
-					ColumnIndices.push_back(atoi(InputLine.substr(IndexCount, ColumnFormatWidth).c_str()));
-
-					IndexCount += ColumnFormatWidth;
-				}
-			}
-
-			RowStartLine = ColumnStartLine + TotalColumnLines;
-
-			if(LineCount >= RowStartLine && LineCount < RowStartLine + TotalRowLines)
-			{
-				IndexCount = _FALSE;
-
-				while(IndexCount <(signed) InputLine.size())
-				{
-					RowIndices.push_back(atoi(InputLine.substr(IndexCount, RowFormatWidth).c_str()));
-
-					IndexCount += RowFormatWidth;
-				}
-			}
-
-			DataStartLine = RowStartLine + TotalRowLines;
-
-			if(LineCount >= DataStartLine && LineCount < DataStartLine + TotalDataLines)
-			{
-				IndexCount = _FALSE;
-
-				while(IndexCount <(signed) InputLine.size())
-				{
-					DataValues.push_back(atof(InputLine.substr(IndexCount, DataFormatWidth).c_str()));
-
-					IndexCount += DataFormatWidth;
-				}
-			}
-
-			LineCount++;
-
+			cout<<"File "<<m_s_InputFile<<" Not Found"<<endl;
+			return _FALSE;
 		}
-		while(InputStream);
-
-		InputStream.close();
-
-		IndexCount = (signed) ColumnIndices.size();
-
-		v2i_VertexAdjacency.clear();
-		v2i_VertexAdjacency.resize((unsigned) STEP_DOWN(IndexCount));
-
-		for(i=0; i<STEP_DOWN(IndexCount); i++)
+		else
 		{
-			for(j=STEP_DOWN(ColumnIndices[i]); j<STEP_DOWN(ColumnIndices[STEP_UP(i)]); j++)
-			{
-				if(i == STEP_DOWN(RowIndices[j]))
-				{
-					continue;
-				}
+			cout<<"Found File "<<m_s_InputFile<<endl;
+		}
+		int i_Dummy, i, j;
+		int num, counter;
+		double d;
+		int nnz;
+		string line, num_string;
+		istringstream iin;
+		vector< vector<int> > vvi_VertexAdjacency;
+		vector< vector<double> > vvd_Values;
+		vector<int> vi_ColumnStartPointers, vi_RowIndices;
+		vector<double> vd_Values;
+		
+		//ignore the first line, which is the tittle and key
+		getline(in, line);
+		
+		// Get line 2
+		int TOTCRD; // (ignored) Total number of lines excluding header
+		int PTRCRD; // (ignored) Number of lines for pointers
+		int INDCRD; // (ignored) Number of lines for row (or variable) indices
+		int VALCRD; // Number of lines for numerical values. VALCRD == 0 if no values is presented
+		int RHSCRD; // (ignored) Number of lines for right-hand sides. RHSCRD == 0 if no right-hand side data is presented
+		
+		getline(in, line);
+		iin.clear();
+		iin.str(line);
+		iin >> TOTCRD >> PTRCRD >> INDCRD >> VALCRD >> RHSCRD;
+		
+		// Get line 3
+		string MXTYPE; //Matrix type. We only accept: (R | P) (S | U) (A)
+		int NROW; // Number of rows (or left vertices)
+		int NCOL; // Number of columns (or  right vertices)
+		int NNZERO; // Number of nonzeros 
+			    // in case of symmetric matrix, it is the number of nonzeros IN THE UPPER TRIANGULAR including the diagonal
+		int NELTVL; // (ignored) Number of elemental matrix entries (zero in the case of assembled matrices) 
+		bool b_symmetric; // true if this matrix is symmetric (MXTYPE[1] == 'S'), false otherwise.
+		
+		getline(in, line);
+		iin.clear();
+		iin.str(line);
+		iin >> MXTYPE >> NROW >> NCOL >> NNZERO >> NELTVL;
+		// We only accept MXTYPE = (R|P)(S|U)A
+		if(MXTYPE[0] == 'C') { //Complex matrix 
+		  cerr<<"ERR: Complex matrix format is not supported"<<endl;
+		  exit(-1);
+		}
+		if(MXTYPE[1] == 'S') {
+		  b_symmetric = true;
+		}
+		else {
+		  b_symmetric = false;
+		  if(MXTYPE[1] != 'U') { //H, Z, R types are not supported
+		    cerr<<"ERR: Matrix format is not supported. MXTYPE[1] != 'S' && MXTYPE[1] != 'U'"<<endl;
+		    exit(-1);
+		  }
+		}
+		if(MXTYPE[2] == 'E') { //Elemental matrices (unassembled) 
+		  cerr<<"ERR: Elemental matrices (unassembled) format is not supported"<<endl;
+		  exit(-1);
+		}
 
-				v2i_VertexAdjacency[i].push_back(STEP_DOWN(RowIndices[j]));
-				v2i_VertexAdjacency[STEP_DOWN(RowIndices[j])].push_back(i);
+		if(NROW != NCOL) {
+			cout<<"* WARNING: GraphInputOutput::ReadHarwellBoeingAdjacencyGraph()"<<endl;
+			cout<<"*\t row!=col. This is not a square matrix. Can't process."<<endl;
+			return _FALSE;
+		}
+
+		// Ignore line 4 for now
+		getline(in, line);
+		
+		//If the right-hand side data is presented, ignore the 5th header line
+		if(RHSCRD) getline(in, line);
+		
+		//Initialize data structures
+		m_vi_Vertices.clear();
+		m_vi_Vertices.resize(NROW+1, _UNKNOWN);
+		vvi_VertexAdjacency.clear();
+		vvi_VertexAdjacency.resize(NROW);
+		vvd_Values.clear();
+		vvd_Values.resize(NROW);
+		vi_ColumnStartPointers.clear();
+		vi_ColumnStartPointers.resize(NCOL+1);
+		vi_RowIndices.clear();
+		vi_RowIndices.resize(NNZERO);
+		vd_Values.clear();
+		vd_Values.resize(NNZERO);
+		
+		// get the 2nd data block: column start pointers		
+		for(int i=0; i<NCOL+1; i++) {
+		  in>> vi_ColumnStartPointers[i];
+		}
+		
+		// get the 3rd data block: row (or variable) indices,
+		for(i=0; i<NNZERO; i++) {
+		  in >> num;
+		  vi_RowIndices[i] = num-1;
+		}
+
+		// get the 4th data block: numerical values 
+		if(VALCRD !=0) {
+		  for(i=0; i<NNZERO; i++) {
+		    in >> num_string;
+		    ConvertHarwellBoeingDouble(num_string);
+		    iin.clear();
+		    iin.str(num_string);
+		    iin >> d;
+		    vd_Values[i] = d;
+		  }
+		}
+
+		//populate vvi_VertexAdjacency & vvd_Values
+		nnz = 0;
+		counter = 0;
+		for(i=0; i<NCOL; i++) {
+		  for(j=vi_ColumnStartPointers[i]; j< vi_ColumnStartPointers[i+1]; j++) {
+		    num = vi_RowIndices[counter];
+		    d = vd_Values[counter];
+		    
+		    if(num != i) {
+		      if(b_symmetric) {
+			vvi_VertexAdjacency[i].push_back(num);			
+			vvi_VertexAdjacency[num].push_back(i);
+			
+			if(VALCRD !=0) {
+			  vvd_Values[i].push_back(d);
+			  vvd_Values[num].push_back(d);
 			}
+			
+			nnz+=2;
+		      }
+		      else { // !b_symmetric
+			vvi_VertexAdjacency[i].push_back(num);
+			if(VALCRD !=0) vvd_Values[i].push_back(d);
+			nnz++;
+		      }
+		    }
+		    counter++;
+		  }
 		}
-
-		i_VertexCount = (signed) v2i_VertexAdjacency.size();
-
-		for(i=0; i<i_VertexCount; i++)
-		{
-			m_vi_Vertices.push_back((signed) m_vi_Edges.size());
-
-			i_VertexDegree = (signed) v2i_VertexAdjacency[i].size();
-
-			for(j=0; j<i_VertexDegree; j++)
-			{
-				m_vi_Edges.push_back(v2i_VertexAdjacency[i][j]);
-			}
+		
+		m_vi_Edges.clear();
+		m_vi_Edges.resize(nnz, _UNKNOWN);
+		if(VALCRD !=0) {
+		  m_vd_Values.clear();
+		  m_vd_Values.resize(nnz, _UNKNOWN);
 		}
-
-		m_vi_Vertices.push_back((signed) m_vi_Edges.size());
-
-		CalculateVertexDegrees();
-
-#if DEBUG == 1258
-
-		cout<<endl;
-
-		cout<<"Matrix Title = "<<MatrixTitle<<endl;
-		cout<<"Matrix Key = "<<MatrixKey<<endl;
-
-		cout<<endl;
-
-		cout<<"Total Entry Lines = "<<TotalEntryLines<<endl;
-		cout<<"Total Column Lines = "<<TotalColumnLines<<endl;
-		cout<<"Total Row Lines = "<<TotalRowLines<<endl;
-		cout<<"Total Data Lines = "<<TotalDataLines<<endl;
-		cout<<"Total Right Data Lines = "<<TotalRightDataLines<<endl;
-
-		cout<<endl;
-
-		cout<<"Matrix Type = "<<MatrixType<<endl;
-		cout<<"Row Count = "<<RowCount<<endl;
-		cout<<"Column Count = "<<ColumnCount<<endl;
-		cout<<"Data Count = "<<DataCount<<endl;
-		cout<<"Assembly Count = "<<AssemblyCount<<endl;
-
-		cout<<endl;
-
-		cout<<"Column Format = "<<ColumnFormat<<endl;
-		cout<<"Row Format = "<<RowFormat<<endl;
-		cout<<"Data Format = "<<DataFormat<<endl;
-		cout<<"Right Format = "<<RightFormat<<endl;
-
-		cout<<endl;
-
-		cout<<"Column Format Width = "<<ColumnFormatWidth<<endl;
-		cout<<"Row Format Width = "<<RowFormatWidth<<endl;
-		cout<<"Data Format Width = "<<DataFormatWidth<<endl;
-
-		cout<<endl;
-
-		if(TotalRightDataLines != _FALSE)
-		{
-			cout<<"Right Type = "<<RightType<<endl;
-			cout<<"Right Count = "<<RightCount<<endl;
-			cout<<"Right Index Count = "<<RightIndexCount<<endl;
-
-			cout<<endl;
+		//populate the m_vi_Vertices, their Edges and Values at the same time
+		m_vi_Vertices[0]=0;
+		for(i=0; i<NROW; i++) {
+		  for(j=0; j<vvi_VertexAdjacency[i].size();j++) {
+		    m_vi_Edges[m_vi_Vertices[i]+j] = vvi_VertexAdjacency[i][j];
+		    if(VALCRD !=0) m_vd_Values[m_vi_Vertices[i]+j] = vvd_Values[i][j];
+		  }
+		  
+		  m_vi_Vertices[i+1] = m_vi_Vertices[i]+vvi_VertexAdjacency[i].size();
 		}
-
-		IndexCount = (signed) ColumnIndices.size();
-
-		cout<<"Column Indices = ";
-
-		for(i=0; i<IndexCount; i++)
-		{
-			if(i == STEP_DOWN(IndexCount))
-			{
-				cout<<ColumnIndices[i]<<" ("<<IndexCount<<")"<<endl;
-			}
-			else
-			{
-				cout<<ColumnIndices[i]<<", ";
-			}
-		}
-
-		if(!IndexCount)
-		{
-			cout<<"Not Found"<<endl;
-		}
-
-		cout<<endl;
-
-		IndexCount = (signed) RowIndices.size();
-
-		cout<<"Row Indices = ";
-
-		for(i=0; i<IndexCount; i++)
-		{
-			if(i == STEP_DOWN(IndexCount))
-			{
-				cout<<RowIndices[i]<<" ("<<IndexCount<<")"<<endl;
-			}
-			else
-			{
-				cout<<RowIndices[i]<<", ";
-			}
-		}
-
-		if(!IndexCount)
-		{
-			cout<<"Not Found"<<endl;
-		}
-
-		cout<<endl;
-
-		IndexCount = (signed) DataValues.size();
-
-		cout<<"Data Values = ";
-
-		for(i=0; i<IndexCount; i++)
-		{
-			if(i == STEP_DOWN(IndexCount))
-			{
-				cout<<DataValues[i]<<" ("<<IndexCount<<")"<<endl;
-			}
-			else
-			{
-				cout<<DataValues[i]<<", ";
-			}
-		}
-
-		if(!IndexCount)
-		{
-			cout<<"Not Found"<<endl;
-		}
-
-		cout<<endl;
-
-#endif
-
-#if DEBUG == 1258
-
-		int i_EdgeCount;
-
-		cout<<endl;
-		cout<<"DEBUG 1258 | Acyclic Coloring | Vertex Adjacency | "<<InputFile<<endl;
-		cout<<endl;
-
-		i_EdgeCount = _FALSE;
-		i_VertexCount = RowCount;
-
-		for(i=0; i<i_VertexCount; i++)
-		{
-			cout<<"Vertex "<<STEP_UP(i)<<"\t"<<" : ";
-
-			i_VertexDegree = (signed) v2i_VertexAdjacency[i].size();
-
-			for(j=0; j<i_VertexDegree; j++)
-			{
-				if(j == STEP_DOWN(i_VertexDegree))
-				{
-				cout<<STEP_UP(v2i_VertexAdjacency[i][j])<<" ("<<i_VertexDegree<<")";
-
-				i_EdgeCount++;
-				}
-				else
-				{
-					cout<<STEP_UP(v2i_VertexAdjacency[i][j])<<", ";
-
-					i_EdgeCount++;
-				}
-			}
-
-			cout<<endl;
-		}
-
-		cout<<endl;
-		cout<<"[Vertices = "<<i_VertexCount<<"; Edges = "<<i_EdgeCount/2<<"]"<<endl;
-		cout<<endl;
-
-#endif
-
-		return(_TRUE);
+		
+		PrintGraph();
+		Pause();
+				
+	  return 0;
 	}
 
 	int GraphInputOutput::ReadMeTiSAdjacencyGraph(string s_InputFile)

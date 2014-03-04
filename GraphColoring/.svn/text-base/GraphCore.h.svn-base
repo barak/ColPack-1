@@ -113,9 +113,12 @@ namespace ColPack
 
 		//Public Function 1109
 		void GetVertices(vector<int> &output) const;
+		vector <int>* GetVerticesPtr(){ return &m_vi_Vertices; }
+		
 
 		//Public Function 1110
 		void GetEdges(vector<int> &output) const;
+		vector <int>* GetEdgesPtr(){ return &m_vi_Edges; }
 
 		//Public Function 1111
 		void GetValues(vector<double> &output) const;

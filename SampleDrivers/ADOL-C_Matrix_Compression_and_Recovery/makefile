@@ -37,7 +37,7 @@ all: $(DRIVERS)
 
 run-test:
 	for i in $(DRIVERS) ; do \
-	( export LD_LIBRARY_PATH=$(TOP_DIR)/build/lib; echo "run-test: Running ./$$i"; ./$$i) ; \
+	( export LD_LIBRARY_PATH=$(TOP_DIR)/build/lib; echo "run-test: Running ./$$i"; valgrind --tool=memcheck --leak-check=yes ./$$i) ; \
 	done
 
 run-extra: $(EXTRA_DRIVERS)

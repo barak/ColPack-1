@@ -221,6 +221,7 @@ namespace ColPack
 
 		//Public Function 1469
 		void GetVertexColors(vector<int> &output);
+		vector <int>* GetVertexColorsPtr(){ return &m_vi_VertexColors; }
 
 		//Public Function 1470
 		int GetHubCount();

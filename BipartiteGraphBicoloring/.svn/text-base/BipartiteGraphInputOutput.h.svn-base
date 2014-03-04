@@ -165,6 +165,9 @@ namespace ColPack
 
 		//Public Function 2257;3257
 		/// Read sparsity pattern of a matrix specified in Harwell Boeing format from a file and build a corresponding bipartite graph
+		/**
+		  Supported sub-format: MXTYPE[3] = (R | P) (*) (A)
+		*/
 		int ReadHarwellBoeingBipartiteGraph(string s_InputFile);
 
 		//Public Function 2260;3260

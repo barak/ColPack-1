@@ -183,8 +183,9 @@ ship: wipe
 	(cd .. && dz ColPack;chmod 755 ColPack.tar.gz;)
 
 ship-dev: ship
-	doxygen ../../../doxygen/ColPack_local_ubuntu_ship_html2
+	doxygen ../doxygen/ColPack_local_ubuntu_ship_html2
 	chmod -R 755 ~/public_html/dox/
+	scp -r ~/public_html/dox/ColPack wiki:/home/csp-wiki/htdocs/dox/
 
 install:
 	@echo

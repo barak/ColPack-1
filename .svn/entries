@@ -1,15 +1,15 @@
 10
 
 dir
-52
-svn+ssh://sslab02.cs.purdue.edu/homes/agebreme/svn/projects/ColPack
+115
+svn+ssh://sslab02.cs.purdue.edu/homes/agebreme/svn/projects/src/ColPack
 svn+ssh://sslab02.cs.purdue.edu/homes/agebreme/svn/projects
 
 
 
-2010-09-08T20:32:45.891340Z
-51
-mpatwary
+2010-10-22T03:45:36.996034Z
+98
+nguyend
 
 
 
@@ -32,23 +32,23 @@ dir
 SampleDrivers
 dir
 
-Main
+Graphs
 dir
 
-Graphs
+Main
 dir
 
 common_variables.in
 file
-53
 
 
 
-2010-09-13T03:52:33.993637Z
-41828cb46a55ecf6bc9dfbef43681547
-2010-09-13T04:05:40.628049Z
-53
-nguyend
+
+2010-10-26T09:03:20.135052Z
+859aa5518802fb33316b6c2afb213450
+2010-10-22T00:01:32.144620Z
+97
+mpatwary
 has-props
 
 
@@ -72,10 +72,13 @@ has-props
 
 1660
 
+GraphColoring
+dir
+
 Recovery
 dir
 
-GraphColoring
+Documents
 dir
 
 main_page.cpp
@@ -84,11 +87,11 @@ file
 
 
 
-2010-09-13T03:52:33.042271Z
-94f54f342b24547a17e1c2c34ae2347f
-2010-08-25T15:15:15.181313Z
-1
-agebreme
+2010-10-01T00:47:57.773501Z
+7a20fdd81fc8579a639b65812a426dc3
+2010-09-28T21:17:29.992972Z
+80
+nguyend
 has-props
 
 
@@ -110,10 +113,7 @@ has-props
 
 
 
-2469
-
-Documents
-dir
+2494
 
 AUTHOR
 file
@@ -121,11 +121,11 @@ file
 
 
 
-2010-09-13T03:52:34.025702Z
-d0fcb8adb9fc943cb818894479c4c369
-2010-08-25T15:15:15.181313Z
-1
-agebreme
+2010-10-01T00:47:57.773501Z
+743a1e428ac4f8c54fc937bf4cf0253d
+2010-09-28T21:17:29.992972Z
+80
+nguyend
 has-props
 
 
@@ -147,7 +147,7 @@ has-props
 
 
 
-97
+122
 
 COPYING.LESSER
 file
@@ -155,7 +155,7 @@ file
 
 
 
-2010-09-13T03:52:33.038189Z
+2010-10-01T00:47:57.773501Z
 6a6a8e020838b23406c81b19c1d46df6
 2010-08-25T15:15:15.181313Z
 1
@@ -189,7 +189,7 @@ file
 
 
 
-2010-09-13T03:52:34.770235Z
+2010-10-01T00:47:57.777456Z
 d32239bcb673463ab874e80d47fae504
 2010-08-25T15:15:15.181313Z
 1
@@ -220,16 +220,19 @@ has-props
 Utilities
 dir
 
+BipartiteGraphBicoloring
+dir
+
 makefile
 file
-53
 
 
 
-2010-09-13T03:52:33.026282Z
-10292316c722b15e5f982636ee6b092f
-2010-09-13T04:05:40.628049Z
-53
+
+2010-10-01T00:47:57.777456Z
+828864a0967e8133da1ddf9a611e8c00
+2010-09-28T21:17:29.992972Z
+80
 nguyend
 has-props
 
@@ -252,8 +255,5 @@ has-props
 
 
 
-6854
-
-BipartiteGraphBicoloring
-dir
+6914
 

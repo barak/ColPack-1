@@ -113,6 +113,10 @@ namespace ColPack
 
 		//Public Function 1258
 		/// Read the entries of symmetric matrix in Harwell Boeing format and build the corresponding adjacency graph.
+		/**
+		  Supported sub-format: MXTYPE[3] = (R | P) (S | U) (A)
+		  If MXTYPE[2] = 'U', the matrix structure must still be symmetric for ColPack to work correctly
+		*/
 		int ReadHarwellBoeingAdjacencyGraph(string s_InputFile);
 
 		//Public Function 1259

@@ -297,7 +297,7 @@ namespace ColPack
 			}
 		}
 
-		// reserver memory
+		// reserve memory
 		m_vi_OrderedVertices.clear();
 		m_vi_OrderedVertices.reserve((unsigned) i_VertexCount);
 
@@ -1625,3 +1625,4 @@ namespace ColPack
 		cout<<endl;
 	}
 }
+

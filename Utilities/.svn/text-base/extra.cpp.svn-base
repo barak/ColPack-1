@@ -22,10 +22,21 @@
 #include "Pause.h"
 #include "mmio.h"
 
+int ConvertHarwellBoeingDouble(string & num_string) {
+  for(int i=num_string.size()-1; i>=0; i--) {
+    if(num_string[i] == 'D') {
+      num_string[i]='E';
+      return 1;
+    }
+  }
+  return 0;
+}
+
 bool isValidOrdering(vector<int> & ordering, int offset) {
-  vector<bool> isExist;
+  vector<bool> isExist, index;
   int orderingNum = 0;
   isExist.resize(ordering.size(), false);
+  index.resize(ordering.size(), false);
   for(int i=0; i<ordering.size(); i++) {
     orderingNum = ordering[i] - offset;
     if(orderingNum<0 || orderingNum>= ordering.size()) {
@@ -34,11 +45,12 @@ bool isValidOrdering(vector<int> & ordering, int offset) {
     }
     
     if(isExist[ orderingNum ]) {
-      cerr<<"This vertex has been seen before. We have duplication!"<<endl;
+      cerr<<"This vertex id "<<orderingNum<<" has been seen before at ordering["<<index [orderingNum]<<"] and  ordering["<<i<<"]. We have duplication!"<<endl;
       return false;
     }
     
     isExist[ orderingNum ] = true;
+    index [orderingNum] = i;
   }
   
   return true;
@@ -176,7 +188,7 @@ void randomOrdering(vector<int>& ordering) {
 	srand(time(NULL));
 	int size = ordering.size();
 	int ran_num = 0;
-	for(int i=0; i < size-1; i++) {
+	for(int i=0; i < size; i++) {
 		//Get a random number in range [i,  size]
 		ran_num = (int)(((float) rand() / RAND_MAX) * (size -1 - i)) + i;
 		swap(ordering[i],ordering[ran_num]);
@@ -380,12 +392,12 @@ int ConvertMatrixMarketFormatToRowCompressedFormat(string s_InputFile, unsigned 
 				}
 			}
 			else { // !b_symmetric
-				cout<<"\t"<<setw(4)<<rowIndex<<setw(4)<<colIndex<<setw(4)<<nz_counter<<endl;
+				//cout<<"\t"<<setw(4)<<rowIndex<<setw(4)<<colIndex<<setw(4)<<nz_counter<<endl;
 				nodeList[rowIndex].push_back(colIndex);
 				nz_counter++;
 				if(b_getValue) {
 				  in2>>value;
-				  cout<<"Value = "<<value<<endl;
+				  //cout<<"Value = "<<value<<endl;
 				  valueList[rowIndex].push_back(value);
 				}
 			}

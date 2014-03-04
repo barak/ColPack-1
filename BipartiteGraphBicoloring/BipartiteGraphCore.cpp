@@ -65,7 +65,7 @@ namespace ColPack
 
 	unsigned int BipartiteGraphCore::GetRowVertices(unsigned int** ip2_RowVertex)
 	{
-		(*ip2_RowVertex) = new unsigned int[m_vi_LeftVertices.size()];
+		(*ip2_RowVertex) = (unsigned int*) malloc(m_vi_LeftVertices.size() * sizeof(unsigned int));
 		for(unsigned int i=0; i < m_vi_LeftVertices.size(); i++) {
 			(*ip2_RowVertex)[i] = m_vi_LeftVertices[i];
 		}
@@ -75,7 +75,7 @@ namespace ColPack
 	unsigned int BipartiteGraphCore::GetColumnIndices(unsigned int** ip2_ColumnIndex)
 	{
 		unsigned int ui_UpperBound = m_vi_LeftVertices[m_vi_LeftVertices.size() - 1];
-		(*ip2_ColumnIndex) = new unsigned int[ui_UpperBound];
+		(*ip2_ColumnIndex) = (unsigned int*) malloc(ui_UpperBound * sizeof(unsigned int));
 		for(unsigned int i=0; i < ui_UpperBound; i++) {
 			(*ip2_ColumnIndex)[i] = m_vi_Edges[i];
 		}

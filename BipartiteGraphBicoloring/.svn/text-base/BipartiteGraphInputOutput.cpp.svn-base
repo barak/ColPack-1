@@ -469,26 +469,13 @@ namespace ColPack
 		return(_TRUE);
 	}
 
-	//Public Function 2257;3257
-	int BipartiteGraphInputOutput::ReadHarwellBoeingBipartiteGraph(string s_InputFile)
-	{
-		char sz_Line [256];
-		int i_Dummy, i_RHSCRD, i_Input;
-		int i_Rows, i_Columns, i_NZ;
-		int i, j, n;
-		int i_RowCount;
-		ifstream InputStream;
-		vector<int> vi_Vertex;
-		vector<int> vi_Degree, vi_RowPointer;
-
+	int BipartiteGraphInputOutput::ReadHarwellBoeingBipartiteGraph(string s_InputFile) {
 		Clear();
 
-		m_s_InputFile = s_InputFile;
+		m_s_InputFile=s_InputFile;
+		ifstream in (m_s_InputFile.c_str());
 
-		InputStream.open ( m_s_InputFile.c_str () );
-
-
-		if(!InputStream)
+		if(!in)
 		{
 			cout<<"File "<<m_s_InputFile<<" Not Found"<<endl;
 			return _FALSE;
@@ -497,109 +484,121 @@ namespace ColPack
 		{
 			cout<<"Found File "<<m_s_InputFile<<endl;
 		}
-
-
-		// get headings
-		// line1: who cares about title...
-		InputStream.getline ( sz_Line, 255 );
-
-		// line2: ignore everything except for RHSCRD which is the amount of additional lines we might need to compute
-		InputStream >> i_Dummy >> i_Dummy >> i_Dummy >> i_Dummy >> i_RHSCRD;
-		InputStream.getline ( sz_Line, 255 );
-		//sscanf ( sz_Line, "%d %d %d %d %d", &i_Dummy, &i_Dummy, &i_Dummy, &i_Dummy, &i_RHSCRD );
-
-		// line3: matrix type (3 characters), # of rows, # of columns, # of nonzeros, ignored
-		//InputStream.getline ( sz_Line, 255 );
-		//DOESN'T WORK sscanf_s ( sz_Line, "%c%c%c %d %d %d %d", &c_dummy, &c_dummy, &c_dummy, &i_Rows, &i_Columns, &i_NZ, &i_Dummy );
-		string format;
-		InputStream >> format >> i_Rows >> i_Columns >> i_NZ;
-		InputStream.getline ( sz_Line, 255 );
-
-		// line4: ignored
-		InputStream.getline ( sz_Line, 255 );
-
-		// check to see if "readmore" (RHSCRD) is presented in this file
-		if ( i_RHSCRD > 0 )
-		{
-			// ignore that line
-			InputStream.getline ( sz_Line, 255 );
+		
+		int i_Dummy, i, j;
+		int num;
+		int nnz;
+		string line, num_string;
+		istringstream iin;
+		vector< vector<int> > vvi_LeftVertexAdjacency, vvi_RightVertexAdjacency;
+		vector<int> vi_ColumnStartPointers;
+		
+		//ignore the first line, which is the tittle and key
+		getline(in, line);
+		
+		// Get line 2
+		int TOTCRD; // (ignored) Total number of lines excluding header
+		int PTRCRD; // (ignored) Number of lines for pointers
+		int INDCRD; // (ignored) Number of lines for row (or variable) indices
+		int VALCRD; // (ignored) Number of lines for numerical values. VALCRD == 0 if no values is presented
+		int RHSCRD; // (ignored) Number of lines for right-hand sides. RHSCRD == 0 if no right-hand side data is presented
+		
+		getline(in, line);
+		iin.clear();
+		iin.str(line);
+		iin >> TOTCRD >> PTRCRD >> INDCRD >> VALCRD >> RHSCRD;
+		
+		// Get line 3
+		string MXTYPE; //Matrix type. We only accept: (R | P) (*) (A)
+		int NROW; // Number of rows (or left vertices)
+		int NCOL; // Number of columns (or  right vertices)
+		int NNZERO; // (ignored) Number of nonzeros 
+			    // in case of symmetric matrix, it is the number of nonzeros IN THE UPPER TRIANGULAR including the diagonal
+		int NELTVL; // (ignored) Number of elemental matrix entries (zero in the case of assembled matrices) 
+		bool b_symmetric; // true if this matrix is symmetric (MXTYPE[1] == 'S'), false otherwise.
+		
+		getline(in, line);
+		iin.clear();
+		iin.str(line);
+		iin >> MXTYPE >> NROW >> NCOL >> NNZERO >> NELTVL;
+		if(MXTYPE[2] == 'E') {
+		  cerr<<"ERR: Elemental matrices (unassembled) format is not supported"<<endl;
+		  exit(-1);
 		}
-
-
-		// initialize stuff
-		n = i_Rows + i_Columns;
-
-		// build up initial setup
-		m_vi_LeftVertices.resize ( i_Rows+1, 0 );
-		m_vi_RightVertices.resize ( i_Columns+1, 0 );
-		m_vi_Edges.resize ( 2 * i_NZ, 0 );
-		vi_Degree.resize ( n, 0 );
-		vi_RowPointer.resize ( i_Rows, 0 );
-		vi_Vertex.resize ( n + 1, 0 );
-
-		// read matrix
-		InputStream >> i_Dummy;
-		for ( i=1; i<=i_Columns; i++ )
-		{
-			InputStream >> i_Input;
-			vi_Vertex [i] = i_Input - 1;
-			vi_Degree [i-1] = vi_Vertex [i] - vi_Vertex [i-1];
+		if(MXTYPE[1] == 'S') {
+		  if(NROW != NCOL) {
+		    cerr<<"ERR: The matrix is declared symmetric but NROW != NCOL"<<endl;
+		    exit(-1);
+		  }
+		  b_symmetric = true;
 		}
-		for ( i=0; i<i_NZ; i++ )
-		{
-			InputStream >> i_Input;
-			m_vi_Edges [i] = i_Columns + i_Input - 1;
-			++vi_RowPointer [i_Input - 1];
-			++vi_Degree [i_Columns + i_Input - 1];
+		else b_symmetric = false;
+		
+		// Ignore line 4 for now
+		getline(in, line);
+		
+		//If the right-hand side data is presented, ignore the 5th header line
+		if(RHSCRD) getline(in, line);
+		
+		m_vi_LeftVertices.clear();
+		m_vi_LeftVertices.resize(NROW+1, _UNKNOWN);
+		m_vi_RightVertices.clear();
+		m_vi_RightVertices.resize(NCOL+1, _UNKNOWN);
+		vvi_LeftVertexAdjacency.clear();
+		vvi_LeftVertexAdjacency.resize(NROW);
+		vvi_RightVertexAdjacency.clear();
+		vvi_RightVertexAdjacency.resize(NCOL);
+		vi_ColumnStartPointers.clear();
+		vi_ColumnStartPointers.resize(NCOL+1);
+		
+		// get the 2nd data block: column start pointers		
+		for(int i=0; i<NCOL+1; i++) {
+		  in>> vi_ColumnStartPointers[i];
 		}
-		// done with InputStream?
-		InputStream.close ();
-		// build 2nd half of graph
-		i_RowCount = i_NZ;
-		for ( i=1; i<=i_Rows; i++ )
-		{
-			i_RowCount += vi_RowPointer [i-1];
-			vi_Vertex [i + i_Columns] = i_RowCount;
+		
+		//populate vvi_LeftVertexAdjacency & vvi_RightVertexAdjacency
+		nnz = 0;
+		for(i=0; i<NCOL; i++) {
+		  for(j=vi_ColumnStartPointers[i]; j< vi_ColumnStartPointers[i+1]; j++) {
+		    in>> num;
+		    num--;
+		    vvi_RightVertexAdjacency[i].push_back(num);
+		    vvi_LeftVertexAdjacency[num].push_back(i);
+		    nnz++;
+		    
+		    if(b_symmetric && num != i) {
+		      vvi_RightVertexAdjacency[num].push_back(i);
+		      vvi_LeftVertexAdjacency[i].push_back(num);
+		      nnz++;
+		    }
+		  }
 		}
-		for ( i=0; i<i_Columns; i++ )
-		{
-			for ( j=vi_Vertex [i]; j<vi_Vertex [i+1]; j++ )
-			{
-				if ( vi_RowPointer [m_vi_Edges [j] - i_Columns] > 0 )
-				{
-					--vi_RowPointer [m_vi_Edges [j] - i_Columns];
-					m_vi_Edges [vi_Vertex [m_vi_Edges [j]] + vi_RowPointer [m_vi_Edges [j] - i_Columns]] = i;
-				}
-			}
+		
+		m_vi_Edges.clear();
+		m_vi_Edges.resize(2*nnz, _UNKNOWN);
+		//populate the m_vi_LeftVertices and their edges at the same time
+		m_vi_LeftVertices[0]=0;
+		for(i=0; i<NROW; i++) {
+		  for(j=0; j<vvi_LeftVertexAdjacency[i].size();j++) {
+		    m_vi_Edges[m_vi_LeftVertices[i]+j] = vvi_LeftVertexAdjacency[i][j];
+		  }
+		  
+		  m_vi_LeftVertices[i+1] = m_vi_LeftVertices[i]+vvi_LeftVertexAdjacency[i].size();
 		}
-
-		// reverse everything
-		for ( i=0; i<i_Columns; i++ )
-		{
-			m_vi_RightVertices [i] = vi_Vertex [i];
+		
+		//populate the m_vi_RightVertices and their edges at the same time
+		m_vi_RightVertices[0]=m_vi_LeftVertices[NROW];
+		for(i=0; i<NCOL; i++) {
+		  for(j=0; j<vvi_RightVertexAdjacency[i].size();j++) {
+		    m_vi_Edges[m_vi_RightVertices[i]+j] = vvi_RightVertexAdjacency[i][j];
+		  }
+		  
+		  m_vi_RightVertices[i+1] = m_vi_RightVertices[i]+vvi_RightVertexAdjacency[i].size();
 		}
-
-		m_vi_RightVertices [i_Columns] = i_NZ;
-
-		for ( i=0; i<i_Rows; i++ )
-		{
-			m_vi_LeftVertices [i] = vi_Vertex [i+i_Columns];
-		}
-
-		m_vi_LeftVertices [i_Rows] = 2*i_NZ;
-
-		for ( i=0; i<i_NZ; i++ )
-		{
-			m_vi_Edges [i] = m_vi_Edges [i] - i_Columns;
-		}
-
-		CalculateVertexDegrees();
-
-		return(_TRUE);
+		
+		return 0;
 	}
-
-
-
+	
 	//Public Function 2258;3258
 	int BipartiteGraphInputOutput::ReadGenericMatrixBipartiteGraph(string s_InputFile)
 	{

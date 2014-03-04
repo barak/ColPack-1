@@ -42,6 +42,17 @@ using namespace std;
 #include "Pause.h"
 */
 
+/// Convert a number string under Harwell-Boeing format to the format that C++ can understand
+/** For example: -6.310289677458059D-07 to -6.310289677458059E-07
+
+Essentially, this function just search backward for the letter D and replace it with E
+
+Return value:
+- 0 if letter D is not found
+- 1 if latter D is found and replace by letter E
+*/
+int ConvertHarwellBoeingDouble(string & num_string);
+
 /// Read a Row Compressed Format file
 /** Read a Row Compressed Format file
 Line 1: <# of rows> <# of columns> <# of non-zeros>
@@ -288,6 +299,17 @@ void displayVector(T* xp2_Value, int size, bool structureOnly = false) {
 	}
 	cout<<endl<<endl;
 }
+
+template<class T>
+int displayVector(vector<T> v) {
+  for (unsigned int i=0; i < v.size(); i++) {
+    cout<<setw(4)<<"["<<setw(3)<<i<<"]";
+    printf("  %7.2f",(float)v[i]);
+    cout<<endl<<flush;
+  }
+  return 0;
+}
+
 
 /// Used mainly to debug GraphColoringInterface::IndirectRecover() routine
 template<class T>

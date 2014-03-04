@@ -1,6 +1,6 @@
 /*! \mainpage ColPack
  *
- * <CENTER><H2>Assefaw H. Gebremedhin, Duc Nguyen, Arijit Tarafdar, Alex Pothen</H2></CENTER>
+ * <CENTER><H2>Assefaw H. Gebremedhin, Duc Nguyen, Arijit Tarafdar, Md. Mostofa Ali Patwary, Alex Pothen</H2></CENTER>
  *
  * \section INTRODUCTION
  *

@@ -22,10 +22,21 @@
 #include "Pause.h"
 #include "mmio.h"
 
+int ConvertHarwellBoeingDouble(string & num_string) {
+  for(int i=num_string.size()-1; i>=0; i--) {
+    if(num_string[i] == 'D') {
+      num_string[i]='E';
+      return 1;
+    }
+  }
+  return 0;
+}
+
 bool isValidOrdering(vector<int> & ordering, int offset) {
-  vector<bool> isExist;
+  vector<bool> isExist, index;
   int orderingNum = 0;
   isExist.resize(ordering.size(), false);
+  index.resize(ordering.size(), false);
   for(int i=0; i<ordering.size(); i++) {
     orderingNum = ordering[i] - offset;
     if(orderingNum<0 || orderingNum>= ordering.size()) {
@@ -34,11 +45,12 @@ bool isValidOrdering(vector<int> & ordering, int offset) {
     }
     
     if(isExist[ orderingNum ]) {
-      cerr<<"This vertex has been seen before. We have duplication!"<<endl;
+      cerr<<"This vertex id "<<orderingNum<<" has been seen before at ordering["<<index [orderingNum]<<"] and  ordering["<<i<<"]. We have duplication!"<<endl;
       return false;
     }
     
     isExist[ orderingNum ] = true;
+    index [orderingNum] = i;
   }
   
   return true;
@@ -107,7 +119,7 @@ int RowCompressedFormat_2_SparseSolversFormat_StructureOnly (unsigned int ** uip
 	//first, count the number of non-zeros in the upper triangular and also populate *ip2_RowIndex array
 	unsigned int nnz = 0;
 	unsigned int nnz_in1Row = 0;
-	(*ip2_RowIndex) = new unsigned int[ui_rowCount + 1];
+	(*ip2_RowIndex) = (unsigned int*) malloc( (ui_rowCount + 1) * sizeof(unsigned int));
 	for (unsigned int i=0; i < ui_rowCount; i++) {
 	  nnz_in1Row = uip2_HessianSparsityPattern[i][0];
 	  (*ip2_RowIndex)[i] = nnz;
@@ -118,10 +130,10 @@ int RowCompressedFormat_2_SparseSolversFormat_StructureOnly (unsigned int ** uip
 	(*ip2_RowIndex)[ui_rowCount] = nnz;
 	//cout<<"nnz = "<<nnz<<endl;
 
-	displayVector(*ip2_RowIndex,ui_rowCount+1);
+	//displayVector(*ip2_RowIndex,ui_rowCount+1);
 
 	// populate *ip2_ColumnIndex array
-	(*ip2_ColumnIndex) = new unsigned int[nnz];
+	(*ip2_ColumnIndex) = (unsigned int*) malloc( (nnz) * sizeof(unsigned int));
 	unsigned int count = 0;
 	for (unsigned int i=0; i < ui_rowCount; i++) {
 	  nnz_in1Row = uip2_HessianSparsityPattern[i][0];
@@ -176,7 +188,7 @@ void randomOrdering(vector<int>& ordering) {
 	srand(time(NULL));
 	int size = ordering.size();
 	int ran_num = 0;
-	for(int i=0; i < size-1; i++) {
+	for(int i=0; i < size; i++) {
 		//Get a random number in range [i,  size]
 		ran_num = (int)(((float) rand() / RAND_MAX) * (size -1 - i)) + i;
 		swap(ordering[i],ordering[ran_num]);

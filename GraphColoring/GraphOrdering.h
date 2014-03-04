@@ -115,6 +115,7 @@ namespace ColPack
 
 		//Public Function 1363
 		void GetOrderedVertices(vector<int> &output);
+		vector <int>* GetOrderedVerticesPtr(){ return &m_vi_OrderedVertices; }
 
 		void PrintVertexOrdering();
 

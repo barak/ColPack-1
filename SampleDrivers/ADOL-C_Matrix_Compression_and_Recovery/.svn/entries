@@ -1,8 +1,8 @@
 10
 
 dir
-52
-svn+ssh://sslab02.cs.purdue.edu/homes/agebreme/svn/projects/ColPack/SampleDrivers/ADOL-C_Matrix_Compression_and_Recovery
+115
+svn+ssh://sslab02.cs.purdue.edu/homes/agebreme/svn/projects/src/ColPack/SampleDrivers/ADOL-C_Matrix_Compression_and_Recovery
 svn+ssh://sslab02.cs.purdue.edu/homes/agebreme/svn/projects
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-13T03:52:33.674626Z
+2010-10-01T00:47:57.155127Z
 9d53c24c166afe1bbaecccfe92879531
 2010-08-27T04:23:29.853313Z
 11
@@ -60,47 +60,13 @@ has-props
 
 6164
 
-Compression_and_indirect_recovery_for_Hessian_return_Sparse_Solvers_Format.cpp
-file
-
-
-
-
-2010-09-13T03:52:33.471121Z
-bc768aa203fa75225bf162853ac15c75
-2010-08-27T04:23:29.853313Z
-11
-nguyend
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5917
-
 Bidirectional_compression_and_recovery_for_Jacobian_return_Coordinate_Format.cpp
 file
 
 
 
 
-2010-09-13T03:52:33.474648Z
+2010-10-01T00:47:57.157513Z
 f5fbe15095d6dde6c94d51c1ff23af24
 2010-08-27T04:23:29.853313Z
 11
@@ -128,13 +94,47 @@ has-props
 
 7508
 
+Compression_and_indirect_recovery_for_Hessian_return_Sparse_Solvers_Format.cpp
+file
+
+
+
+
+2010-10-01T00:47:57.157513Z
+bc768aa203fa75225bf162853ac15c75
+2010-08-27T04:23:29.853313Z
+11
+nguyend
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5917
+
 Row_compression_and_recovery_for_Jacobian_return_Row_Compressed_Format.cpp
 file
 
 
 
 
-2010-09-13T03:52:33.670627Z
+2010-10-01T00:47:57.161791Z
 304e0c7390ab3a3fffab03247b42c9e2
 2010-08-27T04:23:29.853313Z
 11
@@ -168,7 +168,7 @@ file
 
 
 
-2010-09-13T03:52:33.458146Z
+2010-10-01T00:47:57.165468Z
 d775081552acc81a7ced1901936d13fa
 2010-08-27T04:23:29.853313Z
 11
@@ -202,7 +202,7 @@ file
 
 
 
-2010-09-13T03:52:33.478632Z
+2010-10-01T00:47:57.165468Z
 c211b27ac1f734a161f46ecfa3e9d337
 2010-08-27T04:23:29.853313Z
 11
@@ -236,7 +236,7 @@ file
 
 
 
-2010-09-13T03:52:33.666642Z
+2010-10-01T00:47:57.169440Z
 ca6ae4195afdf18edbccf9924cb5848d
 2010-08-27T04:23:29.853313Z
 11
@@ -270,7 +270,7 @@ file
 
 
 
-2010-09-13T03:52:33.658655Z
+2010-10-01T00:47:57.169440Z
 1e1cf40efbbdb7a67a70e70229329321
 2010-08-27T04:23:29.853313Z
 11
@@ -304,7 +304,7 @@ file
 
 
 
-2010-09-13T03:52:33.674626Z
+2010-10-01T00:47:57.173536Z
 16198d83d84fb97af7d6321583d24b72
 2010-08-27T04:23:29.853313Z
 11
@@ -338,7 +338,7 @@ file
 
 
 
-2010-09-13T03:52:33.466149Z
+2010-10-01T00:47:57.173536Z
 d9625dfd2ca967090d72a2d4b1479db9
 2010-08-27T04:23:29.853313Z
 11
@@ -372,7 +372,7 @@ file
 
 
 
-2010-09-13T03:52:33.450149Z
+2010-10-01T00:47:57.173536Z
 687d536f3b676d3ec99360867d597a6d
 2010-08-27T04:23:29.853313Z
 11
@@ -406,7 +406,7 @@ file
 
 
 
-2010-09-13T03:52:33.446215Z
+2010-10-01T00:47:57.177448Z
 14e0ccbff9eb3049d6c3c3067f053448
 2010-08-27T04:23:29.853313Z
 11
@@ -440,7 +440,7 @@ file
 
 
 
-2010-09-13T03:52:33.454144Z
+2010-10-01T00:47:57.177448Z
 5f8169de57d9d980c23e27f151569029
 2010-08-27T04:23:29.853313Z
 11
@@ -468,47 +468,13 @@ has-props
 
 5860
 
-makefile
-file
-
-
-
-
-2010-09-13T03:52:33.426174Z
-224c5d4824c1a4ac656ecf90ca4a9f63
-2010-08-27T04:23:29.853313Z
-11
-nguyend
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2013
-
 Column_compression_and_recovery_for_Jacobian_return_Row_Compressed_Format.cpp
 file
 
 
 
 
-2010-09-13T03:52:33.434203Z
+2010-10-01T00:47:57.177448Z
 f34cb41f7acf1a849fe39efda1cbce80
 2010-08-27T04:23:29.853313Z
 11
@@ -536,13 +502,47 @@ has-props
 
 5736
 
+makefile
+file
+
+
+
+
+2010-10-01T00:47:57.177448Z
+224c5d4824c1a4ac656ecf90ca4a9f63
+2010-08-27T04:23:29.853313Z
+11
+nguyend
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2013
+
 Compression_and_direct_recovery_for_Hessian_return_Row_Compressed_Format.cpp
 file
 
 
 
 
-2010-09-13T03:52:33.654655Z
+2010-10-01T00:47:57.177448Z
 e4da6124d584af61030bb98aeca44cd2
 2010-08-27T04:23:29.853313Z
 11
