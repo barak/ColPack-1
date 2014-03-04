@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
-COLPACK_COMMON_FLAGS = $(EXTRA_FLAGS)  
+COLPACK_COMMON_FLAGS = $(EXTRA_FLAGS)  -O5  
 
 INCLUDES =  $(COLPACK_COMMON_FLAGS) \
 		-I$(top_srcdir)/Main \
@@ -17,9 +17,10 @@ endif
 LDADD = libColPack.la
 AM_DEFAULT_SOURCE_EXT = .cpp
 
-bin_PROGRAMS = ColPack
+noinst_bin_PROGRAMS = ColPack
+noinst_bindir = $(abs_top_builddir)/progs
 lib_LTLIBRARIES = libColPack.la
-include_HEADERS = \
+pkginclude_HEADERS = \
 			Utilities/CoutLock.h Utilities/command_line_parameter_processor.h  \
 			Utilities/File.h Utilities/DisjointSets.h \
 			Utilities/current_time.h Utilities/mmio.h Utilities/Pause.h  \

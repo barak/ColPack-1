@@ -20,7 +20,7 @@
 
 define([COLPACK_VER], [1])
 define([COLPACK_SUB], [0])
-define([COLPACK_LVL], [6])
+define([COLPACK_LVL], [5])
 
 
 AC_INIT(ColPack, COLPACK_VER.COLPACK_SUB.COLPACK_LVL, agebreme@purdue.edu, ColPack, http://www.cscapes.org/coloringpage/)
