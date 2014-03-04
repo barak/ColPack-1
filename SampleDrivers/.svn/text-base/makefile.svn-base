@@ -25,6 +25,11 @@ banner:
 	@echo \
 
 
+run-test:
+	@for i in $(SUBDIRS) ; do \
+	( export TOP_DIR=$(PWD); cd $$i && $(MAKE) run-test) ; \
+	done
+
 clean:
 	@for i in $(SUBDIRS) ; do \
 	( cd $$i && $(MAKE) clean) ; \
