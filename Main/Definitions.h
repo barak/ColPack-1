@@ -96,6 +96,7 @@ Time in seconds = # of clock-ticks / CLOCKS_PER_SEC => max Time in seconds = 2,1
 #define SRC_MEM_ADOLC 1
 #define SRC_MEM_ADIC 2
 
+
 enum boolean {FALSE=0, TRUE};
 
 //enum _INPUT_FORMAT {MATRIX_MARKET, METIS, HARWELL_BOEING};

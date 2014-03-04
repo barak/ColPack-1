@@ -88,7 +88,14 @@ namespace ColPack
 		Note: column-color of entry [row 5][column 3] is m_vi_VertexColors[column 3]
 		*/
 		int DirectRecover_RowCompressedFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, double*** dp3_HessianValue);
+				
+		/// Same as DirectRecover_RowCompressedFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int DirectRecover_RowCompressedFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, double*** dp3_HessianValue);
 
+		
 		/// A routine for recovering a Hessian from a star-coloring based compressed representation.
 		/**
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
@@ -98,7 +105,14 @@ namespace ColPack
 		- double** dp2_JacobianValue // corresponding non-zero values
 		//*/
 		int DirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+				
+		/// Same as DirectRecover_CoordinateFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int DirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
 
+		
 		/// A routine for recovering a Hessian from a star-coloring based compressed representation.
 		/**
 		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
@@ -110,7 +124,14 @@ namespace ColPack
 		NOTE: Since we are returning a symmetric matrix, according to format, only the upper triangle are stored.
 		*/
 		int DirectRecover_SparseSolversFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+				
+		/// Same as DirectRecover_SparseSolversFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int DirectRecover_SparseSolversFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
 
+		
 		/// A routine for recovering a Hessian from a acyclic-coloring based compressed representation.
 		/**
 		Parameter:
@@ -140,7 +161,14 @@ namespace ColPack
 		Algorithm: created by Assefaw, 1st implemented by Arijit Tarafdar. This function is just a modification of Arijit's implementation
 		*/
 		int IndirectRecover_RowCompressedFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, double*** dp3_HessianValue);
+				
+		/// Same as IndirectRecover_RowCompressedFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int IndirectRecover_RowCompressedFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, double*** dp3_HessianValue);
 
+		
 		/// A routine for recovering a Hessian from a acyclic-coloring based compressed representation.
 		/**
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
@@ -150,7 +178,14 @@ namespace ColPack
 		- double** dp2_JacobianValue // corresponding non-zero values
 		//*/
 		int IndirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+				
+		/// Same as IndirectRecover_CoordinateFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int IndirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
 
+		
 		/// A routine for recovering a Hessian from a acyclic-coloring based compressed representation.
 		/**
 		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
@@ -162,6 +197,13 @@ namespace ColPack
 		NOTE: Since we are returning a symmetric matrix, according to format, only the upper triangle are stored.
 		*/
 		int IndirectRecover_SparseSolversFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		
+		
+		/// Same as IndirectRecover_SparseSolversFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int IndirectRecover_SparseSolversFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
 
 	};
 }

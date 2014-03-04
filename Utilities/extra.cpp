@@ -380,12 +380,12 @@ int ConvertMatrixMarketFormatToRowCompressedFormat(string s_InputFile, unsigned 
 				}
 			}
 			else { // !b_symmetric
-				cout<<"\t"<<setw(4)<<rowIndex<<setw(4)<<colIndex<<setw(4)<<nz_counter<<endl;
+				//cout<<"\t"<<setw(4)<<rowIndex<<setw(4)<<colIndex<<setw(4)<<nz_counter<<endl;
 				nodeList[rowIndex].push_back(colIndex);
 				nz_counter++;
 				if(b_getValue) {
 				  in2>>value;
-				  cout<<"Value = "<<value<<endl;
+				  //cout<<"Value = "<<value<<endl;
 				  valueList[rowIndex].push_back(value);
 				}
 			}

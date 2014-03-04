@@ -77,6 +77,9 @@ namespace ColPack
 		int RowIncidenceDegreeOrdering();
 		int ColumnIncidenceDegreeOrdering();
 
+                int RowDynamicLargestFirstOrdering();
+                int ColumnDynamicLargestFirstOrdering();
+
 		string GetVertexOrderingVariant();
 
 		void GetOrderedVertices(vector<int> &output);

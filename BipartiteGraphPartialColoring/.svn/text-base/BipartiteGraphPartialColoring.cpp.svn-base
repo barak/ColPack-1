@@ -681,58 +681,22 @@ namespace ColPack
 
 		if(seed_available) Seed_reset();
 
-		int i_size = m_vi_LeftVertexColors.size();
-		int i_num_of_colors = m_i_LeftVertexColorCount + 1;
-		(*i_SeedRowCount) = i_num_of_colors;
-		(*i_SeedColumnCount) = i_size;
-		if(i_num_of_colors == 0 || i_size == 0) return NULL;
-		double** Seed = new double*[i_num_of_colors];
-
-		// allocate and initialize Seed matrix
-		for (int i=0; i<i_num_of_colors; i++) {
-			Seed[i] = new double[i_size];
-			for(int j=0; j<i_size; j++) Seed[i][j]=0.;
-		}
-
-		// populate Seed matrix
-		for (int i=0; i < i_size; i++) {
-			Seed[m_vi_LeftVertexColors[i]][i] = 1.;
-		}
-
-		seed_available = true;
+		dp2_Seed = GetLeftSeedMatrix_unmanaged(i_SeedRowCount, i_SeedColumnCount);
 		i_seed_rowCount = *i_SeedRowCount;
-		dp2_Seed = Seed;
+		seed_available = true;
 
-		return Seed;
+		return dp2_Seed;
 	}
 
 	double** BipartiteGraphPartialColoring::GetRightSeedMatrix(int* i_SeedRowCount, int* i_SeedColumnCount) {
 
 		if(seed_available) Seed_reset();
 
-		int i_size = m_vi_RightVertexColors.size();
-		int i_num_of_colors = m_i_RightVertexColorCount + 1;
-		(*i_SeedRowCount) = i_size;
-		(*i_SeedColumnCount) = i_num_of_colors;
-		if(i_num_of_colors == 0 || i_size == 0) return NULL;
-		double** Seed = new double*[i_size];
-
-		// allocate and initialize Seed matrix
-		for (int i=0; i<i_size; i++) {
-			Seed[i] = new double[i_num_of_colors];
-			for(int j=0; j<i_num_of_colors; j++) Seed[i][j]=0.;
-		}
-
-		// populate Seed matrix
-		for (int i=0; i < i_size; i++) {
-			Seed[i][m_vi_RightVertexColors[i]] = 1.;
-		}
-
-		seed_available = true;
+		dp2_Seed = GetRightSeedMatrix_unmanaged(i_SeedRowCount, i_SeedColumnCount);
 		i_seed_rowCount = *i_SeedRowCount;
-		dp2_Seed = Seed;
+		seed_available = true;
 
-		return Seed;
+		return dp2_Seed;
 	}
 
 	double** BipartiteGraphPartialColoring::GetLeftSeedMatrix_unmanaged(int* i_SeedRowCount, int* i_SeedColumnCount) {

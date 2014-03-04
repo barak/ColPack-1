@@ -84,7 +84,6 @@ namespace ColPack
 		return;
 	}
 
-	//Public Function 3455
 	int BipartiteGraphOrdering::NaturalOrdering()
 	{
 		if(CheckVertexOrdering("NATURAL"))
@@ -163,7 +162,6 @@ namespace ColPack
 		return(_TRUE);
 	}
 
-	//Public Function 3456
 	int BipartiteGraphOrdering::LargestFirstOrdering()
 	{
 		if(CheckVertexOrdering("LARGEST_FIRST"))
@@ -179,7 +177,7 @@ namespace ColPack
 
 		int i_VertexDegree, i_VertexDegreeCount;
 
-		vector< vector< int > > v2i_GroupedVertexDegree;
+		vector< vector< int > > vvi_GroupedVertexDegree;
 
 		m_i_MaximumVertexDegree = _FALSE;
 
@@ -188,14 +186,14 @@ namespace ColPack
 		i_LeftVertexCount = STEP_DOWN((signed) m_vi_LeftVertices.size());
 		i_RightVertexCount = STEP_DOWN((signed) m_vi_RightVertices.size());
 
-		v2i_GroupedVertexDegree.clear();
-		v2i_GroupedVertexDegree.resize((unsigned) i_LeftVertexCount + i_RightVertexCount);
+		vvi_GroupedVertexDegree.clear();
+		vvi_GroupedVertexDegree.resize((unsigned) i_LeftVertexCount + i_RightVertexCount);
 
 		for(i=0; i<i_LeftVertexCount; i++)
 		{
 			i_VertexDegree = m_vi_LeftVertices[STEP_UP(i)] - m_vi_LeftVertices[i];
 
-			v2i_GroupedVertexDegree[i_VertexDegree].push_back(i);
+			vvi_GroupedVertexDegree[i_VertexDegree].push_back(i);
 
 			if(m_i_MaximumVertexDegree < i_VertexDegree)
 			{
@@ -209,7 +207,7 @@ namespace ColPack
 		{
 			i_VertexDegree = m_vi_RightVertices[STEP_UP(i)] - m_vi_RightVertices[i];
 
-			v2i_GroupedVertexDegree[i_VertexDegree].push_back(i + i_LeftVertexCount);
+			vvi_GroupedVertexDegree[i_VertexDegree].push_back(i + i_LeftVertexCount);
 
 			if(m_i_MaximumVertexDegree < i_VertexDegree)
 			{
@@ -226,11 +224,11 @@ namespace ColPack
 		{
 			for(i=m_i_MaximumVertexDegree; i>=0; i--)
 			{
-				i_VertexDegreeCount = (signed) v2i_GroupedVertexDegree[i].size();
+				i_VertexDegreeCount = (signed) vvi_GroupedVertexDegree[i].size();
 
 				for(j=0; j<i_VertexDegreeCount; j++)
 				{
-					m_vi_OrderedVertices.push_back(v2i_GroupedVertexDegree[i][j]);
+					m_vi_OrderedVertices.push_back(vvi_GroupedVertexDegree[i][j]);
 				}
 			}
 		}
@@ -238,16 +236,16 @@ namespace ColPack
 		{
 			for(i=m_i_MaximumVertexDegree; i>=0; i--)
 			{
-				i_VertexDegreeCount = (signed) v2i_GroupedVertexDegree[i].size();
+				i_VertexDegreeCount = (signed) vvi_GroupedVertexDegree[i].size();
 
 				for(j=STEP_DOWN(i_VertexDegreeCount); j>=0; j--)
 				{
-					m_vi_OrderedVertices.push_back(v2i_GroupedVertexDegree[i][j]);
+					m_vi_OrderedVertices.push_back(vvi_GroupedVertexDegree[i][j]);
 				}
 			}
 		}
 
-		v2i_GroupedVertexDegree.clear();
+		vvi_GroupedVertexDegree.clear();
 
 		return(_TRUE);
 	}
@@ -567,281 +565,6 @@ namespace ColPack
 		return(_TRUE);
 	}
 
-/*
-	//Public Function 3457
-	int BipartiteGraphOrdering::SmallestLastOrdering()
-	{
-		if(CheckVertexOrdering("SMALLEST_LAST"))
-		{
-			return(_TRUE);
-		}
-
-		int i;
-
-		int _FOUND;
-
-		int i_HighestInducedVertexDegree, i_HighestInducedDegreeVertex;
-
-		int i_LeftVertexCount, i_RightVertexCount;
-
-		int i_VertexCountMinus1; // = i_LeftVertexCount + i_RightVertexCount - 1, used when inserting selected vertices into m_vi_OrderedVertices
-
-		int i_InducedVertexDegree;
-
-		int i_InducedVertexDegreeCount;
-
-		int i_SelectedVertex, i_SelectedVertexCount;
-
-		vector<int> vi_InducedVertexDegree;
-
-		vector< list<int> > vli_GroupedInducedVertexDegree;
-
-		vector< list<int>::iterator > vlit_VertexLocation;
-
-		list<int>::iterator lit_ListIterator;
-
-		i_LeftVertexCount = STEP_DOWN((signed) m_vi_LeftVertices.size());
-		i_RightVertexCount = STEP_DOWN((signed) m_vi_RightVertices.size());
-
-		i_VertexCountMinus1 = i_LeftVertexCount + i_RightVertexCount - 1;
-
-		vi_InducedVertexDegree.clear();
-
-		vli_GroupedInducedVertexDegree.clear();
-		vli_GroupedInducedVertexDegree.resize((unsigned) i_LeftVertexCount + i_RightVertexCount);
-
-		vlit_VertexLocation.clear();
-
-		i_HighestInducedVertexDegree = _FALSE;
-
-		i_HighestInducedDegreeVertex = _UNKNOWN;
-
-		i_SelectedVertex = _UNKNOWN;
-
-		for(i=0; i<i_LeftVertexCount; i++)
-		{
-			i_InducedVertexDegree = m_vi_LeftVertices[STEP_UP(i)] - m_vi_LeftVertices[i];
-
-			vi_InducedVertexDegree.push_back(i_InducedVertexDegree);
-
-			vli_GroupedInducedVertexDegree[i_InducedVertexDegree].push_front(i);
-
-			vlit_VertexLocation.push_back(vli_GroupedInducedVertexDegree[i_InducedVertexDegree].begin());
-
-			if(i_HighestInducedVertexDegree < i_InducedVertexDegree)
-			{
-				i_HighestInducedVertexDegree = i_InducedVertexDegree;
-
-				i_HighestInducedDegreeVertex = i;
-			}
-		}
-
-		for(i=0; i<i_RightVertexCount; i++)
-		{
-			i_InducedVertexDegree = m_vi_RightVertices[STEP_UP(i)] - m_vi_RightVertices[i];
-
-			vi_InducedVertexDegree.push_back(i_InducedVertexDegree);
-
-			vli_GroupedInducedVertexDegree[i_InducedVertexDegree].push_front(i + i_LeftVertexCount);
-
-			vlit_VertexLocation.push_back(vli_GroupedInducedVertexDegree[i_InducedVertexDegree].begin());
-
-			if(i_HighestInducedVertexDegree < i_InducedVertexDegree)
-			{
-				i_HighestInducedVertexDegree = i_InducedVertexDegree;
-
-				i_HighestInducedDegreeVertex = i + i_LeftVertexCount;
-			}
-		}
-
-
-#if DEBUG == 3457
-
-		int j;
-
-		cout<<endl;
-		cout<<"DEBUG 3457 | Bipartite Graph Coloring | Bipartite Smallest Last Ordering"<<endl;
-		cout<<endl;
-
-		for(i=0; i<STEP_UP(i_HighestInducedVertexDegree); i++)
-		{
-			cout<<"Degree "<<i<<"\t"<<" : ";
-
-			i_InducedVertexDegreeCount = (signed) vli_GroupedInducedVertexDegree[i].size();
-
-			j = _FALSE;
-
-			for(lit_ListIterator = vli_GroupedInducedVertexDegree[i].begin(); lit_ListIterator != vli_GroupedInducedVertexDegree[i].end(); lit_ListIterator++)
-			{
-				if(j==STEP_DOWN(i_InducedVertexDegreeCount))
-				{
-					cout<<STEP_UP(*lit_ListIterator)<<" ("<<i_InducedVertexDegreeCount<<")";
-				}
-				else
-				{
-					cout<<STEP_UP(*lit_ListIterator)<<", ";
-				}
-
-				j++;
-			}
-
-			cout<<endl;
-		}
-
-		cout<<endl;
-		cout<<"[Highest Degree Vertex = "<<STEP_UP(i_HighestInducedDegreeVertex)<<"; Highest Induced Vertex Degree = "<<i_HighestInducedVertexDegree<<"]"<<endl;
-		cout<<endl;
-
-#endif
-
-		m_vi_OrderedVertices.clear();
-		m_vi_OrderedVertices.resize(i_LeftVertexCount + i_RightVertexCount, _UNKNOWN);
-
-		i_SelectedVertexCount = _FALSE;
-
-		while(i_SelectedVertexCount < i_LeftVertexCount + i_RightVertexCount)
-		{
-			for(i=0; i<STEP_UP(i_HighestInducedVertexDegree); i++)
-			{
-				i_InducedVertexDegreeCount = (signed) vli_GroupedInducedVertexDegree[i].size();
-
-				if(i_InducedVertexDegreeCount == _FALSE)
-				{
-					continue;
-				}
-
-				if(i_HighestInducedDegreeVertex < i_LeftVertexCount)
-				{
-					_FOUND = _FALSE;
-
-					for(lit_ListIterator = vli_GroupedInducedVertexDegree[i].begin(); lit_ListIterator != vli_GroupedInducedVertexDegree[i].end(); lit_ListIterator++)
-					{
-						if(*lit_ListIterator < i_LeftVertexCount)
-						{
-							i_SelectedVertex = *lit_ListIterator;
-
-							_FOUND = _TRUE;
-
-							break;
-						}
-					}
-
-					if(!_FOUND)
-					{
-						i_SelectedVertex = vli_GroupedInducedVertexDegree[i].front();
-					}
-
-					break;
-				}
-				else
-				{
-					_FOUND = _FALSE;
-
-					for(lit_ListIterator = vli_GroupedInducedVertexDegree[i].begin(); lit_ListIterator != vli_GroupedInducedVertexDegree[i].end(); lit_ListIterator++)
-					{
-						if(*lit_ListIterator >= i_LeftVertexCount)
-						{
-							i_SelectedVertex = *lit_ListIterator;
-
-							_FOUND = _TRUE;
-
-							break;
-						}
-					}
-
-					if(!_FOUND)
-					{
-						i_SelectedVertex = vli_GroupedInducedVertexDegree[i].front();
-					}
-				}
-
-				break;
-			}
-
-			if(i_SelectedVertex < i_LeftVertexCount)
-			{
-				for(i=m_vi_LeftVertices[i_SelectedVertex]; i<m_vi_LeftVertices[STEP_UP(i_SelectedVertex)]; i++)
-				{
-					if(vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount] == _UNKNOWN)
-					{
-						continue;
-					}
-
-					vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].erase(vlit_VertexLocation[m_vi_Edges[i] + i_LeftVertexCount]);
-
-					vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount] = STEP_DOWN(vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]);
-
-					vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].push_front(m_vi_Edges[i] + i_LeftVertexCount);
-
-					vlit_VertexLocation[m_vi_Edges[i] + i_LeftVertexCount] = vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].begin();
-				}
-			}
-			else
-			{
-				for(i=m_vi_RightVertices[i_SelectedVertex - i_LeftVertexCount]; i<m_vi_RightVertices[STEP_UP(i_SelectedVertex - i_LeftVertexCount)]; i++)
-				{
-					if(vi_InducedVertexDegree[m_vi_Edges[i]] == _UNKNOWN)
-					{
-						continue;
-					}
-
-					vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i]]].erase(vlit_VertexLocation[m_vi_Edges[i]]);
-
-					vi_InducedVertexDegree[m_vi_Edges[i]] = STEP_DOWN(vi_InducedVertexDegree[m_vi_Edges[i]]);
-
-					vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i]]].push_front(m_vi_Edges[i]);
-
-					vlit_VertexLocation[m_vi_Edges[i]] = vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i]]].begin();
-				}
-			}
-
-			vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[i_SelectedVertex]].erase(vlit_VertexLocation[i_SelectedVertex]);
-
-			vi_InducedVertexDegree[i_SelectedVertex] = _UNKNOWN;
-
-			//insert at the beginning (push_front)? BAD!!!! due to moving
-			//m_vi_OrderedVertices.insert(m_vi_OrderedVertices.begin(), i_SelectedVertex);
-
-			//Alternative method for the above (commented) line
-//printf("m_vi_OrderedVertices[i_VertexCountMinus1 (%d) - i_SelectedVertexCount (%d)] (%d) = i_SelectedVertex (%d) \n", i_VertexCountMinus1, i_SelectedVertexCount, i_VertexCountMinus1 - i_SelectedVertexCount, i_SelectedVertex);
-			m_vi_OrderedVertices[i_VertexCountMinus1 - i_SelectedVertexCount] = i_SelectedVertex;
-
-			i_SelectedVertexCount = STEP_UP(i_SelectedVertexCount);
-		}
-
-#if DEBUG == 3457
-
-		int i_OrderedVertexCount;
-
-		cout<<endl;
-		cout<<"DEBUG 3457 | Bipartite Graph Coloring | Bipartite Smallest Last Ordering"<<endl;
-		cout<<endl;
-
-		i_OrderedVertexCount = (signed) m_vi_OrderedVertices.size();
-
-		for(i=0; i<i_OrderedVertexCount; i++)
-		{
-			if(i == STEP_DOWN(i_OrderedVertexCount))
-			{
-				cout<<STEP_UP(m_vi_OrderedVertices[i])<<" ("<<i_OrderedVertexCount<<")"<<endl;
-			}
-			else
-			{
-				cout<<STEP_UP(m_vi_OrderedVertices[i])<<", ";
-			}
-		}
-
-		cout<<endl;
-		cout<<"[Ordered Vertex Count = "<<i_OrderedVertexCount<<"/"<<i_LeftVertexCount + i_RightVertexCount<<"]"<<endl;
-		cout<<endl;
-
-#endif
-
-		return(_TRUE);
-	}
-	*/
-
-	//Public Function 3458
 	int BipartiteGraphOrdering::IncidenceDegreeOrdering()
 	{
 		if(CheckVertexOrdering("INCIDENCE_DEGREE"))
@@ -849,13 +572,11 @@ namespace ColPack
 			return(_TRUE);
 		}
 
-		int i;
+		int i, u, l;
+		
+		int i_HighestIncidenceVertexDegree;
 
-		int _FOUND;
-
-		int i_HighestIncidenceDegreeVertex, i_HighestIncidenceVertexDegree;
-
-		int i_LeftVertexCount, i_RightVertexCount;
+		int i_LeftVertexCount, i_RightVertexCount, i_VertexCount;
 
 		int i_VertexDegree;
 
@@ -865,23 +586,29 @@ namespace ColPack
 
 		vector<int> vi_IncidenceVertexDegree;
 
-		vector< list<int> > vli_GroupedIncidenceVertexDegree;
+		//Vertices of the same IncidenceDegree are differenciated into 
+		//  LeftVertices (vpvi_GroupedIncidenceVertexDegree.first) and
+		//  RightVertices (vpvi_GroupedIncidenceVertexDegree.second)
+		vector< pair<vector<int>, vector<int> > > vpvi_GroupedIncidenceVertexDegree;
 
-		vector< list<int>::iterator > vlit_VertexLocation;
+		vector< int > vi_VertexLocation;
 
-		list<int>::iterator lit_ListIterator;
+		list<int>::iterator lit_ListIterator; //???
 
 		i_LeftVertexCount = STEP_DOWN((signed) m_vi_LeftVertices.size());
 		i_RightVertexCount = STEP_DOWN((signed) m_vi_RightVertices.size());
+		i_VertexCount = i_LeftVertexCount + i_RightVertexCount;
 
 		vi_IncidenceVertexDegree.clear();
+		vi_IncidenceVertexDegree.reserve((unsigned) (i_VertexCount));
 
-		vli_GroupedIncidenceVertexDegree.clear();
-		vli_GroupedIncidenceVertexDegree.resize((unsigned) i_LeftVertexCount + i_RightVertexCount);
+		vpvi_GroupedIncidenceVertexDegree.clear();
+		vpvi_GroupedIncidenceVertexDegree.resize((unsigned) (i_VertexCount));
 
-		vlit_VertexLocation.clear();
+		vi_VertexLocation.clear();
+		vi_VertexLocation.reserve((unsigned) (i_VertexCount));
 
-		i_HighestIncidenceDegreeVertex = i_HighestIncidenceVertexDegree = _UNKNOWN;
+		i_HighestIncidenceVertexDegree = _UNKNOWN;
 
 		i_IncidenceVertexDegree = _FALSE;
 
@@ -891,17 +618,15 @@ namespace ColPack
 		{
 			vi_IncidenceVertexDegree.push_back(i_IncidenceVertexDegree);
 
-			vli_GroupedIncidenceVertexDegree[i_IncidenceVertexDegree].push_front(i);
+			vpvi_GroupedIncidenceVertexDegree[i_IncidenceVertexDegree].first.push_back(i);
 
-			vlit_VertexLocation.push_back(vli_GroupedIncidenceVertexDegree[i_IncidenceVertexDegree].begin());
+			vi_VertexLocation.push_back(vpvi_GroupedIncidenceVertexDegree[i_IncidenceVertexDegree].first.size() - 1);
 
 			i_VertexDegree = m_vi_LeftVertices[STEP_UP(i)] - m_vi_LeftVertices[i];
 
-			if(i_HighestIncidenceVertexDegree < i_VertexDegree)
+			if(m_i_MaximumVertexDegree < i_VertexDegree)
 			{
-				i_HighestIncidenceVertexDegree = i_VertexDegree;
-
-				i_HighestIncidenceDegreeVertex = i;
+				m_i_MaximumVertexDegree = i_VertexDegree;
 			}
 		}
 
@@ -909,171 +634,116 @@ namespace ColPack
 		{
 			vi_IncidenceVertexDegree.push_back(i_IncidenceVertexDegree);
 
-			vli_GroupedIncidenceVertexDegree[i_IncidenceVertexDegree].push_front(i + i_LeftVertexCount);
+			vpvi_GroupedIncidenceVertexDegree[i_IncidenceVertexDegree].second.push_back(i + i_LeftVertexCount);
 
-			vlit_VertexLocation.push_back(vli_GroupedIncidenceVertexDegree[i_IncidenceVertexDegree].begin());
+			vi_VertexLocation.push_back(vpvi_GroupedIncidenceVertexDegree[i_IncidenceVertexDegree].second.size() - 1);
 
 			i_VertexDegree = m_vi_RightVertices[STEP_UP(i)] - m_vi_RightVertices[i];
 
-			if(i_HighestIncidenceVertexDegree < i_VertexDegree)
+			if(m_i_MaximumVertexDegree < i_VertexDegree)
 			{
-				i_HighestIncidenceVertexDegree = i_VertexDegree;
-
-				i_HighestIncidenceDegreeVertex = i + i_LeftVertexCount;
+				m_i_MaximumVertexDegree = i_VertexDegree;
 			}
 		}
-
-#if DEBUG == 3458
-
-		int j;
-
-		cout<<endl;
-		cout<<"DEBUG 3458 | Bipartite Graph Coloring | Bipartite Incidence Degree Ordering"<<endl;
-		cout<<endl;
-
-		for(i=m_i_MaximumVertexDegree; i>=0; i--)
-		{
-			cout<<"Degree "<<i<<"\t"<<" : ";
-
-			i_IncidenceVertexDegreeCount = (signed) vli_GroupedIncidenceVertexDegree[i].size();
-
-			j = _FALSE;
-
-			for(lit_ListIterator = vli_GroupedIncidenceVertexDegree[i].begin(); lit_ListIterator != vli_GroupedIncidenceVertexDegree[i].end(); lit_ListIterator++)
-			{
-				if(j==STEP_DOWN(i_IncidenceVertexDegreeCount))
-				{
-					cout<<STEP_UP(*lit_ListIterator)<<" ("<<i_IncidenceVertexDegreeCount<<")";
-				}
-				else
-				{
-					cout<<STEP_UP(*lit_ListIterator)<<", ";
-				}
-
-				j++;
-			}
-
-			cout<<endl;
-		}
-
-		cout<<endl;
-		cout<<"[Highest Degree Vertex = "<<STEP_UP(i_HighestIncidenceDegreeVertex)<<"; Highest Vertex Degree = "<<i_HighestIncidenceVertexDegree<<"]"<<endl;
-		cout<<endl;
-
-#endif
+		
+		i_HighestIncidenceVertexDegree = 0;
 
 		m_vi_OrderedVertices.clear();
+		m_vi_OrderedVertices.reserve((unsigned) (i_VertexCount));
 
 		i_SelectedVertexCount = _FALSE;
 
-		while(i_SelectedVertexCount < i_LeftVertexCount + i_RightVertexCount)
+		while(i_SelectedVertexCount < i_VertexCount)
 		{
-			if(i_SelectedVertexCount == _FALSE)
-			{
-				i_SelectedVertex = i_HighestIncidenceDegreeVertex;
+			if(i_HighestIncidenceVertexDegree != m_i_MaximumVertexDegree &&
+			    vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree+1].first.size() + 
+			    vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree+1].second.size()  != 0) {
+			  //We need to update the value of i_HighestIncidenceVertexDegree
+			  i_HighestIncidenceVertexDegree++;
+			
 			}
-			else
-			{
-				for(i=i_HighestIncidenceVertexDegree; i>=0; i--)
-				{
-					i_IncidenceVertexDegreeCount = (signed) vli_GroupedIncidenceVertexDegree[i].size();
-
-					if(i_IncidenceVertexDegreeCount == _FALSE)
-					{
-						continue;
-					}
-
-					if(i_HighestIncidenceDegreeVertex < i_LeftVertexCount)
-					{
-						_FOUND = _FALSE;
-
-						for(lit_ListIterator = vli_GroupedIncidenceVertexDegree[i].begin(); lit_ListIterator != vli_GroupedIncidenceVertexDegree[i].end(); lit_ListIterator++)
-						{
-							if(*lit_ListIterator < i_LeftVertexCount)
-							{
-								i_SelectedVertex = *lit_ListIterator;
-
-								_FOUND = _TRUE;
-
-								break;
-							}
-						}
-
-						if(!_FOUND)
-						{
-							i_SelectedVertex = vli_GroupedIncidenceVertexDegree[i].front();
-						}
-
-						break;
-					}
-					else
-					{
-						_FOUND = _FALSE;
-
-						for(lit_ListIterator = vli_GroupedIncidenceVertexDegree[i].begin(); lit_ListIterator != vli_GroupedIncidenceVertexDegree[i].end(); lit_ListIterator++)
-						{
-							if(*lit_ListIterator >= i_LeftVertexCount)
-							{
-								i_SelectedVertex = *lit_ListIterator;
-
-								_FOUND = _TRUE;
-
-								break;
-							}
-						}
-
-						if(!_FOUND)
-						{
-							i_SelectedVertex = vli_GroupedIncidenceVertexDegree[i].front();
-						}
-					}
-
-					break;
-				}
+			else {
+			  while(vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree].first.size() + 
+			    vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree].second.size()  == 0) {
+			    i_HighestIncidenceVertexDegree--;
+			  }
+			}
+			
+			if(vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree].first.size() != 0) {
+			  //vertex with i_HighestIncidenceVertexDegree is a LeftVertex
+			  i_SelectedVertex = vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree].first.back();
+			  vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree].first.pop_back();
+			}
+			else {
+			  //vertex with i_HighestIncidenceVertexDegree is a RightVertex
+			  i_SelectedVertex = vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree].second.back();
+			  vpvi_GroupedIncidenceVertexDegree[i_HighestIncidenceVertexDegree].second.pop_back();
 			}
 
-			if(i_SelectedVertex < i_LeftVertexCount)
+			// Increase the IncidenceDegree of all the unvisited neighbor vertices by 1 and move them to the correct buckets
+			if(i_SelectedVertex < i_LeftVertexCount) // i_SelectedVertex is a LeftVertex
 			{
 				for(i=m_vi_LeftVertices[i_SelectedVertex]; i<m_vi_LeftVertices[STEP_UP(i_SelectedVertex)]; i++)
 				{
-					if(vi_IncidenceVertexDegree[m_vi_Edges[i] + i_LeftVertexCount] == _UNKNOWN)
+					u = m_vi_Edges[i] + i_LeftVertexCount;
+					if(vi_IncidenceVertexDegree[u] == _UNKNOWN)
 					{
 						continue;
 					}
+					
+					// move the last element in this bucket to u's position to get rid of expensive erase operation
+					if(vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].second.size() > 1) {
+						l = vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].second.back();
+						vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].second[vi_VertexLocation[u]] = l;
+						vi_VertexLocation[l] = vi_VertexLocation[u];
+					}
+					
+					//remove the last element from vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].second
+					vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].second.pop_back();
+					
+					// increase incidence degree of u
+					vi_IncidenceVertexDegree[u]++;
 
-					vli_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].erase(vlit_VertexLocation[m_vi_Edges[i] + i_LeftVertexCount]);
-
-					vi_IncidenceVertexDegree[m_vi_Edges[i] + i_LeftVertexCount] = STEP_UP(vi_IncidenceVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]);
-
-					vli_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].push_front(m_vi_Edges[i] + i_LeftVertexCount);
-
-					vlit_VertexLocation[m_vi_Edges[i] + i_LeftVertexCount] = vli_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].begin();
-
+					// insert u into appropriate bucket
+					vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].second.push_back(u);
+					
+					// update location of u
+					vi_VertexLocation[u] = vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].second.size() - 1;
 				}
 			}
 			else
 			{
 				for(i=m_vi_RightVertices[i_SelectedVertex - i_LeftVertexCount]; i<m_vi_RightVertices[STEP_UP(i_SelectedVertex - i_LeftVertexCount)]; i++)
 				{
-					if(vi_IncidenceVertexDegree[m_vi_Edges[i]] == _UNKNOWN)
+					u = m_vi_Edges[i];
+					if(vi_IncidenceVertexDegree[u] == _UNKNOWN)
 					{
 						continue;
 					}
+					
+					// move the last element in this bucket to u's position to get rid of expensive erase operation
+					if(vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].first.size() > 1) {
+						l = vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].first.back();
+						vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].first[vi_VertexLocation[u]] = l;
+						vi_VertexLocation[l] = vi_VertexLocation[u];
+					}
+					
+					//remove the last element from vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].first
+					vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].first.pop_back();
+					
+					// increase incidence degree of u
+					vi_IncidenceVertexDegree[u]++;
 
-					vli_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[m_vi_Edges[i]]].erase(vlit_VertexLocation[m_vi_Edges[i]]);
-
-					vi_IncidenceVertexDegree[m_vi_Edges[i]] = STEP_UP(vi_IncidenceVertexDegree[m_vi_Edges[i]]);
-
-					vli_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[m_vi_Edges[i]]].push_front(m_vi_Edges[i]);
-
-					vlit_VertexLocation[m_vi_Edges[i]] = vli_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[m_vi_Edges[i]]].begin();
-
+					// insert u into appropriate bucket
+					vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].first.push_back(u);
+					
+					// update location of u
+					vi_VertexLocation[u] = vpvi_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[u]].first.size() - 1;
 				}
 
 			}
-
-			vli_GroupedIncidenceVertexDegree[vi_IncidenceVertexDegree[i_SelectedVertex]].erase(vlit_VertexLocation[i_SelectedVertex]);
-
+	
+			// Mark that this vertex has been visited
 			vi_IncidenceVertexDegree[i_SelectedVertex] = _UNKNOWN;
 
 			m_vi_OrderedVertices.push_back(i_SelectedVertex);
@@ -1104,7 +774,7 @@ namespace ColPack
 		}
 
 		cout<<endl;
-		cout<<"[Ordered Vertex Count = "<<i_OrderedVertexCount<<"/"<<i_LeftVertexCount + i_RightVertexCount<<"]"<<endl;
+		cout<<"[Ordered Vertex Count = "<<i_OrderedVertexCount<<"/"<<i_VertexCount<<"]"<<endl;
 		cout<<endl;
 
 #endif
@@ -1112,7 +782,208 @@ namespace ColPack
 		return(_TRUE);
 	}
 
-	//Public Function 3459
+
+	int BipartiteGraphOrdering::DynamicLargestFirstOrdering()
+	{
+		if(CheckVertexOrdering("DYNAMIC_LARGEST_FIRST"))
+		{
+			return(_TRUE);
+		}
+
+		int i, u, l;
+
+		int i_HighestInducedVertexDegree;
+
+		int i_LeftVertexCount, i_RightVertexCount, i_VertexCount;
+
+		int i_InducedVertexDegree;
+
+		int i_SelectedVertex, i_SelectedVertexCount;
+
+		vector<int> vi_InducedVertexDegree;
+
+		vector< pair<vector<int>, vector<int> > > vpvi_GroupedInducedVertexDegree;
+
+		vector< int > vi_VertexLocation;
+		
+
+		i_LeftVertexCount = STEP_DOWN((signed) m_vi_LeftVertices.size());
+		i_RightVertexCount = STEP_DOWN((signed) m_vi_RightVertices.size());
+		i_VertexCount = i_LeftVertexCount + i_RightVertexCount;
+
+		vi_InducedVertexDegree.clear();
+		vi_InducedVertexDegree.reserve((unsigned) i_VertexCount);
+
+		vpvi_GroupedInducedVertexDegree.clear();
+		vpvi_GroupedInducedVertexDegree.resize((unsigned) i_VertexCount);
+
+		vi_VertexLocation.clear();
+		vi_VertexLocation.reserve((unsigned) i_VertexCount);
+
+		i_SelectedVertex = _UNKNOWN;
+
+		for(i=0; i<i_LeftVertexCount; i++)
+		{
+			i_InducedVertexDegree = m_vi_LeftVertices[STEP_UP(i)] - m_vi_LeftVertices[i];
+
+			vi_InducedVertexDegree.push_back(i_InducedVertexDegree);
+
+			vpvi_GroupedInducedVertexDegree[i_InducedVertexDegree].first.push_back(i);
+
+			vi_VertexLocation.push_back(vpvi_GroupedInducedVertexDegree[i_InducedVertexDegree].first.size() - 1);
+
+			if(m_i_MaximumVertexDegree < i_InducedVertexDegree)
+			{
+				m_i_MaximumVertexDegree = i_InducedVertexDegree;
+			}
+		}
+
+		for(i=0; i<i_RightVertexCount; i++)
+		{
+			i_InducedVertexDegree = m_vi_RightVertices[STEP_UP(i)] - m_vi_RightVertices[i];
+
+			vi_InducedVertexDegree.push_back(i_InducedVertexDegree);
+
+			vpvi_GroupedInducedVertexDegree[i_InducedVertexDegree].second.push_back(i + i_LeftVertexCount);
+
+			vi_VertexLocation.push_back(vpvi_GroupedInducedVertexDegree[i_InducedVertexDegree].second.size() - 1);
+
+			if(m_i_MaximumVertexDegree < i_InducedVertexDegree)
+			{
+				m_i_MaximumVertexDegree = i_InducedVertexDegree;
+			}
+		}
+		
+		i_HighestInducedVertexDegree = m_i_MaximumVertexDegree;
+
+		m_vi_OrderedVertices.clear();
+		m_vi_OrderedVertices.reserve((unsigned) i_VertexCount);
+
+		i_SelectedVertexCount = _FALSE;
+
+		// just counting the number of vertices that we have worked with,
+		// stop when i_SelectedVertexCount == i_VertexCount, i.e. we have looked through all the vertices
+		while(i_SelectedVertexCount < i_VertexCount)
+		{
+			while(vpvi_GroupedInducedVertexDegree[i_HighestInducedVertexDegree].first.size() + 
+			    vpvi_GroupedInducedVertexDegree[i_HighestInducedVertexDegree].second.size()  == 0) {
+			  i_HighestInducedVertexDegree--;
+			}
+			
+			if(vpvi_GroupedInducedVertexDegree[i_HighestInducedVertexDegree].first.size() != 0) {
+			  //vertex with i_HighestInducedVertexDegree is a LeftVertex
+			  i_SelectedVertex = vpvi_GroupedInducedVertexDegree[i_HighestInducedVertexDegree].first.back();
+			  vpvi_GroupedInducedVertexDegree[i_HighestInducedVertexDegree].first.pop_back();
+			}
+			else {
+			  //vertex with i_HighestInducedVertexDegree is a RightVertex
+			  i_SelectedVertex = vpvi_GroupedInducedVertexDegree[i_HighestInducedVertexDegree].second.back();
+			  vpvi_GroupedInducedVertexDegree[i_HighestInducedVertexDegree].second.pop_back();
+			}
+
+			// Decrease the InducedVertexDegree of all the unvisited neighbor vertices by 1 and move them to the correct buckets
+			if(i_SelectedVertex < i_LeftVertexCount) // i_SelectedVertex is a LeftVertex
+			{
+				for(i=m_vi_LeftVertices[i_SelectedVertex]; i<m_vi_LeftVertices[STEP_UP(i_SelectedVertex)]; i++)
+				{
+					u = m_vi_Edges[i] + i_LeftVertexCount;
+					if(vi_InducedVertexDegree[u] == _UNKNOWN)
+					{
+						continue;
+					}
+
+					
+					// move the last element in this bucket to u's position to get rid of expensive erase operation
+					if(vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].second.size() > 1) {
+						l = vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].second.back();
+						vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].second[vi_VertexLocation[u]] = l;
+						vi_VertexLocation[l] = vi_VertexLocation[u];
+					}
+					
+					//remove the last element from vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].second
+					vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].second.pop_back();
+					
+					// increase incidence degree of u
+					vi_InducedVertexDegree[u]--;
+
+					// insert u into appropriate bucket
+					vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].second.push_back(u);
+					
+					// update location of u
+					vi_VertexLocation[u] = vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].second.size() - 1;
+				}
+			}
+			else
+			{
+				for(i=m_vi_RightVertices[i_SelectedVertex - i_LeftVertexCount]; i<m_vi_RightVertices[STEP_UP(i_SelectedVertex - i_LeftVertexCount)]; i++)
+				{
+					u = m_vi_Edges[i];
+					if(vi_InducedVertexDegree[u] == _UNKNOWN)
+					{
+						continue;
+					}
+
+					// move the last element in this bucket to u's position to get rid of expensive erase operation
+					if(vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].first.size() > 1) {
+						l = vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].first.back();
+						vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].first[vi_VertexLocation[u]] = l;
+						vi_VertexLocation[l] = vi_VertexLocation[u];
+					}
+					
+					//remove the last element from vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].first
+					vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].first.pop_back();
+					
+					// increase incidence degree of u
+					vi_InducedVertexDegree[u]--;
+
+					// insert u into appropriate bucket
+					vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].first.push_back(u);
+					
+					// update location of u
+					vi_VertexLocation[u] = vpvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].first.size() - 1;
+				}
+			}
+
+			// Mark that this vertex has been visited
+			vi_InducedVertexDegree[i_SelectedVertex] = _UNKNOWN;
+
+			m_vi_OrderedVertices.push_back(i_SelectedVertex);
+
+			i_SelectedVertexCount++;
+		}
+
+
+#if DEBUG == 3462
+
+		int i_OrderedVertexCount;
+
+		cout<<endl;
+		cout<<"DEBUG 3462 | Bipartite Graph Coloring | Bipartite Dynamic Largest First Ordering"<<endl;
+		cout<<endl;
+
+		i_OrderedVertexCount = (signed) m_vi_OrderedVertices.size();
+
+		for(i=0; i<i_OrderedVertexCount; i++)
+		{
+			if(i == STEP_DOWN(i_OrderedVertexCount))
+			{
+				cout<<STEP_UP(m_vi_OrderedVertices[i])<<" ("<<i_OrderedVertexCount<<")"<<endl;
+			}
+			else
+			{
+				cout<<STEP_UP(m_vi_OrderedVertices[i])<<", ";
+			}
+		}
+
+		cout<<endl;
+		cout<<"[Ordered Vertex Count = "<<i_OrderedVertexCount<<"/"<<i_VertexCount<<"]"<<endl;
+		cout<<endl;
+
+#endif
+
+		return(_TRUE);
+	}
+
 	int BipartiteGraphOrdering::SelectiveLargestFirstOrdering()
 	{
 		if(CheckVertexOrdering("SELECTVE_LARGEST_FIRST"))
@@ -1126,15 +997,15 @@ namespace ColPack
 
 		int i_VertexDegree, i_VertexDegreeCount;
 
-		vector< vector<int> > v2i_GroupedVertexDegree;
+		vector< vector<int> > vvi_GroupedVertexDegree;
 
 		m_i_MaximumVertexDegree = _FALSE;
 
 		i_LeftVertexCount = STEP_DOWN((signed) m_vi_LeftVertices.size());
 		i_RightVertexCount = STEP_DOWN((signed) m_vi_RightVertices.size());
 
-		v2i_GroupedVertexDegree.clear();
-		v2i_GroupedVertexDegree.resize((unsigned) i_LeftVertexCount + i_RightVertexCount);
+		vvi_GroupedVertexDegree.clear();
+		vvi_GroupedVertexDegree.resize((unsigned) i_LeftVertexCount + i_RightVertexCount);
 
 		for(i=0; i<i_LeftVertexCount; i++)
 		{
@@ -1155,7 +1026,7 @@ namespace ColPack
 				i_VertexDegree++;
 			}
 
-			v2i_GroupedVertexDegree[i_VertexDegree].push_back(i);
+			vvi_GroupedVertexDegree[i_VertexDegree].push_back(i);
 
 			if(m_i_MaximumVertexDegree < i_VertexDegree)
 			{
@@ -1182,7 +1053,7 @@ namespace ColPack
 				i_VertexDegree++;
 			}
 
-			v2i_GroupedVertexDegree[i_VertexDegree].push_back(i + i_LeftVertexCount);
+			vvi_GroupedVertexDegree[i_VertexDegree].push_back(i + i_LeftVertexCount);
 
 			if(m_i_MaximumVertexDegree < i_VertexDegree)
 			{
@@ -1194,11 +1065,11 @@ namespace ColPack
 
 		for(i=m_i_MaximumVertexDegree; i>=0; i--)
 		{
-			i_VertexDegreeCount = (signed) v2i_GroupedVertexDegree[i].size();
+			i_VertexDegreeCount = (signed) vvi_GroupedVertexDegree[i].size();
 
 			for(j=0; j<i_VertexDegreeCount; j++)
 			{
-				m_vi_OrderedVertices.push_back(v2i_GroupedVertexDegree[i][j]);
+				m_vi_OrderedVertices.push_back(vvi_GroupedVertexDegree[i][j]);
 			}
 		}
 
@@ -1233,7 +1104,6 @@ namespace ColPack
 		return(_TRUE);
 	}
 
-	//Public Function 3460
 	int BipartiteGraphOrdering::SelectiveSmallestLastOrdering()
 	{
 		if(CheckVertexOrdering("SELECTIVE_SMALLEST_LAST"))
@@ -1473,7 +1343,6 @@ namespace ColPack
 	}
 
 
-	//Public Function 3461
 	int BipartiteGraphOrdering::SelectiveIncidenceDegreeOrdering()
 	{
 		if(CheckVertexOrdering("SELECTIVE_INCIDENCE_DEGREE"))
@@ -1751,270 +1620,6 @@ namespace ColPack
 	}
 
 
-	//Public Function 3462
-	int BipartiteGraphOrdering::DynamicLargestFirstOrdering()
-	{
-		if(CheckVertexOrdering("DYNAMIC_LARGEST_FIRST"))
-		{
-			return(_TRUE);
-		}
-
-		int i;
-
-		int _FOUND;
-
-		int i_HighestInducedVertexDegree, i_HighestInducedDegreeVertex;
-
-		int i_LeftVertexCount, i_RightVertexCount;
-
-		int i_InducedVertexDegree;
-
-		int i_InducedVertexDegreeCount;
-
-		int i_SelectedVertex, i_SelectedVertexCount;
-
-		vector<int> vi_InducedVertexDegree;
-
-		vector< list<int> > vli_GroupedInducedVertexDegree;
-
-		vector< list<int>::iterator > vlit_VertexLocation;
-
-		list<int>::iterator lit_ListIterator;
-
-		i_LeftVertexCount = STEP_DOWN((signed) m_vi_LeftVertices.size());
-		i_RightVertexCount = STEP_DOWN((signed) m_vi_RightVertices.size());
-
-		vi_InducedVertexDegree.clear();
-
-		vli_GroupedInducedVertexDegree.clear();
-		vli_GroupedInducedVertexDegree.resize((unsigned) i_LeftVertexCount + i_RightVertexCount);
-
-		vlit_VertexLocation.clear();
-
-		i_SelectedVertex = _UNKNOWN;
-
-		i_HighestInducedVertexDegree = _FALSE;
-
-		i_HighestInducedDegreeVertex = _UNKNOWN;
-
-		for(i=0; i<i_LeftVertexCount; i++)
-		{
-			i_InducedVertexDegree = m_vi_LeftVertices[STEP_UP(i)] - m_vi_LeftVertices[i];
-
-			vi_InducedVertexDegree.push_back(i_InducedVertexDegree);
-
-			vli_GroupedInducedVertexDegree[i_InducedVertexDegree].push_front(i);
-
-			vlit_VertexLocation.push_back(vli_GroupedInducedVertexDegree[i_InducedVertexDegree].begin());
-
-			if(i_HighestInducedVertexDegree < i_InducedVertexDegree)
-			{
-				i_HighestInducedVertexDegree = i_InducedVertexDegree;
-
-				i_HighestInducedDegreeVertex = i;
-			}
-		}
-
-		for(i=0; i<i_RightVertexCount; i++)
-		{
-			i_InducedVertexDegree = m_vi_RightVertices[STEP_UP(i)] - m_vi_RightVertices[i];
-
-			vi_InducedVertexDegree.push_back(i_InducedVertexDegree);
-
-			vli_GroupedInducedVertexDegree[i_InducedVertexDegree].push_front(i + i_LeftVertexCount);
-
-			vlit_VertexLocation.push_back(vli_GroupedInducedVertexDegree[i_InducedVertexDegree].begin());
-
-			if(i_HighestInducedVertexDegree < i_InducedVertexDegree)
-			{
-				i_HighestInducedVertexDegree = i_InducedVertexDegree;
-
-				i_HighestInducedDegreeVertex = i + i_LeftVertexCount;
-			}
-		}
-
-
-#if DEBUG == 3462
-
-		int j;
-
-		cout<<endl;
-		cout<<"DEBUG 3462 | Bipartite Graph Coloring | Bipartite Smallest Last Ordering"<<endl;
-		cout<<endl;
-
-		for(i=0; i<STEP_UP(i_HighestInducedVertexDegree); i++)
-		{
-			cout<<"Degree "<<i<<"\t"<<" : ";
-
-			i_InducedVertexDegreeCount = (signed) vli_GroupedInducedVertexDegree[i].size();
-
-			j = _FALSE;
-
-			for(lit_ListIterator = vli_GroupedInducedVertexDegree[i].begin(); lit_ListIterator != vli_GroupedInducedVertexDegree[i].end(); lit_ListIterator++)
-			{
-				if(j==STEP_DOWN(i_InducedVertexDegreeCount))
-				{
-					cout<<STEP_UP(*lit_ListIterator)<<" ("<<i_InducedVertexDegreeCount<<")";
-				}
-				else
-				{
-					cout<<STEP_UP(*lit_ListIterator)<<", ";
-				}
-
-				j++;
-			}
-
-			 cout<<endl;
-		}
-
-		cout<<endl;
-		cout<<"[Highest Degree Vertex = "<<STEP_UP(i_HighestInducedDegreeVertex)<<"; Highest Induced Vertex Degree = "<<i_HighestInducedVertexDegree<<"]"<<endl;
-		cout<<endl;
-
-#endif
-
-		m_vi_OrderedVertices.clear();
-
-		i_SelectedVertexCount = _FALSE;
-
-		while(i_SelectedVertexCount < i_LeftVertexCount + i_RightVertexCount)
-		{
-			for(i=i_HighestInducedVertexDegree; i>=0; i--)
-			{
-				i_InducedVertexDegreeCount = (signed) vli_GroupedInducedVertexDegree[i].size();
-
-				if(i_InducedVertexDegreeCount == _FALSE)
-				{
-					continue;
-				}
-
-				if(i_HighestInducedDegreeVertex < i_LeftVertexCount)
-				{
-					_FOUND = _FALSE;
-
-					for(lit_ListIterator = vli_GroupedInducedVertexDegree[i].begin(); lit_ListIterator != vli_GroupedInducedVertexDegree[i].end(); lit_ListIterator++)
-					{
-						if(*lit_ListIterator < i_LeftVertexCount)
-						{
-							i_SelectedVertex = *lit_ListIterator;
-
-							_FOUND = _TRUE;
-
-							break;
-						}
-					}
-
-					if(!_FOUND)
-					{
-						i_SelectedVertex = vli_GroupedInducedVertexDegree[i].front();
-					}
-
-					break;
-				}
-				else
-				{
-					_FOUND = _FALSE;
-
-					for(lit_ListIterator = vli_GroupedInducedVertexDegree[i].begin(); lit_ListIterator != vli_GroupedInducedVertexDegree[i].end(); lit_ListIterator++)
-					{
-						if(*lit_ListIterator >= i_LeftVertexCount)
-						{
-							i_SelectedVertex = *lit_ListIterator;
-
-							_FOUND = _TRUE;
-
-							break;
-						}
-					}
-
-					if(!_FOUND)
-					{
-						i_SelectedVertex = vli_GroupedInducedVertexDegree[i].front();
-					}
-				}
-
-				break;
-			}
-
-			if(i_SelectedVertex < i_LeftVertexCount)
-			{
-				for(i=m_vi_LeftVertices[i_SelectedVertex]; i<m_vi_LeftVertices[STEP_UP(i_SelectedVertex)]; i++)
-				{
-					if(vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount] == _UNKNOWN)
-					{
-						continue;
-					}
-
-					vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].erase(vlit_VertexLocation[m_vi_Edges[i] + i_LeftVertexCount]);
-
-					vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount] = STEP_DOWN(vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]);
-
-					vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].push_front(m_vi_Edges[i] + i_LeftVertexCount);
-
-					vlit_VertexLocation[m_vi_Edges[i] + i_LeftVertexCount] = vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i] + i_LeftVertexCount]].begin();
-				}
-			}
-			else
-			{
-				for(i=m_vi_RightVertices[i_SelectedVertex - i_LeftVertexCount]; i<m_vi_RightVertices[STEP_UP(i_SelectedVertex - i_LeftVertexCount)]; i++)
-				{
-					if(vi_InducedVertexDegree[m_vi_Edges[i]] == _UNKNOWN)
-					{
-						continue;
-					}
-
-					vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i]]].erase(vlit_VertexLocation[m_vi_Edges[i]]);
-
-					vi_InducedVertexDegree[m_vi_Edges[i]] = STEP_DOWN(vi_InducedVertexDegree[m_vi_Edges[i]]);
-
-					vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i]]].push_front(m_vi_Edges[i]);
-
-					vlit_VertexLocation[m_vi_Edges[i]] = vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[m_vi_Edges[i]]].begin();
-				}
-			}
-
-			vli_GroupedInducedVertexDegree[vi_InducedVertexDegree[i_SelectedVertex]].erase(vlit_VertexLocation[i_SelectedVertex]);
-
-			vi_InducedVertexDegree[i_SelectedVertex] = _UNKNOWN;
-
-			m_vi_OrderedVertices.push_back(i_SelectedVertex);
-
-			i_SelectedVertexCount = STEP_UP(i_SelectedVertexCount);
-		}
-
-
-#if DEBUG == 3462
-
-		int i_OrderedVertexCount;
-
-		cout<<endl;
-		cout<<"DEBUG 3462 | Bipartite Graph Coloring | Bipartite Dynamic Largest First Ordering"<<endl;
-		cout<<endl;
-
-		i_OrderedVertexCount = (signed) m_vi_OrderedVertices.size();
-
-		for(i=0; i<i_OrderedVertexCount; i++)
-		{
-			if(i == STEP_DOWN(i_OrderedVertexCount))
-			{
-				cout<<STEP_UP(m_vi_OrderedVertices[i])<<" ("<<i_OrderedVertexCount<<")"<<endl;
-			}
-			else
-			{
-				cout<<STEP_UP(m_vi_OrderedVertices[i])<<", ";
-			}
-		}
-
-		cout<<endl;
-		cout<<"[Ordered Vertex Count = "<<i_OrderedVertexCount<<"/"<<i_LeftVertexCount + i_RightVertexCount<<"]"<<endl;
-		cout<<endl;
-
-#endif
-
-		return(_TRUE);
-	}
-
-	//Public Function 3463
 	string BipartiteGraphOrdering::GetVertexOrderingVariant()
 	{
 
@@ -2063,7 +1668,6 @@ namespace ColPack
 		}
 	}
 
-	//Public Function 3464
 	void BipartiteGraphOrdering::GetOrderedVertices(vector<int> &output)
 	{
 		output = (m_vi_OrderedVertices);

@@ -80,13 +80,17 @@ int main(int argc, char ** argv)
 	double** RightSeed = g->GetRightSeedMatrix(&i_RightSeedRowCount, &i_RightSeedColumnCount);
 
 	//Display Seeds
-	printf("Left Seed matrix %d x %d \n", i_LeftSeedRowCount, i_LeftSeedColumnCount);
-	displayMatrix(LeftSeed, i_LeftSeedRowCount, i_LeftSeedColumnCount, 1);
-	Pause();
+	if(i_LeftSeedRowCount>0 && i_LeftSeedColumnCount > 0){
+	  printf("Left Seed matrix %d x %d \n", i_LeftSeedRowCount, i_LeftSeedColumnCount);
+	  displayMatrix(LeftSeed, i_LeftSeedRowCount, i_LeftSeedColumnCount, 1);
+	  Pause();
+	}
 
-	printf("Right Seed matrix %d x %d \n", i_RightSeedRowCount, i_RightSeedColumnCount);
-	displayMatrix(RightSeed, i_RightSeedRowCount, i_RightSeedColumnCount, 1);
-	Pause();
+	if(i_RightSeedRowCount>0 && i_RightSeedColumnCount > 0) {
+	  printf("Right Seed matrix %d x %d \n", i_RightSeedRowCount, i_RightSeedColumnCount);
+	  displayMatrix(RightSeed, i_RightSeedRowCount, i_RightSeedColumnCount, 1);
+	  Pause();
+	}
 	//*/
 
 	delete g;

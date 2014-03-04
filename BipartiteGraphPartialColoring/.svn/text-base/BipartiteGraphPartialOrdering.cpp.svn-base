@@ -695,7 +695,369 @@ namespace ColPack
 		return(_TRUE);
 	}
 
+	int BipartiteGraphPartialOrdering::ColumnDynamicLargestFirstOrdering()
+	{
+		if(CheckVertexOrdering("COLUMN_DYNAMIC_LARGEST_FIRST"))
+		{
+			return(_TRUE);
+		}
 
+		int i, j, k, u, l;
+		int i_Current;
+		int i_SelectedVertex, i_SelectedVertexCount;
+		int i_VertexCount;
+		
+		int i_HighestInducedVertexDegree, i_InducedVertexDegree;
+		
+		vector < int > vi_InducedVertexDegree;
+		vector < int > vi_Visited;
+		vector < vector < int > > vvi_GroupedInducedVertexDegree;
+		vector < int > vi_VertexLocation;
+
+		// initialize
+		i_SelectedVertex = _UNKNOWN;
+		i_VertexCount = (int)m_vi_RightVertices.size () - 1;
+		
+		i_HighestInducedVertexDegree = 0;
+		
+		vi_Visited.clear();
+		vi_Visited.resize ( i_VertexCount, _UNKNOWN );
+		
+		m_vi_OrderedVertices.clear();
+		m_vi_OrderedVertices.reserve(i_VertexCount);
+
+ 		vi_InducedVertexDegree.clear();
+ 		vi_InducedVertexDegree.reserve((unsigned) i_VertexCount);
+ 		
+		vvi_GroupedInducedVertexDegree.clear();
+ 		vvi_GroupedInducedVertexDegree.resize((unsigned) i_VertexCount);
+ 		
+		vi_VertexLocation.clear();
+ 		vi_VertexLocation.reserve((unsigned) i_VertexCount);
+		
+		int i_LeftVertexCount = STEP_DOWN((signed) m_vi_LeftVertices.size());
+
+		for ( i=0; i<i_VertexCount; ++i)
+		{
+			// clear the visted nodes
+			//vi_VistedNodes.clear ();
+			// reset the degree count
+			i_InducedVertexDegree = 0;
+			// let's loop from mvi_RightVertices[i] to mvi_RightVertices[i+1] for the i'th column
+			for ( j=m_vi_RightVertices [i]; j<m_vi_RightVertices [i+1]; ++j )
+			{
+				i_Current = m_vi_Edges [j];
+
+				for ( k=m_vi_LeftVertices [i_Current]; k<m_vi_LeftVertices [i_Current+1]; ++k )
+				{
+				// b_visited = visitedAlready ( vi_VistedNodes, m_vi_Edges [k] );
+
+					if ( m_vi_Edges [k] != i && vi_Visited [m_vi_Edges [k]] != i )
+					{
+						++i_InducedVertexDegree;
+						// vi_VistedNodes.push_back ( m_vi_Edges [k] );
+						vi_Visited [m_vi_Edges [k]] = i;
+					}
+				}
+			}
+			
+			//vi_InducedVertexDegree[i] = vertex degree of vertex i
+			vi_InducedVertexDegree.push_back ( i_InducedVertexDegree );
+			// vector vvi_GroupedInducedVertexDegree[i] = all the vertices with degree i
+			// for every new vertex with degree i, it will be pushed to the back of vector vvi_GroupedInducedVertexDegree[i]
+			vvi_GroupedInducedVertexDegree [i_InducedVertexDegree].push_back ( i );
+			//vi_VertexLocation[i] = location of vertex i in vvi_GroupedInducedVertexDegree[i_InducedVertexDegree]
+			vi_VertexLocation.push_back(vvi_GroupedInducedVertexDegree[i_InducedVertexDegree].size() - 1);
+
+			//get max degree (i_HighestInducedVertexDegree)
+			if ( i_HighestInducedVertexDegree < i_InducedVertexDegree )
+			{
+				i_HighestInducedVertexDegree = i_InducedVertexDegree;
+			}
+		}
+
+		i_SelectedVertexCount = 0;
+		// first clear the visited nodes
+		vi_Visited.clear ();
+		vi_Visited.resize ( i_VertexCount, _UNKNOWN );
+		// end clear nodes
+
+		//int iMin = 1;
+
+		// just counting the number of vertices that we have worked with,
+		// stop when i_SelectedVertexCount == i_VertexCount, i.e. we have looked through all the vertices
+		while ( i_SelectedVertexCount < i_VertexCount )
+		{
+			//if(iMin != 0 && vvi_GroupedInducedVertexDegree[iMin - 1].size() != _FALSE)
+			//	iMin--;
+
+			// selecte first item from the bucket
+			for ( i= i_HighestInducedVertexDegree; i>= 0; i-- )
+			{
+				if ( vvi_GroupedInducedVertexDegree[i].size () != 0 )
+				{
+					i_SelectedVertex = vvi_GroupedInducedVertexDegree[i].back ();
+					//remove the i_SelectedVertex from vvi_GroupedInducedVertexDegree
+					vvi_GroupedInducedVertexDegree[i].pop_back();
+					break;
+				}
+				else
+				    i_HighestInducedVertexDegree--;
+			}
+			// end select first nonzero item from the bucket
+
+			// go to the neighbors of i_SelectedVertex and decrease the degrees by 1
+			for ( i=m_vi_RightVertices [i_SelectedVertex]; i<m_vi_RightVertices [i_SelectedVertex+1]; ++i )
+			{
+				// which Row element is Col (i_SelectedVertex) pointing to?
+				i_Current = m_vi_Edges [i];
+				// go to each neighbor of Col (i_SelectedVertex), decrease their degree by 1
+				// and then update their position in vvi_GroupedInducedVertexDegree and vi_VertexLocation
+				for ( j=m_vi_LeftVertices [i_Current]; j<m_vi_LeftVertices [i_Current+1]; ++j )
+				{
+					// note: m_vi_Edges [j] is the neighbor of Col (i_SelectedVertex)
+					// make sure it's not pointing back to itself, or if we already visited this node
+					if ( m_vi_Edges [j] == i_SelectedVertex || vi_Visited [m_vi_Edges [j]] == i_SelectedVertex )
+					{
+						// it is pointed to itself or already visited
+						continue;
+					}
+					
+					u = m_vi_Edges[j];
+
+					// now check to make sure that the neighbor's degree isn't UNKNOWN
+					if ( vi_InducedVertexDegree [u] == _UNKNOWN )
+					{
+						// our neighbor doesn't have any neighbors, so skip it.
+						continue;
+					}
+
+					// update that we visited this
+					vi_Visited [u] = i_SelectedVertex;
+					// end up update that we visited this
+					
+					// move the last element in this bucket to u's position to get rid of expensive erase operation
+					if(vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].size() > 1)
+					{
+						l = vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].back();
+
+						vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]][vi_VertexLocation[u]] = l;
+
+
+						vi_VertexLocation[l] = vi_VertexLocation[u];
+					}
+					// remove last element from this bucket
+					vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].pop_back();
+
+					// reduce degree of u by 1
+					vi_InducedVertexDegree[u]--;
+
+					// move u to appropriate bucket
+					vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].push_back(u);
+
+					// update vi_VertexLocation[u] since it has now been changed
+					vi_VertexLocation[u] = vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].size() - 1;
+				}
+			}
+			// end of go to the neighbors of i_SelectedVertex and decrease the degrees by 1
+
+			//Mark the i_SelectedVertex as  _UNKNOWN, so that we don't look at it again
+			vi_InducedVertexDegree [i_SelectedVertex] =  _UNKNOWN;
+
+			m_vi_OrderedVertices.push_back(i_SelectedVertex + i_LeftVertexCount);
+
+			// go to next vertex
+			++i_SelectedVertexCount;
+		}
+
+		// clear the buffer
+                vi_InducedVertexDegree.clear();
+                vi_VertexLocation.clear();
+                vvi_GroupedInducedVertexDegree.clear();
+		vi_Visited.clear ();	
+		return(_TRUE);
+	}
+
+	int BipartiteGraphPartialOrdering::RowDynamicLargestFirstOrdering()
+	{
+		if(CheckVertexOrdering("ROW_DYNAMIC_LARGEST_FIRST"))
+		{
+			return(_TRUE);
+		}
+
+		int i, j, k, u, l;
+		int i_Current;
+		int i_SelectedVertex, i_SelectedVertexCount;
+		int i_VertexCount;
+		
+		int i_HighestInducedVertexDegree, i_InducedVertexDegree;
+		vector<int> vi_InducedVertexDegree;
+		vector<int> vi_Visited;
+		vector< vector<int> > vvi_GroupedInducedVertexDegree;
+		vector< int > vi_VertexLocation;
+
+		// initialize
+		
+		i_SelectedVertex = _UNKNOWN;
+		i_VertexCount = (int)m_vi_LeftVertices.size () - 1;
+		i_HighestInducedVertexDegree = 0;
+		
+		vi_Visited.clear();
+		vi_Visited.resize ( i_VertexCount, _UNKNOWN );
+		
+		m_vi_OrderedVertices.clear();
+		m_vi_OrderedVertices.reserve(i_VertexCount);
+
+		vi_InducedVertexDegree.clear();
+		vi_InducedVertexDegree.reserve((unsigned) i_VertexCount);
+		vvi_GroupedInducedVertexDegree.clear();
+		vvi_GroupedInducedVertexDegree.resize((unsigned) i_VertexCount);
+		vi_VertexLocation.clear();
+		vi_VertexLocation.reserve((unsigned) i_VertexCount);
+
+		for ( i=0; i<i_VertexCount; ++i )
+		{
+			// clear the visted nodes
+			//vi_VistedNodes.clear ();
+			// reset the degree count
+			i_InducedVertexDegree = 0;
+			// let's loop from mvi_LeftVertices[i] to mvi_LeftVertices[i+1] for the i'th column
+			for ( j=m_vi_LeftVertices[i]; j<m_vi_LeftVertices[i+1]; ++j )
+			{
+				i_Current = m_vi_Edges [j];
+
+				for (k=m_vi_RightVertices[i_Current]; k<m_vi_RightVertices[i_Current+1]; ++k)
+					{
+					// b_visited = visitedAlready ( vi_VistedNodes, m_vi_Edges [k] );
+
+					if ( m_vi_Edges [k] != i && vi_Visited [m_vi_Edges [k]] != i )
+					{
+						++i_InducedVertexDegree;
+						// vi_VistedNodes.push_back ( m_vi_Edges [k] );
+						vi_Visited [m_vi_Edges [k]] = i;
+					}
+				}
+			}
+
+			//vi_InducedVertexDegree[i] = vertex degree of vertex i
+			vi_InducedVertexDegree.push_back ( i_InducedVertexDegree );
+			// vector vvi_GroupedInducedVertexDegree[i] = all the vertices with degree i
+			// for every new vertex with degree i, it will be pushed to the back of vector vvi_GroupedInducedVertexDegree[i]
+			vvi_GroupedInducedVertexDegree [i_InducedVertexDegree].push_back ( i );
+			//vi_VertexLocation[i] = location of vertex i in vvi_GroupedInducedVertexDegree[i_InducedVertexDegree]
+			vi_VertexLocation.push_back(vvi_GroupedInducedVertexDegree[i_InducedVertexDegree].size() - 1);
+
+			//get max degree (i_HighestInducedVertexDegree)
+			if ( i_HighestInducedVertexDegree < i_InducedVertexDegree )
+			{
+				i_HighestInducedVertexDegree = i_InducedVertexDegree;
+			}
+		}
+
+		i_SelectedVertexCount = 0;
+		// first clear the visited nodes
+		vi_Visited.clear ();
+		vi_Visited.resize ( i_VertexCount, _UNKNOWN );
+		// end clear nodes
+
+		//int iMin = 1;
+
+		// just counting the number of vertices that we have worked with,
+		// stop when i_SelectedVertexCount == i_VertexCount, i.e. we have looked through all the vertices
+		while ( i_SelectedVertexCount < i_VertexCount )
+		{
+			//if(iMin != 0 && vvi_GroupedInducedVertexDegree[iMin - 1].size() != _FALSE)
+			//	iMin--;
+
+			// selecte first item from the bucket
+			for ( i= i_HighestInducedVertexDegree; i>= 0; i-- )
+			{
+
+				if ( vvi_GroupedInducedVertexDegree[i].size () != 0 )
+				{
+					i_SelectedVertex = vvi_GroupedInducedVertexDegree[i].back ();
+					//remove the i_SelectedVertex from vvi_GroupedInducedVertexDegree
+					vvi_GroupedInducedVertexDegree[i].pop_back();
+					break;
+				}
+				else
+				    i_HighestInducedVertexDegree--;
+			}
+			// end select first nonzero item from the bucket
+
+			// go to the neighbors of i_SelectedVertex and decrease the degrees by 1
+			for ( i=m_vi_LeftVertices [i_SelectedVertex]; i<m_vi_LeftVertices [i_SelectedVertex+1]; ++i )
+			{
+				// which Column element is Row (i_SelectedVertex) pointing to?
+				i_Current = m_vi_Edges [i];
+				// go to each neighbor of Col (i_SelectedVertex), decrease their degree by 1
+				// and then update their position in vvi_GroupedInducedVertexDegree and vi_VertexLocation
+				for ( j=m_vi_RightVertices [i_Current]; j<m_vi_RightVertices [i_Current+1]; ++j )
+				{
+					// note: m_vi_Edges [j] is the neighbor of Col (i_SelectedVertex)
+					// make sure it's not pointing back to itself, or if we already visited this node
+					if ( m_vi_Edges [j] == i_SelectedVertex || vi_Visited [m_vi_Edges [j]] == i_SelectedVertex )
+					{
+						// it is pointed to itself or already visited
+						continue;
+					}
+					
+					u = m_vi_Edges[j];
+
+					// now check to make sure that the neighbor's degree isn't UNKNOWN
+					if ( vi_InducedVertexDegree [u] ==  _UNKNOWN )
+					{
+						// our neighbor doesn't have any neighbors, so skip it.
+						continue;
+					}
+
+					// update that we visited this
+					vi_Visited [u] = i_SelectedVertex;
+					// end up update that we visited this
+					
+					// move the last element in this bucket to u's position to get rid of expensive erase operation
+					if(vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].size() > 1)
+					{
+						l = vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].back();
+
+						vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]][vi_VertexLocation[u]] = l;
+
+
+						vi_VertexLocation[l] = vi_VertexLocation[u];
+					}
+					// remove last element from this bucket
+					vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].pop_back();
+
+					// reduce degree of u by 1
+					vi_InducedVertexDegree[u]--;
+
+					// move u to appropriate bucket
+					vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].push_back(u);
+
+					// update vi_VertexLocation[u] since it has now been changed
+					vi_VertexLocation[u] = vvi_GroupedInducedVertexDegree[vi_InducedVertexDegree[u]].size() - 1;
+					
+				}
+			}
+			// end of go to the neighbors of i_SelectedVertex and decrease the degrees by 1
+
+			//Mark the i_SelectedVertex as  _UNKNOWN, so that we don't look at it again
+			vi_InducedVertexDegree [i_SelectedVertex] =  _UNKNOWN;
+
+			m_vi_OrderedVertices.push_back(i_SelectedVertex);
+
+			// go to next vertex
+			++i_SelectedVertexCount;
+		}
+		
+		// clear the buffer
+                vi_InducedVertexDegree.clear();
+                vi_VertexLocation.clear();
+                vvi_GroupedInducedVertexDegree.clear();
+		vi_Visited.clear();
+
+		return(_TRUE);
+	}
 
 	//Public Function 2361
 	int BipartiteGraphPartialOrdering::RowIncidenceDegreeOrdering()

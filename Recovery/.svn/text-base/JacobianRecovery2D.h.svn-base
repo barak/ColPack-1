@@ -77,6 +77,12 @@ namespace ColPack
 		Algorithm: Basically the combination of RecoverForPD2RowWise() (for dp2_RowCompressedMatrix) and RecoverForPD2ColumnWise() (for dp2_ColumnCompressedMatrix) in BipartiteGraphPartialColoringInterface class
 		*/
 		int DirectRecover_RowCompressedFormat(BipartiteGraphBicoloringInterface* g, double** dp2_RowCompressedMatrix, double** dp2_ColumnCompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue);
+		
+		/// Same as DirectRecover_RowCompressedFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int DirectRecover_RowCompressedFormat_unmanaged(BipartiteGraphBicoloringInterface* g, double** dp2_RowCompressedMatrix, double** dp2_ColumnCompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue);
 
 		/// A routine for recovering a Jacobian from a Star-Bicoloring based compressed representation.
 		/**
@@ -87,7 +93,14 @@ namespace ColPack
 		- double** dp2_JacobianValue // corresponding non-zero values
 		//*/
 		int DirectRecover_CoordinateFormat(BipartiteGraphBicoloringInterface* g, double** dp2_RowCompressedMatrix, double** dp2_ColumnCompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
+				
+		/// Same as DirectRecover_CoordinateFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int DirectRecover_CoordinateFormat_unmanaged(BipartiteGraphBicoloringInterface* g, double** dp2_RowCompressedMatrix, double** dp2_ColumnCompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 
+		
 		/// A routine for recovering a Jacobian from a Star-Bicoloring based compressed representation.
 		/**
 		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
@@ -97,7 +110,12 @@ namespace ColPack
 		- double** dp2_JacobianValue // corresponding non-zero values
 		//*/
 		int DirectRecover_SparseSolversFormat(BipartiteGraphBicoloringInterface* g, double** dp2_RowCompressedMatrix, double** dp2_ColumnCompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
-
+		
+		/// Same as DirectRecover_SparseSolversFormat(), except that the output is NOT managed by ColPack 
+		/** Notes:
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		*/
+		int DirectRecover_SparseSolversFormat_unmanaged(BipartiteGraphBicoloringInterface* g, double** dp2_RowCompressedMatrix, double** dp2_ColumnCompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 	};
 }
 #endif

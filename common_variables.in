@@ -13,9 +13,9 @@ AR = ar
 
 RANLIB = ranlib
 
-FLAGS = -O5 -fPIC
+#FLAGS = -O5 -fPIC
 #FLAGS = -O5 -Wall
-#FLAGS = -g -fPIC
+FLAGS = -g -fPIC
 #FLAGS = -fast -tp amd64
 #FLAGS = -pg
 

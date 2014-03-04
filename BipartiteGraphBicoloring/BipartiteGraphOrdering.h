@@ -55,47 +55,34 @@ namespace ColPack
 
 	public:
 
-		//Public Constructor 3451
 		BipartiteGraphOrdering();
 
-		//Public Destructor 3452
 		~BipartiteGraphOrdering();
 
-		//Virtual Function 3453
 		virtual void Clear();
 
-		//Virtual Function 3454
 		virtual void Reset();
 
-		//Public Function 3455
 		int NaturalOrdering();
+
 		int RandomOrdering();
 
-		//Public Function 3456
 		int LargestFirstOrdering();
 
-		//Public Function 3457
 		int SmallestLastOrdering();
 
-		//Public Function 3458
 		int IncidenceDegreeOrdering();
 
-		//Public Function 3459
-		int SelectiveLargestFirstOrdering();
-
-		//Public Function 3460
-		int SelectiveSmallestLastOrdering();
-
-		//Public Function 3461
-		int SelectiveIncidenceDegreeOrdering();
-
-		//Public Function 3462
 		int DynamicLargestFirstOrdering();
 
-		//Public Function 3463
+		int SelectiveLargestFirstOrdering();
+
+		int SelectiveSmallestLastOrdering();
+
+		int SelectiveIncidenceDegreeOrdering();
+
 		string GetVertexOrderingVariant();
 
-		//Public Function 3464
 		void GetOrderedVertices(vector<int> &output);
 
 		void PrintVertexOrdering();

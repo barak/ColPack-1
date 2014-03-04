@@ -379,7 +379,13 @@ namespace ColPack
 		if(lseed_available) {
 			lseed_available = false;
 
-			free_2DMatrix(dp2_lSeed, i_lseed_rowCount);
+			if(i_lseed_rowCount>0) {
+			  free_2DMatrix(dp2_lSeed, i_lseed_rowCount);
+			}
+			else {
+			  cerr<<"ERR: freeing left seed matrix with 0 row"<<endl;
+			  exit(-1);
+			}
 			dp2_lSeed = NULL;
 			i_lseed_rowCount = 0;
 		}
@@ -387,7 +393,13 @@ namespace ColPack
 		if(rseed_available) {
 			rseed_available = false;
 
-			free_2DMatrix(dp2_rSeed, i_rseed_rowCount);
+			if(i_rseed_rowCount>0) {
+			  free_2DMatrix(dp2_rSeed, i_rseed_rowCount);
+			}
+			else {
+			  cerr<<"ERR: freeing right seed matrix with 0 row"<<endl;
+			  exit(-1);
+			}
 			dp2_rSeed = NULL;
 			i_rseed_rowCount = 0;
 		}
@@ -5447,84 +5459,26 @@ namespace ColPack
 
 		if(lseed_available) Seed_reset();
 
-		int i_size = GetLeftVertexCount();
-		int i_num_of_colors = m_i_LeftVertexColorCount;
-		if (i_LeftVertexDefaultColor == 1) i_num_of_colors--; //color ID 0 is used, ignore it
-		(*ip1_SeedRowCount) = i_num_of_colors;
-		(*ip1_SeedColumnCount) = i_size;
-		if((*ip1_SeedRowCount) == 0 || (*ip1_SeedColumnCount) == 0) return NULL;
-
-#if DEBUG != _UNKNOWN
-		printf("Seed[%d][%d] \n",(*ip1_SeedRowCount),(*ip1_SeedColumnCount));
-#endif
-
-		// allocate and initialize Seed matrix
-		double** Seed = new double*[(*ip1_SeedRowCount)];
-		for (int i=0; i<(*ip1_SeedRowCount); i++) {
-			Seed[i] = new double[(*ip1_SeedColumnCount)];
-			for(int j=0; j<(*ip1_SeedColumnCount); j++) Seed[i][j]=0.;
-		}
-
-		// populate Seed matrix
-		for (int i=0; i < (*ip1_SeedColumnCount); i++) {
-#if DEBUG != _UNKNOWN
-			if(m_vi_LeftVertexColors[i]>(*ip1_SeedColumnCount)) {
-				printf("**WARNING: Out of bound: Seed[%d >= %d][%d] = 1. \n",m_vi_LeftVertexColors[i]-1,(*ip1_SeedColumnCount), i);
-			}
-#endif
-			if(m_vi_LeftVertexColors[i] != 0) { //ignore color 0
-				Seed[m_vi_LeftVertexColors[i]-1][i] = 1.;
-			}
-		}
-
-		lseed_available = true;
+		dp2_lSeed = GetLeftSeedMatrix_unmanaged(ip1_SeedRowCount, ip1_SeedColumnCount);
+		if(dp2_lSeed == NULL) return NULL;
+		
 		i_lseed_rowCount = *ip1_SeedRowCount;
-		dp2_lSeed = Seed;
+		lseed_available = true;
 
-		return Seed;
+		return dp2_lSeed;
 	}
 
 	double** BipartiteGraphBicoloring::GetRightSeedMatrix(int* ip1_SeedRowCount, int* ip1_SeedColumnCount) {
 
 		if(rseed_available) Seed_reset();
 
-		int i_size = GetRightVertexCount();
-		vector<int> RightVertexColors_Transformed;
-		GetRightVertexColors_Transformed(RightVertexColors_Transformed);
-		int i_num_of_colors = m_i_RightVertexColorCount;
-		if (i_RightVertexDefaultColor == 1) i_num_of_colors--; //color ID 0 is used, ignore it
-		(*ip1_SeedRowCount) = i_size;
-		(*ip1_SeedColumnCount) = i_num_of_colors;
-		if((*ip1_SeedRowCount) == 0 || (*ip1_SeedColumnCount) == 0) return NULL;
-
-#if DEBUG != _UNKNOWN
-		printf("Seed[%d][%d] \n",(*ip1_SeedRowCount),(*ip1_SeedColumnCount));
-#endif
-
-		// allocate and initialize Seed matrix
-		double** Seed = new double*[(*ip1_SeedRowCount)];
-		for (int i=0; i<(*ip1_SeedRowCount); i++) {
-			Seed[i] = new double[(*ip1_SeedColumnCount)];
-			for(int j=0; j<(*ip1_SeedColumnCount); j++) Seed[i][j]=0.;
-		}
-
-		// populate Seed matrix
-		for (int i=0; i < (*ip1_SeedRowCount); i++) {
-#if DEBUG != _UNKNOWN
-			if(RightVertexColors_Transformed[i]>(*ip1_SeedRowCount)) {
-				printf("**WARNING: Out of bound: Seed[%d][%d >= %d] = 1. \n",i, RightVertexColors_Transformed[i] - 1, (*ip1_SeedRowCount));
-			}
-#endif
-			if(RightVertexColors_Transformed[i] != 0) { //ignore color 0
-				Seed[i][RightVertexColors_Transformed[i] - 1] = 1.;
-			}
-		}
-
-		rseed_available = true;
+		dp2_rSeed = GetRightSeedMatrix_unmanaged(ip1_SeedRowCount, ip1_SeedColumnCount);
+		if(dp2_rSeed == NULL) return NULL;
+		
 		i_rseed_rowCount = *ip1_SeedRowCount;
-		dp2_rSeed = Seed;
+		rseed_available = true;
 
-		return Seed;
+		return dp2_rSeed;
 	}
 
 	double** BipartiteGraphBicoloring::GetLeftSeedMatrix_unmanaged(int* ip1_SeedRowCount, int* ip1_SeedColumnCount) {
