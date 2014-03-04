@@ -419,11 +419,13 @@ namespace ColPack
 		vector<unsigned int> ColumnIndex;
 		vector<double> HessianValue;
 
-		int returnValue = DirectRecover_CoordinateFormat_vectors_OMP(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, RowIndex, ColumnIndex, HessianValue);
+//		int returnValue = DirectRecover_CoordinateFormat_vectors_OMP(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, RowIndex, ColumnIndex, HessianValue);
+
+		int returnValue = DirectRecover_CoordinateFormat_vectors(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, RowIndex, ColumnIndex, HessianValue);
 
 		unsigned int numOfNonZeros = RowIndex.size();
 
-		#pragma omp parallel for default(none) schedule(static) shared(numOfNonZeros, ip2_RowIndex, ip2_ColumnIndex, dp2_HessianValue, RowIndex, ColumnIndex, HessianValue) 
+//		#pragma omp parallel for default(none) schedule(static) shared(numOfNonZeros, ip2_RowIndex, ip2_ColumnIndex, dp2_HessianValue, RowIndex, ColumnIndex, HessianValue) 
 		for(int i=0; i < numOfNonZeros; i++) {
 			(*ip2_RowIndex)[i] = RowIndex[i];
 			(*ip2_ColumnIndex)[i] = ColumnIndex[i];

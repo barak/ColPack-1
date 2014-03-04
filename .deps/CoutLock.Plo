@@ -1,0 +1,6 @@
+CoutLock.lo: Utilities/CoutLock.cpp Main/Definitions.h \
+ Utilities/CoutLock.h
+
+Main/Definitions.h:
+
+Utilities/CoutLock.h:

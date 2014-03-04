@@ -1,6 +1,3 @@
-2012-07-31 Mu Wang, Assefaw Gebremedhin
-  Fixed a known bug occuring in "HessianRecovery::DirectRecover_CoordinateFormat_vectors_OMP()"
-    The problem was that "int total_length" was not initialized as "=0"
 2011-09-01 Duc Nguyen
   displayGraph() is updated to accept BipartiteGraphPartialColoringInterface &g
     At this point, displayGraph(BipartiteGraphPartialColoringInterface &g) cannot highlight coloring conflicts yet

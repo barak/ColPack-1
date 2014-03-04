@@ -189,8 +189,9 @@ namespace ColPack
 		vector<int>* LeftVerticesPtr = g->GetLeftVerticesPtr();
 		
 		//Recover value of the Jacobian
-		#pragma omp parallel for default(none) schedule(static) shared(rowCount,LeftVerticesPtr,dp2_JacobianValue, ip2_RowIndex, ip2_ColumnIndex, uip2_JacobianSparsityPattern, dp2_CompressedMatrix, vi_LeftVertexColors) private(numOfNonZeros)
-		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+
+//		#pragma omp parallel for default(none) schedule(static) shared(rowCount,LeftVerticesPtr,dp2_JacobianValue, ip2_RowIndex, ip2_ColumnIndex, uip2_JacobianSparsityPattern, dp2_CompressedMatrix, vi_LeftVertexColors) private(numOfNonZeros)
+/*		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
 			numOfNonZeros = uip2_JacobianSparsityPattern[i][0];
 			for(int j=1; j <= numOfNonZeros; j++) {
 				(*dp2_JacobianValue)[(*LeftVerticesPtr)[i]+j-1] = dp2_CompressedMatrix[vi_LeftVertexColors[i]][uip2_JacobianSparsityPattern[i][j]];
@@ -207,9 +208,31 @@ namespace ColPack
 		}
 		else cout<<"**Good!!!"<<endl;
 		Pause();
-		//*/
+		//
 		
 		return (*LeftVerticesPtr)[rowCount];
+*/
+		unsigned int numOfNonZeros_count = 0;
+		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+			numOfNonZeros = uip2_JacobianSparsityPattern[i][0];
+			for(int j=1; j <= numOfNonZeros; j++) {
+				(*dp2_JacobianValue)[numOfNonZeros_count] = dp2_CompressedMatrix[vi_LeftVertexColors[i]][uip2_JacobianSparsityPattern[i][j]];
+				(*ip2_RowIndex)[numOfNonZeros_count] = i;
+				(*ip2_ColumnIndex)[numOfNonZeros_count] = uip2_JacobianSparsityPattern[i][j];
+				numOfNonZeros_count++;
+			}
+		}
+		/*
+		if(numOfNonZeros_count != g->GetEdgeCount()) {
+			cout<<"**Something fishing going on"<<endl;
+			cout<<"numOfNonZeros_count="<<numOfNonZeros_count<<endl;
+			cout<<"numOfNonZeros="<<g->GetEdgeCount()<<endl;
+		}
+		else cout<<"**Good!!!"<<endl;
+		Pause();
+		//*/
+		return numOfNonZeros_count;
+
 	}
 	
 	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_usermem_serial(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
@@ -503,12 +526,12 @@ namespace ColPack
 		vector<int> vi_RightVertexColors;
 		g->GetRightVertexColors(vi_RightVertexColors);
 		unsigned int numOfNonZeros = 0;
-		vector<int>* LeftVerticesPtr = g->GetLeftVerticesPtr();
+//		vector<int>* LeftVerticesPtr = g->GetLeftVerticesPtr();
 
 		//Recover value of the Jacobian
 		//cout<<"Recover value of the Jacobian"<<endl;
-		#pragma omp parallel for default(none) schedule(static) shared(rowCount,LeftVerticesPtr,dp2_JacobianValue, ip2_RowIndex, ip2_ColumnIndex, uip2_JacobianSparsityPattern, dp2_CompressedMatrix, vi_RightVertexColors) private(numOfNonZeros)
-		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+//		#pragma omp parallel for default(none) schedule(static) shared(rowCount,LeftVerticesPtr,dp2_JacobianValue, ip2_RowIndex, ip2_ColumnIndex, uip2_JacobianSparsityPattern, dp2_CompressedMatrix, vi_RightVertexColors) private(numOfNonZeros)
+/*		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
 			numOfNonZeros = uip2_JacobianSparsityPattern[i][0];
 			for(unsigned int j=1; j <= numOfNonZeros; j++) {
 				(*dp2_JacobianValue)[(*LeftVerticesPtr)[i]+j-1] = dp2_CompressedMatrix[i][vi_RightVertexColors[uip2_JacobianSparsityPattern[i][j]]];
@@ -518,6 +541,21 @@ namespace ColPack
 		}
 		
 		return (*LeftVerticesPtr)[rowCount];
+*/
+		unsigned int numOfNonZeros_count = 0;
+		unsigned int ll=0;
+		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
+			numOfNonZeros = uip2_JacobianSparsityPattern[i][0];
+			for(unsigned int j=1; j <= numOfNonZeros; j++) {
+				(*dp2_JacobianValue)[numOfNonZeros_count] = dp2_CompressedMatrix[i][vi_RightVertexColors[uip2_JacobianSparsityPattern[i][j]]];
+				(*ip2_RowIndex)[numOfNonZeros_count] = i;
+				(*ip2_ColumnIndex)[numOfNonZeros_count] = uip2_JacobianSparsityPattern[i][j];
+				numOfNonZeros_count++;
+			}
+		}
+		
+		return numOfNonZeros_count;
+
 	}
 	
 	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_usermem_serial(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {

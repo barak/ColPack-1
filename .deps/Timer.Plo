@@ -1,0 +1,30 @@
+Timer.lo: Utilities/Timer.cpp Main/Definitions.h Utilities/Timer.h \
+ /usr/include/sys/times.h /usr/include/features.h \
+ /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h /usr/include/time.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h
+
+Main/Definitions.h:
+
+Utilities/Timer.h:
+
+/usr/include/sys/times.h:
+
+/usr/include/features.h:
+
+/usr/include/bits/predefs.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-32.h:
+
+/usr/include/time.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
