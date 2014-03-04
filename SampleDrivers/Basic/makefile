@@ -11,7 +11,8 @@ MORE_FLAGS = -I$(TOP_DIR)/build/include/ -L$(TOP_DIR)/build/lib/  -lColPack -DTO
 % : %.cpp
 	$(CC_COMPILER)  $(FLAGS) $(MORE_FLAGS) $< -o $@
 
-DRIVERS = color_bipartite_graph_using_BipartiteGraphBicoloringInterface \
+DRIVERS = \
+	color_bipartite_graph_using_BipartiteGraphBicoloringInterface \
 	color_bipartite_graph_using_BipartiteGraphPartialColoringInterface \
 	color_graph_using_GraphColoringInterface \
 	Generate_seed_matrix_for_Hessian \

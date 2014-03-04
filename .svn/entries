@@ -32,23 +32,23 @@ dir
 SampleDrivers
 dir
 
-Graphs
+Main
 dir
 
-Main
+Graphs
 dir
 
 common_variables.in
 file
+126
 
 
 
-
-2010-10-26T09:03:20.135052Z
-859aa5518802fb33316b6c2afb213450
-2010-10-22T00:01:32.144620Z
-97
-mpatwary
+2010-12-23T21:24:29.187482Z
+41828cb46a55ecf6bc9dfbef43681547
+2010-12-23T22:05:14.996786Z
+126
+nguyend
 has-props
 
 
@@ -72,13 +72,10 @@ has-props
 
 1660
 
-GraphColoring
-dir
-
 Recovery
 dir
 
-Documents
+GraphColoring
 dir
 
 main_page.cpp
@@ -87,7 +84,7 @@ file
 
 
 
-2010-10-01T00:47:57.773501Z
+2010-12-23T21:24:28.255555Z
 7a20fdd81fc8579a639b65812a426dc3
 2010-09-28T21:17:29.992972Z
 80
@@ -115,13 +112,16 @@ has-props
 
 2494
 
+Documents
+dir
+
 AUTHOR
 file
 
 
 
 
-2010-10-01T00:47:57.773501Z
+2010-12-23T21:24:29.219525Z
 743a1e428ac4f8c54fc937bf4cf0253d
 2010-09-28T21:17:29.992972Z
 80
@@ -155,7 +155,7 @@ file
 
 
 
-2010-10-01T00:47:57.773501Z
+2010-12-23T21:24:28.248021Z
 6a6a8e020838b23406c81b19c1d46df6
 2010-08-25T15:15:15.181313Z
 1
@@ -189,7 +189,7 @@ file
 
 
 
-2010-10-01T00:47:57.777456Z
+2010-12-23T21:24:30.100997Z
 d32239bcb673463ab874e80d47fae504
 2010-08-25T15:15:15.181313Z
 1
@@ -220,16 +220,13 @@ has-props
 Utilities
 dir
 
-BipartiteGraphBicoloring
-dir
-
 makefile
 file
 
 
 
 
-2010-10-01T00:47:57.777456Z
+2010-12-23T21:24:28.227520Z
 828864a0967e8133da1ddf9a611e8c00
 2010-09-28T21:17:29.992972Z
 80
@@ -256,4 +253,7 @@ has-props
 
 
 6914
+
+BipartiteGraphBicoloring
+dir
 

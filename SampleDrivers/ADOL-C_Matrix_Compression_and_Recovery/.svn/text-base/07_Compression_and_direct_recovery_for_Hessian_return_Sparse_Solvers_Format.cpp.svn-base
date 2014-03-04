@@ -1,4 +1,4 @@
-// An example of (Column) compression (by using Acyclic coloring) and indirect recovery for Hessian
+// An example of (Column) compression (by using Star coloring) and direct recovery for Hessian
 /* How to compile this driver manually:
 	Please make sure that "baseDir" point to the directory (folder) containing the input matrix file, and
 		s_InputFile should point to the input file that you want to use
@@ -63,10 +63,10 @@ int main()
 
 	//Step 2.1: Read the sparsity pattern of the given Hessian matrix (compressed sparse rows format)
 	//and create the corresponding graph
-	GraphColoringInterface *g = new GraphColoringInterface(SRC_MEM_ADOLC, *uip3_SparsityPattern, rowCount);
+	GraphColoringInterface *g = new GraphColoringInterface(SRC_MEM_ADOLC,*uip3_SparsityPattern, rowCount);
 
 	//Step 2.2: Color the bipartite graph with the specified ordering
-	g->Coloring("SMALLEST_LAST", "ACYCLIC");
+	g->Coloring("SMALLEST_LAST", "STAR");
 
 	//Step 2.3 (Option 1): From the coloring information, create and return the seed matrix
 	(*dp3_Seed) = g->GetSeedMatrix(ip1_SeedRowCount, ip1_SeedColumnCount);
@@ -98,7 +98,7 @@ int main()
 	unsigned int** ip2_ColumnIndex = new unsigned int*;
 	double** dp2_HessianValue = new double*;
 	HessianRecovery* hr = new HessianRecovery;
-	int i_arraySize = hr->IndirectRecover_SparseSolversFormat(g, *dp3_CompressedMatrix, *uip3_SparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_HessianValue);
+	int i_arraySize = hr->DirectRecover_SparseSolversFormat(g, *dp3_CompressedMatrix, *uip3_SparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_HessianValue);
 	cout<<"Finish Recover()"<<endl;
 
 	cout<<endl<<"Display result, the structure and values should be similar to the original one"<<endl;

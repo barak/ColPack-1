@@ -43,6 +43,7 @@ namespace ColPack
 
 		Postcondition:
 		- dp3_JacobianValue points to a 2d matrix contains the numerical values of the Jacobian. Row Compressed Format is used
+		The memory allocated for this output vector is managed by ColPack. The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.
 
 		Return value:
 		- _TRUE upon successful
@@ -75,43 +76,75 @@ namespace ColPack
 		
 		/// Same as RecoverD2Row_RowCompressedFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
-		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
 		int RecoverD2Row_RowCompressedFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue);
+
+		/// Same as RecoverD2Row_RowCompressedFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
+		/** Notes:
+		- This function will assume the user has properly allocate memory output vector(s).
+		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
+		(*dp3_JacobianValue) should have the same structure as uip2_JacobianSparsityPattern
+		*/
+		int RecoverD2Row_RowCompressedFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue);
 
 		
 		/// A routine for recovering a Jacobian from a "Row-wise Distance 2 coloring"-based compressed representation.
 		/**
+		Precondition:
+		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
 		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
 		- unsigned int** ip2_RowIndex
 		- unsigned int** ip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		
+		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		//*/
 		int RecoverD2Row_SparseSolversFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 				
 		/// Same as RecoverD2Row_SparseSolversFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
-		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
 		int RecoverD2Row_SparseSolversFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
+
+		/// Same as RecoverD2Row_SparseSolversFormat_usermem(), except that memory allocation for output vector(s) is done by user.
+		/** Notes:
+		- This function will assume the user has properly allocate memory output vector(s).
+		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
+		*/
+		int RecoverD2Row_SparseSolversFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 
 		
 		/// A routine for recovering a Jacobian from a "Row-wise Distance 2 coloring"-based compressed representation.
 		/**
+		Precondition:
+		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_5
 		- unsigned int** ip2_RowIndex
 		- unsigned int** ip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		
+		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		*/
 		int RecoverD2Row_CoordinateFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 				
 		/// Same as RecoverD2Row_CoordinateFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
-		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
 		int RecoverD2Row_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
+
+		/// Same as RecoverD2Row_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
+		/** Notes:
+		- This function will assume the user has properly allocate memory output vector(s).
+		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
+		*/
+		int RecoverD2Row_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 
 		
 		/// A routine for recovering a Jacobian from a "Column-wise Distance 2 coloring"-based compressed representation.
@@ -125,6 +158,7 @@ namespace ColPack
 
 		Postcondition:
 		- dp3_JacobianValue points to a 2d matrix contains the numerical values of the Jacobian. Row Compressed Format is used
+		The memory allocated for this output vector is managed by ColPack. The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.
 
 		Return value:
 		- _TRUE upon successful
@@ -157,43 +191,76 @@ namespace ColPack
 				
 		/// Same as RecoverD2Cln_RowCompressedFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
-		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
 		int RecoverD2Cln_RowCompressedFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue);
+
+		/// Same as RecoverD2Cln_RowCompressedFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
+		/** Notes:
+		- This function will assume the user has properly allocate memory output vector(s).
+		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
+		(*dp3_JacobianValue) should have the same structure as uip2_JacobianSparsityPattern
+		*/
+		int RecoverD2Cln_RowCompressedFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue);
 
 		
 		/// A routine for recovering a Jacobian from a "Column-wise Distance 2 coloring"-based compressed representation.
 		/**
+		Precondition:
+		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
 		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
 		- unsigned int** ip2_RowIndex
 		- unsigned int** ip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		
+		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		//*/
 		int RecoverD2Cln_SparseSolversFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 				
 		/// Same as RecoverD2Cln_SparseSolversFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
-		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
 		int RecoverD2Cln_SparseSolversFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
+
+		/// Same as RecoverD2Cln_SparseSolversFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
+		/** Notes:
+		- This function will assume the user has properly allocate memory output vector(s).
+		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
+		*/
+		int RecoverD2Cln_SparseSolversFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 
 		
 		/// A routine for recovering a Jacobian from a "Column-wise Distance 2 coloring"-based compressed representation.
 		/**
+		Precondition:
+		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_5
 		- unsigned int** ip2_RowIndex
 		- unsigned int** ip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		
+		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.
 		//*/
 		int RecoverD2Cln_CoordinateFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 				
 		/// Same as RecoverD2Cln_CoordinateFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
-		- The output is NOT managed by ColPack. Therefore, the user should free the output manually when it is no longer needed.
+		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
 		int RecoverD2Cln_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
+
+		/// Same as RecoverD2Cln_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
+		/** Notes:
+		- This function will assume the user has properly allocate memory output vector(s).
+		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
+		*/
+		int RecoverD2Cln_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
+		
 	};
 }
 #endif

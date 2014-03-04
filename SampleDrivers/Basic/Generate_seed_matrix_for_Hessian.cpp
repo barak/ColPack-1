@@ -94,5 +94,5 @@ int main()
 	free_2DMatrix(uip2_HessianSparsityPattern, i_RowCount);
 	uip2_HessianSparsityPattern = NULL;
 
-	return(_TRUE);
+	return 0;
 }

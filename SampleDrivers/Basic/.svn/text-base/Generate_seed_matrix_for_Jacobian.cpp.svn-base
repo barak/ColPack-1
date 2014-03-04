@@ -122,5 +122,5 @@ int main()
 	free_2DMatrix(uip2_JacobianSparsityPattern, i_RowCount);
 	uip2_JacobianSparsityPattern = NULL;
 
-	return(_TRUE);
+	return 0;
 }

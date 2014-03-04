@@ -119,7 +119,7 @@ int RowCompressedFormat_2_SparseSolversFormat_StructureOnly (unsigned int ** uip
 	//first, count the number of non-zeros in the upper triangular and also populate *ip2_RowIndex array
 	unsigned int nnz = 0;
 	unsigned int nnz_in1Row = 0;
-	(*ip2_RowIndex) = new unsigned int[ui_rowCount + 1];
+	(*ip2_RowIndex) = (unsigned int*) malloc( (ui_rowCount + 1) * sizeof(unsigned int));
 	for (unsigned int i=0; i < ui_rowCount; i++) {
 	  nnz_in1Row = uip2_HessianSparsityPattern[i][0];
 	  (*ip2_RowIndex)[i] = nnz;
@@ -130,10 +130,10 @@ int RowCompressedFormat_2_SparseSolversFormat_StructureOnly (unsigned int ** uip
 	(*ip2_RowIndex)[ui_rowCount] = nnz;
 	//cout<<"nnz = "<<nnz<<endl;
 
-	displayVector(*ip2_RowIndex,ui_rowCount+1);
+	//displayVector(*ip2_RowIndex,ui_rowCount+1);
 
 	// populate *ip2_ColumnIndex array
-	(*ip2_ColumnIndex) = new unsigned int[nnz];
+	(*ip2_ColumnIndex) = (unsigned int*) malloc( (nnz) * sizeof(unsigned int));
 	unsigned int count = 0;
 	for (unsigned int i=0; i < ui_rowCount; i++) {
 	  nnz_in1Row = uip2_HessianSparsityPattern[i][0];
