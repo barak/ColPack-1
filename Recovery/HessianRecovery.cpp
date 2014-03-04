@@ -250,6 +250,7 @@ namespace ColPack
 		return (returnValue);
 	}
 
+/*
 	int HessianRecovery::DirectRecover_CoordinateFormat_vectors_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue) {
 		int rowCount = g->GetVertexCount();
 		int colorCount = g->GetVertexColorCount();
@@ -354,7 +355,7 @@ namespace ColPack
 		
 		return (RowIndex.size());
 	}
-	
+*/	
 	int HessianRecovery::DirectRecover_CoordinateFormat_vectors(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue) {
 		int rowCount = g->GetVertexCount();
 		int colorCount = g->GetVertexColorCount();
@@ -434,7 +435,7 @@ namespace ColPack
 
 		return (returnValue);
 	}
-	
+/*	
 	int HessianRecovery::DirectRecover_CoordinateFormat_usermem_serial(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
@@ -457,7 +458,8 @@ namespace ColPack
 
 		return (returnValue);
 	}
-
+*/
+/*
 	int HessianRecovery::DirectRecover_CoordinateFormat_unmanaged_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
@@ -496,7 +498,7 @@ namespace ColPack
 		
 		return (returnValue);
 	}
-
+*/
 	int HessianRecovery::DirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
@@ -522,7 +524,7 @@ namespace ColPack
 		
 		return (returnValue);
 	}
-	
+/*	
 	int HessianRecovery::DirectRecover_CoordinateFormat_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
 		int numOfNonZeros = DirectRecover_CoordinateFormat_unmanaged_OMP(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, ip2_RowIndex,ip2_ColumnIndex, dp2_HessianValue);
 
@@ -536,7 +538,7 @@ namespace ColPack
 
 		return (numOfNonZeros);
 	}
-	
+*/	
 	int HessianRecovery::DirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
 		int numOfNonZeros = DirectRecover_CoordinateFormat_unmanaged(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, ip2_RowIndex,ip2_ColumnIndex, dp2_HessianValue);
 
@@ -552,6 +554,10 @@ namespace ColPack
 	}
 
 	int HessianRecovery::IndirectRecover_RowCompressedFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, double*** dp3_HessianValue) {
+		if (g->GetVertexColorCount()==1){
+			return DirectRecover_RowCompressedFormat_usermem(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, dp3_HessianValue);
+		}
+
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
 			return _FALSE;
@@ -920,6 +926,9 @@ namespace ColPack
 	}
 
 	int HessianRecovery::IndirectRecover_SparseSolversFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue) {
+		if (g->GetVertexColorCount()==1){
+			return DirectRecover_SparseSolversFormat_usermem(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, ip2_RowIndex,  ip2_ColumnIndex, dp2_HessianValue,numOfNonZerosInHessianValue);
+		}
 
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
@@ -1328,6 +1337,9 @@ namespace ColPack
 cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 1, uip2_HessianSparsityPattern, "<< g->GetVertexCount() <<", " << g->GetVertexCount() <<", dp2_CompressedMatrix, " << g->GetVertexCount() <<", "  << g->GetVertexColorCount() <<endl;
 		WriteMatrixMarket_ADOLCInput(s_postfix, 1, uip2_HessianSparsityPattern, g->GetVertexCount(), g->GetVertexCount() , dp2_CompressedMatrix, g->GetVertexCount(), g->GetVertexColorCount() );
 #endif
+		if (g->GetVertexColorCount()==1){
+			return DirectRecover_CoordinateFormat_unmanaged(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, uip2_RowIndex,  uip2_ColumnIndex, dp2_HessianValue);
+		}
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
 			return _FALSE;
@@ -1683,6 +1695,10 @@ cout<<"*WriteMatrixMarket_ADOLCInput("<<s_postfix<<", 2, uip2_HessianSparsityPat
 	}
 	
 	int HessianRecovery::IndirectRecover_CoordinateFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue) {
+		if (g->GetVertexColorCount()==1){
+			return DirectRecover_CoordinateFormat_usermem(g, dp2_CompressedMatrix, uip2_HessianSparsityPattern, ip2_RowIndex,  ip2_ColumnIndex, dp2_HessianValue);
+		}
+
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
 			return _FALSE;

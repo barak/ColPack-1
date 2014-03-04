@@ -552,4 +552,7 @@ namespace ColPack
 
 		return (_TRUE);
 	}
+	int GraphColoringInterface::GetVertexColorCount(){
+		return GraphColoring::GetVertexColorCount();
+	}
 }

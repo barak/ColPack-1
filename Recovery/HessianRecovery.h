@@ -122,21 +122,21 @@ namespace ColPack
 		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		//*/
 		int DirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
-		int DirectRecover_CoordinateFormat_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
+//		int DirectRecover_CoordinateFormat_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 				
 		/// Same as DirectRecover_CoordinateFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
 		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
 		int DirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
-		int DirectRecover_CoordinateFormat_unmanaged_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
+//		int DirectRecover_CoordinateFormat_unmanaged_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 
 		/// Same as DirectRecover_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user. (OpenMP enabled)
 		/** Notes:
 		- This function will assume the user has properly allocate memory output vector(s).
 		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
 		*/
-		int DirectRecover_CoordinateFormat_usermem_serial(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
+//		int DirectRecover_CoordinateFormat_usermem_serial(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 		int DirectRecover_CoordinateFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 		//int DirectRecover_CoordinateFormat_usermem_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 
@@ -300,7 +300,7 @@ namespace ColPack
 
 	  private:
 		int DirectRecover_CoordinateFormat_vectors(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue);
-		int DirectRecover_CoordinateFormat_vectors_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue);
+//		int DirectRecover_CoordinateFormat_vectors_OMP(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue);
 		int IndirectRecover_CoordinateFormat_vectors(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue);
 	};
 }

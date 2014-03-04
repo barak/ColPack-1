@@ -168,6 +168,7 @@ namespace ColPack
 		//Public Function 1610
 		int TriangularColoring(string s_OrderingVariant);
 
+		int GetVertexColorCount();
 
 		static void PrintInducedVertexDegrees(int SetID, int i_HighestInducedVertexDegree, vector< list<int> > &vli_GroupedInducedVertexDegrees);
 

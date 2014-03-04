@@ -1,6 +1,0 @@
-MatrixDeallocation.lo: Utilities/MatrixDeallocation.cpp \
- Utilities/MatrixDeallocation.h Main/Definitions.h
-
-Utilities/MatrixDeallocation.h:
-
-Main/Definitions.h:
