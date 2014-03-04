@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with autoreconf --parallel
+
+# Disable built-time compilation of examples.  Enabling would be a
+# harmless reality check, except we want to install the example
+# sources as documentation, and compiling them leaves the compilation
+# output in-place, which then needs be be filtered out.
+override_dh_auto_configure:
+	dh_auto_configure -- --enable-examples=no
+
+# Do not compress the example source code.
+override_dh_compress:
+	dh_compress -X.cpp -Xeval_fun_chem.c
+
+override_dh_installexamples:
+	dh_installexamples
+	find debian/libcolpack-dev -name .gitignore -exec rm '{}' \;

@@ -1,0 +1,3 @@
+version=3
+# http://www.cscapes.org/coloringpage/ http://cscapes.cs.purdue.edu/download/ColPack/ColPack-(.*)\.tar\.gz
+http://cscapes.cs.purdue.edu/download/ColPack/ ColPack-([0-9.]+)\.tar\.gz

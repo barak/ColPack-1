@@ -1,0 +1,5 @@
+colpack (1.0.9-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #740822)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Wed, 05 Mar 2014 11:16:33 +0000

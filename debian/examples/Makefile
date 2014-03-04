@@ -1,0 +1,31 @@
+progs += SampleDrivers/Basic/color_bipartite_graph_using_BipartiteGraphBicoloringInterface
+progs += SampleDrivers/Basic/color_bipartite_graph_using_BipartiteGraphPartialColoringInterface
+progs += SampleDrivers/Basic/color_graph_using_GraphColoringInterface
+progs += SampleDrivers/Basic/Generate_seed_matrix_for_Hessian
+progs += SampleDrivers/Basic/Generate_seed_matrix_for_Jacobian
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADIC/01_Column_compression_and_recovery_for_Jacobian_return_ADIC_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/01_Column_compression_and_recovery_for_Jacobian_return_Row_Compressed_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/02_Column_compression_and_recovery_for_Jacobian_return_Coordinate_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/03_Column_compression_and_recovery_for_Jacobian_return_Sparse_Solvers_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/05_Compression_and_direct_recovery_for_Hessian_return_Row_Compressed_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/04_Row_compression_and_recovery_for_Jacobian_return_Row_Compressed_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/06_Compression_and_direct_recovery_for_Hessian_return_Coordinate_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/07_Compression_and_direct_recovery_for_Hessian_return_Sparse_Solvers_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/08_Compression_and_indirect_recovery_for_Hessian_return_Row_Compressed_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/09_Bidirectional_compression_and_recovery_for_Jacobian_return_Row_Compressed_Format
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/10_Column_compression_and_recovery_for_Jacobian_return_Row_Compressed_Format__unmanaged_usermem
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/11_Compression_and_direct_recovery_for_Hessian_return_Row_Compressed_Format__unmanaged_usermem
+progs += SampleDrivers/Matrix_Compression_and_Recovery/ADOL-C/12_Bidirectional_compression_and_recovery_for_Jacobian_return_Row_Compressed_Format__unmanaged_usermem
+progs += SampleDrivers/Matrix_Compression_and_Recovery/CSR_input/01_Column_compression_and_recovery_for_Jacobian_CSR_input_return_Row_Compressed_Format
+
+progs += SampleDrivers/Matrix_Compression_and_Recovery/SMB/sparse_jac_hess
+
+all: $(progs)
+
+LOADLIBES += -lColPack
+CC = $(CXX)
+CPPFLAGS += -I/usr/include/ColPack
+CXXFLAGS += -O2 -Wall
+
+SampleDrivers/Matrix_Compression_and_Recovery/SMB/sparse_jac_hess:
+	$(MAKE) -C $(dir $@) ADCFLAGS='-I/usr/include/adolc $(CPPFLAGS)' CFLAGS='$(CXXFLAGS) -Wno-unused-variable' ADLIBS='-ladolc $(LOADLIBES)' all
