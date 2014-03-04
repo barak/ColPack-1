@@ -342,7 +342,7 @@ namespace ColPack
 		free_2DMatrix(colorStatistic, rowCount);
 		colorStatistic = NULL;
 		
-		return rowCount;
+		return numOfNonZeros_count;
 	}
 
 	int JacobianRecovery2D::DirectRecover_CoordinateFormat_unmanaged(BipartiteGraphBicoloringInterface* g, double** dp2_RowCompressedMatrix, double** dp2_ColumnCompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {

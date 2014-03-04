@@ -21,6 +21,176 @@
 #include "extra.h"
 #include "Pause.h"
 #include "mmio.h"
+#include <cmath>
+
+int WriteMatrixMarket_ADOLCInput(string s_postfix, int i_mode, ...) {
+  unsigned int ** uip2_SparsityPattern;
+  int i_Matrix_Row;
+  int i_Matrix_Col;
+  double** dp2_CompressedMatrix;
+  int i_CompressedMatrix_Row;
+  int i_CompressedMatrix_Col;
+  double** dp2_Values;
+  
+  string s_BaseName = "-ColPack_debug.mtx";
+  
+  va_list ap; /*will point to each unnamed argument in turn*/
+  va_start(ap,i_mode); /* point to first element after i_mode*/
+  
+  if (i_mode == 0) {
+    uip2_SparsityPattern = va_arg(ap,unsigned int **);
+    i_Matrix_Row = va_arg(ap,int);
+    i_Matrix_Col = va_arg(ap,int);
+    
+    string s_MatrixName = "pattern"+s_postfix+s_BaseName;
+
+    ofstream out_Matrix (s_MatrixName.c_str());
+    if(!out_Matrix) {
+	    cout<<"Error creating file: \""<<out_Matrix<<"\""<<endl;
+	    exit(1);
+    }
+    
+    int i_NumOfLines = 0;
+    
+    //Count i_NumOfLines
+    for(int i = 0; i<i_Matrix_Row;i++) {
+      i_NumOfLines += uip2_SparsityPattern[i][0];
+    }
+			
+    out_Matrix<<"%%MatrixMarket matrix coordinate real general"<<endl;    
+    out_Matrix<<i_Matrix_Row<<" "<<i_Matrix_Col<<" "<< i_NumOfLines<<endl;
+    
+    out_Matrix<<setprecision(10)<<scientific<<showpoint;
+    for(int i = 0; i<i_Matrix_Row;i++) {
+      for(int j = 1; j<=uip2_SparsityPattern[i][0];j++) {
+	out_Matrix<<i+1<<" "<<uip2_SparsityPattern[i][j]+1;
+	out_Matrix<<endl;
+      }
+    }
+
+    out_Matrix.close();
+  }
+  else if (i_mode == 1) {
+    uip2_SparsityPattern = va_arg(ap,unsigned int **);
+    i_Matrix_Row = va_arg(ap,int);
+    i_Matrix_Col = va_arg(ap,int);
+    dp2_CompressedMatrix = va_arg(ap,double**);
+    i_CompressedMatrix_Row = va_arg(ap,int);
+    i_CompressedMatrix_Col = va_arg(ap,int);
+    
+    string s_MatrixName = "pattern"+s_postfix+s_BaseName;
+    ofstream out_Matrix (s_MatrixName.c_str());
+    if(!out_Matrix) {
+	    cout<<"Error creating file: \""<<out_Matrix<<"\""<<endl;
+	    exit(1);
+    }
+
+    int i_NumOfLines = 0;
+    
+    //Count i_NumOfLines
+    for(int i = 0; i<i_Matrix_Row;i++) {
+      i_NumOfLines += uip2_SparsityPattern[i][0];
+    }
+			
+    out_Matrix<<"%%MatrixMarket matrix coordinate real general"<<endl;    
+    out_Matrix<<i_Matrix_Row<<" "<<i_Matrix_Col<<" "<< i_NumOfLines<<endl;
+    
+    out_Matrix<<setprecision(10)<<scientific<<showpoint;
+    for(int i = 0; i<i_Matrix_Row;i++) {
+      for(int j = 1; j<=uip2_SparsityPattern[i][0];j++) {
+	out_Matrix<<i+1<<" "<<uip2_SparsityPattern[i][j]+1;
+	out_Matrix<<endl;
+      }
+    }
+
+    out_Matrix.close();
+
+    string s_CompressedMatrixName = "CompressedMatrix"+s_postfix+s_BaseName;
+    ofstream out_CompressedMatrix (s_CompressedMatrixName.c_str());
+    if(!out_CompressedMatrix) {
+	    cout<<"Error creating file: \""<<out_CompressedMatrix<<"\""<<endl;
+	    exit(1);
+    }
+    
+    out_CompressedMatrix<<"%%MatrixMarket matrix coordinate real general"<<endl;    
+    out_CompressedMatrix<<i_CompressedMatrix_Row<<" "<<i_CompressedMatrix_Col<<" "<< i_CompressedMatrix_Row*i_CompressedMatrix_Col<<endl;
+    
+    out_CompressedMatrix<<setprecision(10)<<scientific<<showpoint;
+    for(int i = 0; i<i_CompressedMatrix_Row;i++) {
+      for(int j = 0; j<i_CompressedMatrix_Col;j++) {
+	out_CompressedMatrix<<i+1<<" "<<j+1<<" "<<dp2_CompressedMatrix[i][j];
+	out_CompressedMatrix<<endl;
+      }
+    }
+
+    out_CompressedMatrix.close();
+  }
+  else if (i_mode == 2) {
+    uip2_SparsityPattern = va_arg(ap,unsigned int **);
+    i_Matrix_Row = va_arg(ap,int);
+    i_Matrix_Col = va_arg(ap,int);
+    dp2_CompressedMatrix = va_arg(ap,double**);
+    i_CompressedMatrix_Row = va_arg(ap,int);
+    i_CompressedMatrix_Col = va_arg(ap,int);
+    dp2_Values = va_arg(ap,double**);
+    
+    string s_MatrixName = "pattern_value"+s_postfix+s_BaseName;
+    ofstream out_Matrix (s_MatrixName.c_str());
+    if(!out_Matrix) {
+	    cout<<"Error creating file: \""<<out_Matrix<<"\""<<endl;
+	    exit(1);
+    }
+
+    int i_NumOfLines = 0;
+    
+    //Count i_NumOfLines
+    for(int i = 0; i<i_Matrix_Row;i++) {
+      i_NumOfLines += uip2_SparsityPattern[i][0];
+    }
+			
+    out_Matrix<<"%%MatrixMarket matrix coordinate real general"<<endl;    
+    out_Matrix<<i_Matrix_Row<<" "<<i_Matrix_Col<<" "<< i_NumOfLines<<endl;
+    
+    out_Matrix<<setprecision(10)<<scientific<<showpoint;
+    for(int i = 0; i<i_Matrix_Row;i++) {
+      for(int j = 1; j<=uip2_SparsityPattern[i][0];j++) {
+	out_Matrix<<i+1<<" "<<uip2_SparsityPattern[i][j]+1<<" "<<dp2_Values[i][j];
+	out_Matrix<<endl;
+      }
+    }
+
+    out_Matrix.close();
+
+    string s_CompressedMatrixName = "CompressedMatrix"+s_postfix+s_BaseName;
+    ofstream out_CompressedMatrix (s_CompressedMatrixName.c_str());
+    if(!out_CompressedMatrix) {
+	    cout<<"Error creating file: \""<<out_CompressedMatrix<<"\""<<endl;
+	    exit(1);
+    }
+    
+    out_CompressedMatrix<<"%%MatrixMarket matrix coordinate real general"<<endl;    
+    out_CompressedMatrix<<i_CompressedMatrix_Row<<" "<<i_CompressedMatrix_Col<<" "<< i_CompressedMatrix_Row*i_CompressedMatrix_Col<<endl;
+    
+    out_CompressedMatrix<<setprecision(10)<<scientific<<showpoint;
+    for(int i = 0; i<i_CompressedMatrix_Row;i++) {
+      for(int j = 0; j<i_CompressedMatrix_Col;j++) {
+	out_CompressedMatrix<<i+1<<" "<<j+1<<" "<<dp2_CompressedMatrix[i][j];
+	out_CompressedMatrix<<endl;
+      }
+    }
+
+    out_CompressedMatrix.close();
+  }
+  else {
+    cerr<<"ERR: WriteMatrixMarket_ADOLCInput(): i_mode =\""<< i_mode <<"\" unknown or unspecified"<<endl;
+
+    va_end(ap); //cleanup
+    return 1;
+  }
+  
+  va_end(ap); //cleanup  
+  return 0;
+}
 
 int ConvertHarwellBoeingDouble(string & num_string) {
   for(int i=num_string.size()-1; i>=0; i--) {
@@ -114,7 +284,7 @@ int ReadRowCompressedFormat(string s_InputFile, unsigned int *** uip3_SparsityPa
 
 }
 
-int RowCompressedFormat_2_SparseSolversFormat_StructureOnly (unsigned int ** uip2_HessianSparsityPattern, unsigned int ui_rowCount, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex) {
+int ConvertRowCompressedFormat2SparseSolversFormat_StructureOnly (unsigned int ** uip2_HessianSparsityPattern, unsigned int ui_rowCount, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex) {
 
 	//first, count the number of non-zeros in the upper triangular and also populate *ip2_RowIndex array
 	unsigned int nnz = 0;
@@ -152,8 +322,49 @@ int RowCompressedFormat_2_SparseSolversFormat_StructureOnly (unsigned int ** uip
 	return nnz;
 }
 
+int ConvertCoordinateFormat2RowCompressedFormat(unsigned int* uip1_RowIndex, unsigned int* uip1_ColumnIndex, double* dp1_HessianValue, int i_RowCount, int i_NonZeroCount, unsigned int *** dp3_Pattern, double*** dp3_Values ) {
+  (*dp3_Pattern) = (unsigned int**) malloc( (i_RowCount) * sizeof(unsigned int*));
+  (*dp3_Values) = (double**) malloc( (i_RowCount) * sizeof(double*));
+  
+  //Allocate memory for (*dp3_Pattern) and (*dp3_Values)
+  int count=1;
+  for(int i=1; i<i_NonZeroCount; i++) {
+    if(uip1_RowIndex[i] != uip1_RowIndex[i-1]) {
+      (*dp3_Pattern)[ uip1_RowIndex[i-1] ] = (unsigned int*) malloc( (count + 1) * sizeof(unsigned int));
+      (*dp3_Pattern)[ uip1_RowIndex[i-1] ][0] = count;
+      (*dp3_Values)[ uip1_RowIndex[i-1] ] = (double*) malloc( (count + 1) * sizeof(double));
+      (*dp3_Values)[ uip1_RowIndex[i-1] ][0] = (double)count;
+      
+      count=1;
+    } else { //uip1_RowIndex[i] == uip1_RowIndex[i-1]
+      count++;
+    }
+  }
+  (*dp3_Pattern)[ uip1_RowIndex[i_NonZeroCount-1] ] = (unsigned int*) malloc( (count + 1) * sizeof(unsigned int));
+  (*dp3_Pattern)[ uip1_RowIndex[i_NonZeroCount-1] ][0] = count;
+  (*dp3_Values)[ uip1_RowIndex[i_NonZeroCount-1] ] = (double*) malloc( (count + 1) * sizeof(double));
+  (*dp3_Values)[ uip1_RowIndex[i_NonZeroCount-1] ][0] = (double) count;
+  
+  //Populate values of (*dp3_Pattern) and (*dp3_Values)
+  count=0;
+  for(int i=0; i<i_RowCount; i++) {
+    for(int j=1; j<= (*dp3_Pattern)[i][0]; j++) {
+      (*dp3_Pattern)[i][j] = uip1_ColumnIndex[count];
+      (*dp3_Values)[i][j] = dp1_HessianValue[count];
+      count++;
+    }
+  }
+  
+  if(count != i_NonZeroCount) {
+    cerr<<"count != i_NonZeroCount"<<endl;
+    exit(1);
+  }
+  
+  
+  return 0;
+}
 
-void ConvertDIMACSFormat2MatrixMarketFormat(string fileNameNoExt) {
+void ConvertFileDIMACSFormat2MatrixMarketFormat(string fileNameNoExt) {
 	string inFileName = fileNameNoExt + ".gr";
 	string outFileName = fileNameNoExt + ".mtx";
 	string line, temp;
@@ -275,7 +486,53 @@ int GenerateValuesForSymmetricMatrix(unsigned int ** uip2_SparsityPattern, int r
 	return 0;
 }
 
-int ConvertMatrixMarketFormatToRowCompressedFormat(string s_InputFile, unsigned int *** uip3_SparsityPattern, double*** dp3_Value, int &rowCount, int &columnCount) {
+int ConvertRowCompressedFormat2ADIC(unsigned int ** uip2_SparsityPattern_RowCompressedFormat, int i_rowCount , double** dp2_Value, std::list<std::set<int> > &lsi_valsetlist, std::list<std::vector<double> > &lvd_Value) {
+  for(int i=0; i<i_rowCount; i++) {
+    std::set<int> valset;
+    std::vector<double> valuevector;
+    valuevector.reserve(uip2_SparsityPattern_RowCompressedFormat[i][0]);
+    for(int j= 1; j <= uip2_SparsityPattern_RowCompressedFormat[i][0]; j++) {
+      valset.insert(uip2_SparsityPattern_RowCompressedFormat[i][j]);
+      valuevector.push_back(dp2_Value[i][j]);
+    }
+    (lsi_valsetlist).push_back(valset);
+    (lvd_Value).push_back(valuevector);
+  }
+  
+  return 0;
+}
+
+int ConvertRowCompressedFormat2CSR(unsigned int ** uip2_SparsityPattern_RowCompressedFormat, int i_rowCount, int** ip_RowIndex, int** ip_ColumnIndex) {
+  (*ip_RowIndex) = new int[i_rowCount+1];
+  int nnz = 0;
+  for(int i=0; i < i_rowCount; i++) {
+    (*ip_RowIndex)[i] = nnz;
+    nnz += uip2_SparsityPattern_RowCompressedFormat[i][0];
+    
+	//cout<<"Display *ip_RowIndex"<<endl;
+	//displayVector(*ip_RowIndex,i_rowCount+1);
+    
+  }
+  (*ip_RowIndex)[i_rowCount] = nnz;
+  
+  (*ip_ColumnIndex) = new int[nnz];
+  int nz_count=0;
+  for(int i=0; i < i_rowCount; i++) {
+    for(int j=1; j<= uip2_SparsityPattern_RowCompressedFormat[i][0];j++) {
+      (*ip_ColumnIndex)[nz_count] = uip2_SparsityPattern_RowCompressedFormat[i][j];
+      nz_count++;
+    }
+	//cout<<"Display *ip_ColumnIndex"<<endl;
+	//displayVector(*ip_ColumnIndex, (*ip_RowIndex)[i_rowCount]);
+  }
+  
+  if(nz_count != nnz) {
+    cerr<<"IN ConvertRowCompressedFormat2CSR, nz_count ("<<nz_count<<") != nnz ("<<nnz<<")"<<endl;
+  }
+  return 0;
+}
+
+int ConvertMatrixMarketFormat2RowCompressedFormat(string s_InputFile, unsigned int *** uip3_SparsityPattern, double*** dp3_Value, int &rowCount, int &columnCount) {
 
 	string m_s_InputFile=s_InputFile;
 
@@ -449,6 +706,34 @@ int ConvertMatrixMarketFormatToRowCompressedFormat(string s_InputFile, unsigned 
 	return(0);
 }
 
+int MatrixMultiplication_VxS__usingVertexPartialColors(std::list<std::set<int> > &lsi_SparsityPattern, std::list<std::vector<double> > &lvd_Value, int columnCount, vector<int> &vi_VertexPartialColors, int colorCount, double*** dp3_CompressedMatrix) {
+	unsigned int rowCount = lsi_SparsityPattern.size();
+  
+	//Allocate memory for (*dp3_CompressedMatrix)[rowCount][colorCount]
+	//cout<<"Allocate memory for (*dp3_CompressedMatrix)[rowCount][colorCount]"<<endl;
+	(*dp3_CompressedMatrix) = new double*[rowCount];
+	for(unsigned int i=0; i < rowCount; i++) {
+		(*dp3_CompressedMatrix)[i] = new double[colorCount];
+		for(unsigned int j=0; j < (unsigned int)colorCount; j++) {
+			(*dp3_CompressedMatrix)[i][j] = 0.;
+		}
+	}
+
+	//do the multiplication
+	//cout<<"Do the multiplication"<<endl;
+	std::list<std::set<int> >::iterator valsetlistiter = lsi_SparsityPattern.begin();
+	std::list<std::vector<double> >::iterator valuelistlistiter = lvd_Value.begin();
+	for (unsigned int i=0; i< rowCount; valsetlistiter++, valuelistlistiter++, i++){
+		unsigned int numOfNonZeros = (*valsetlistiter).size();
+		std::set<int>::iterator valsetiter = (*valsetlistiter).begin();
+		for(unsigned int j=0; j < numOfNonZeros; valsetiter++, j++) {
+		  (*dp3_CompressedMatrix)[i][vi_VertexPartialColors[*valsetiter] ] += (*valuelistlistiter)[j];
+		}
+	}
+  
+	return 0;
+}
+
 int MatrixMultiplication_VxS(unsigned int ** uip3_SparsityPattern, double** dp3_Value, int rowCount, int columnCount, double** dp2_seed, int colorCount, double*** dp3_CompressedMatrix) {
 
 	//Allocate memory for (*dp3_CompressedMatrix)[rowCount][colorCount]
@@ -502,8 +787,68 @@ int MatrixMultiplication_SxV(unsigned int ** uip3_SparsityPattern, double** dp3_
 
 	return 0;
 }
+bool ADICMatricesAreEqual(std::list<std::vector<double> >& lvd_Value, std::list<std::vector<double> >& lvd_NewValue, bool compare_exact, bool print_all) {
+	double ratio = 1.;
+	int none_equal_count = 0;
+	int rowCount = lvd_Value.size();
+	std::list<std::vector<double> >::iterator lvdi_Value = lvd_Value.begin(), lvdi_NewValue = lvd_NewValue.begin() ;
 
-bool CompressedRowMatricesREqual(double** dp3_Value, double** dp3_NewValue, int rowCount, bool compare_exact, bool print_all) {
+	for(unsigned int i=0; i < (unsigned int)rowCount; lvdi_Value++, lvdi_NewValue++, i++) {
+		unsigned int numOfNonZeros = (unsigned int)(*lvdi_Value).size();
+		if (numOfNonZeros != (unsigned int)(*lvdi_NewValue).size()) {
+			printf("Number of non-zeros in row %d are not equal. (*lvdi_Value).size() = %d; (*lvdi_NewValue).size() = %d; \n",i,(unsigned int)(*lvdi_Value).size(),(unsigned int)(*lvdi_NewValue).size());
+			if (print_all) {
+				none_equal_count++;
+				continue;
+			}
+			else return false;
+		}
+		for(unsigned int j=0; j < numOfNonZeros; j++) {
+			if (compare_exact) {
+				if ((*lvdi_Value)[j] != (*lvdi_NewValue)[j]) {
+					printf("At row %d, column %d, (*lvdi_Value)[j](%f) != (*lvdi_NewValue)[j](%f) \n",i,j,(*lvdi_Value)[j],(*lvdi_NewValue)[j]);
+					if (print_all) {
+						none_equal_count++;
+					}
+					else {
+						printf("You may want to set the flag \"compare_exact\" to 0 to compare the values approximately\n");
+						return false;
+					}
+				}
+			}
+			else {
+				if((*lvdi_NewValue)[j] == 0.) {
+					if((*lvdi_Value)[j] != 0.) {
+						printf("At row %d, column %d, (*lvdi_Value)[j](%f) != (*lvdi_NewValue)[j](0) \n",i,j,(*lvdi_Value)[j]);
+						if (print_all) {
+							none_equal_count++;
+						}
+						else return false;
+					}
+				}
+				else {
+					ratio = (*lvdi_Value)[j] / (*lvdi_NewValue)[j];
+					if( ratio < .99 || ratio > 1.02) {
+						printf("At row %d, column %d, (*lvdi_Value)[j](%f) != (*lvdi_NewValue)[j](%f) ; (*lvdi_Value)[j] / (*lvdi_NewValue)[j]=%f\n",i,j,(*lvdi_Value)[j],(*lvdi_NewValue)[j], ratio);
+						if (print_all) {
+							none_equal_count++;
+						}
+						else return false;
+					}
+				}
+			}
+		}
+	}
+
+	if(none_equal_count!=0) {
+		printf("Total: %d lines. (The total # of non-equals can be greater)\n",none_equal_count);
+		if (compare_exact) printf("You may want to set the flag \"compare_exact\" to 0 to compare the values approximately\n");
+		return false;
+	}
+	else return true;
+}
+
+bool CompressedRowMatricesAreEqual(double** dp3_Value, double** dp3_NewValue, int rowCount, bool compare_exact, bool print_all) {
 	double ratio = 1.;
 	int none_equal_count = 0;
 
@@ -532,8 +877,9 @@ bool CompressedRowMatricesREqual(double** dp3_Value, double** dp3_NewValue, int 
 			}
 			else {
 				if(dp3_NewValue[i][j] == 0.) {
-					if(dp3_Value[i][j] != 0.) {
+					if(fabs(dp3_Value[i][j]) > 1e-10) {
 						printf("At row %d, column %d, dp3_Value[i][j](%f) != dp3_NewValue[i][j](0) \n",i,j,dp3_Value[i][j]);
+						cout<<scientific<<"    dp3_Value="<< dp3_Value[i][j]  <<endl;
 						if (print_all) {
 							none_equal_count++;
 						}
@@ -541,9 +887,10 @@ bool CompressedRowMatricesREqual(double** dp3_Value, double** dp3_NewValue, int 
 					}
 				}
 				else {
-					ratio = dp3_Value[i][j] / dp3_NewValue[i][j];
-					if( ratio < .99 || ratio > 1.02) {
+					ratio = fabs(dp3_Value[i][j]) / fabs(dp3_NewValue[i][j]);
+					if( fabs(dp3_Value[i][j]) > 1e-10 && (ratio < .99 || ratio > 1.02) ) {
 						printf("At row %d, column %d, dp3_Value[i][j](%f) != dp3_NewValue[i][j](%f) ; dp3_Value[i][j] / dp3_NewValue[i][j]=%f\n",i,j,dp3_Value[i][j],dp3_NewValue[i][j], ratio);
+						cout<<scientific<<"    dp3_Value="<< dp3_Value[i][j] <<", dp3_NewValue="<< dp3_NewValue[i][j] <<endl;
 						if (print_all) {
 							none_equal_count++;
 						}
@@ -561,5 +908,59 @@ bool CompressedRowMatricesREqual(double** dp3_Value, double** dp3_NewValue, int 
 	}
 	else return true;
 }
+
+int DisplayADICFormat_Sparsity(std::list<std::set<int> > &lsi_valsetlist) {
+	int size = (lsi_valsetlist).size();
+	int rowIndex=-1, colIndex=-1;
+	std::list<std::set<int> >::iterator valsetlistiter = (lsi_valsetlist).begin();
+	
+	unsigned int estimateColumnCount = 20;
+	cout<<setw(4)<<"["<<setw(3)<<"\\"<<"]       ";
+	for(unsigned int j=0; j < estimateColumnCount; j++) cout<<setw(4)<<j;
+	cout<<endl;
+
+	for (; valsetlistiter != (lsi_valsetlist).end(); valsetlistiter++){
+		rowIndex++;
+		std::set<int>::iterator valsetiter = (*valsetlistiter).begin();
+		cout<<setw(4)<<"["<<setw(3)<<rowIndex<<"]";
+		cout<<"  ("<<setw(3)<<(*valsetlistiter).size()<<")";
+		for (; valsetiter != (*valsetlistiter).end() ; valsetiter++) {
+			colIndex = *valsetiter;
+			cout<<setw(4)<<colIndex;
+		}
+		cout<<endl<<flush;
+	}
+	cout<<endl<<endl;	
+	
+	return 0;
+}
+
+int DisplayADICFormat_Value(std::list<std::vector<double> > &lvd_Value) {
+	int size = (lvd_Value).size();
+	int rowIndex=-1;
+	double value=0.;
+	std::list<std::vector<double> >::iterator valsetlistiter = (lvd_Value).begin();
+	
+	unsigned int estimateColumnCount = 20;
+	cout<<setw(4)<<"["<<setw(3)<<"\\"<<"]       ";
+	for(unsigned int j=0; j < estimateColumnCount; j++) cout<<setw(9)<<j;
+	cout<<endl;
+
+	for (; valsetlistiter != (lvd_Value).end(); valsetlistiter++){
+		rowIndex++;
+		std::vector<double>::iterator valsetiter = (*valsetlistiter).begin();
+		cout<<setw(4)<<"["<<setw(3)<<rowIndex<<"]";
+		cout<<"  ("<<setw(3)<<(*valsetlistiter).size()<<")";
+		for (; valsetiter != (*valsetlistiter).end() ; valsetiter++) {
+			value = *valsetiter;
+			cout<<setw(9)<<value;
+		}
+		cout<<endl<<flush;
+	}
+	cout<<endl<<endl;	
+	
+	return 0;
+}
+
 
 

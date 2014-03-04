@@ -98,12 +98,6 @@ namespace ColPack
 		Clear();
 	}
 
-	//Virtual Function 2253;3254
-	void BipartiteGraphInputOutput::Initialize()
-	{
-
-	}
-
 	//Virtual Function 2254;3254
 	void BipartiteGraphInputOutput::Clear()
 	{
@@ -112,7 +106,30 @@ namespace ColPack
 		return;
 	}
 
-	//Public Function 2255;3255
+	int BipartiteGraphInputOutput::WriteMatrixMarket(string s_OutputFile)
+	{
+		ofstream out (s_OutputFile.c_str());
+		if(!out) {
+			cout<<"Error creating file: \""<<s_OutputFile<<"\""<<endl;
+			exit(1);
+		}
+		
+		int max = m_vi_LeftVertices.size()-1;
+		
+		out<<"%%MatrixMarket matrix coordinate real general"<<endl;
+		
+		out<<GetLeftVertexCount()<<" "<<GetRightVertexCount()<<" "<< GetEdgeCount()<<endl;
+		
+		for(int i = 0; i<max;i++) {
+		  for(int j = m_vi_LeftVertices[i]; j < m_vi_LeftVertices[i+1]; j++) {
+		    out<<i+1<<" "<<m_vi_Edges[j]+1;
+		    out<<endl;
+		  }
+		}
+		
+		return 0;
+	}
+	
 	int BipartiteGraphInputOutput::ReadMatrixMarketBipartiteGraph(string s_InputFile)
 	{
 		bool b_symmetric;
@@ -127,7 +144,8 @@ namespace ColPack
 
 		int i_RowCount, i_ColumnCount;
 
-		int i_LeftVertex, i_RightVertex, i_Value;
+		int i_LeftVertex, i_RightVertex;
+		double d_Value;
 
 		int i_LeftVertexCount, i_RightVertexCount;
 
@@ -242,15 +260,15 @@ namespace ColPack
 //cout<<"i_LineCount = "<<i_LineCount<<endl;
 				in2.clear();
 				in2.str(s_InputLine);
-				i_Value =-999999999;
+				d_Value =-999999999.;
 				value_not_specified=false;
-				in2>>i_LeftVertex>>i_RightVertex>>i_Value;
+				in2>>i_LeftVertex>>i_RightVertex>>d_Value;
 				entry_counter++;
-				if(i_Value == -999999999 && in2.eof()) {		
-				  // "i_Value" entry is not specified
+				if(d_Value == -999999999. && in2.eof()) {		
+				  // "d_Value" entry is not specified
 				  value_not_specified = true;
 				}
-				else if (i_Value == 0) {
+				else if (d_Value == 0) {
 				  continue;
 				}
 
@@ -905,6 +923,104 @@ namespace ColPack
 		return;
 	}
 
+	int BipartiteGraphInputOutput::BuildBPGraphFromCSRFormat(int* ip_RowIndex, int i_RowCount, int i_ColumnCount, int* ip_ColumnIndex) {
+	  int i;
+	  unsigned int j;
+	  map< int,vector<int> > colList;
+	  
+	  m_vi_LeftVertices.clear();
+	  m_vi_LeftVertices.reserve(i_RowCount+1);
+	  m_vi_RightVertices.clear();
+	  m_vi_RightVertices.reserve(i_RowCount+1);
+	  m_vi_Edges.clear();
+	  m_vi_Edges.reserve(2*ip_RowIndex[i_RowCount]); //??? !!!
+
+	  m_vi_LeftVertices.push_back(0); //equivalent to m_vi_LeftVertices.push_back(m_vi_Edges.size());
+	  //PrintBipartiteGraph ();
+	  //Pause();
+	  for(i=0; i < i_RowCount; i++) {
+	    for(j=ip_RowIndex[i]; j<ip_RowIndex[i+1]; j++) {
+	      m_vi_Edges.push_back(ip_ColumnIndex[j]);
+	      colList[ ip_ColumnIndex[j] ].push_back(i);
+	    }
+	    m_vi_LeftVertices.push_back(m_vi_Edges.size());
+	    //PrintBipartiteGraph ();
+	    //Pause();
+	  }
+	  	  
+	  //for(i=0; i < i_RowCount; i++) {
+	//	  for(j=1; j <= uip2_JacobianSparsityPattern[i][0]; j++) {
+	//		  m_vi_Edges.push_back(uip2_JacobianSparsityPattern[i][j]);
+	//		  colList[ uip2_JacobianSparsityPattern[i][j] ].push_back(i);
+	//	  }
+	//	  m_vi_LeftVertices.push_back(m_vi_Edges.size());
+	  //}
+
+	  //put together the right vertices
+	  map< int,vector<int> >::iterator curr;
+	  m_vi_RightVertices.push_back(m_vi_Edges.size());
+	  for(int i=0; i <= i_ColumnCount; i++) {
+		  curr = colList.find(i);
+		  if(curr !=colList.end()) {
+			m_vi_Edges.insert(m_vi_Edges.end(),curr->second.begin(),curr->second.end());
+		  }//else  We have an empty column
+		  m_vi_RightVertices.push_back(m_vi_Edges.size());
+	  }
+
+	  CalculateVertexDegrees();	  
+
+	  return (_TRUE);
+	}
+	
+	int BipartiteGraphInputOutput::BuildBPGraphFromADICFormat(std::list<std::set<int> > *  lsi_SparsityPattern, int i_ColumnCount) {
+	  int i;
+	  unsigned int j;
+	  map< int,vector<int> > colList;
+	  int i_RowCount = (*lsi_SparsityPattern).size();
+
+	  m_vi_LeftVertices.clear();
+	  m_vi_LeftVertices.reserve(i_RowCount+1);
+	  m_vi_RightVertices.clear();
+	  m_vi_RightVertices.reserve(i_ColumnCount+1);
+	  m_vi_Edges.clear();
+	  
+	  m_vi_LeftVertices.push_back(0); // equivalent to m_vi_LeftVertices.push_back(m_vi_Edges.size());
+	  
+	  int rowIndex=-1, colIndex=-1;
+	  std::list<std::set<int> >::iterator valsetlistiter = (*lsi_SparsityPattern).begin();
+	  
+	  for (; valsetlistiter != (*lsi_SparsityPattern).end(); valsetlistiter++){
+	    rowIndex++;
+	    std::set<int>::iterator valsetiter = (*valsetlistiter).begin();
+	    
+	    for (; valsetiter != (*valsetlistiter).end() ; valsetiter++) {
+	      colIndex = *valsetiter;
+	      m_vi_Edges.push_back(colIndex);
+	      colList[colIndex].push_back(rowIndex);
+	    }
+	    m_vi_LeftVertices.push_back(m_vi_Edges.size());
+	  }
+	  m_vi_Edges.reserve(2*m_vi_Edges.size());
+	  
+	  //put together the right vertices
+	  map< int,vector<int> >::iterator curr;
+	  m_vi_RightVertices.push_back(m_vi_Edges.size());
+	  for(int i=0; i < i_ColumnCount; i++) {
+		  curr = colList.find(i);
+		  if(curr !=colList.end()) {
+			m_vi_Edges.insert(m_vi_Edges.end(),curr->second.begin(),curr->second.end());
+		  }//else  We have an empty column
+		  m_vi_RightVertices.push_back(m_vi_Edges.size());
+	  }
+
+	  CalculateVertexDegrees();
+	  //cout<<"PrintBipartiteGraph()"<<endl;
+	  //PrintBipartiteGraph();
+	  //Pause();
+	  //cout<<"OUT BipartiteGraphInputOutput::RowCompressedFormat2BipartiteGraph"<<endl;
+	  return _TRUE;
+	}
+
 	int BipartiteGraphInputOutput::BuildBPGraphFromRowCompressedFormat(unsigned int ** uip2_JacobianSparsityPattern, int i_RowCount, int i_ColumnCount) {
 		return RowCompressedFormat2BipartiteGraph(uip2_JacobianSparsityPattern, i_RowCount, i_ColumnCount);
 	}
@@ -917,7 +1033,9 @@ namespace ColPack
 	  map< int,vector<int> > colList;
 
 	  m_vi_LeftVertices.clear();
+	  m_vi_LeftVertices.reserve(i_RowCount+1);
 	  m_vi_RightVertices.clear();
+	  m_vi_RightVertices.reserve(i_ColumnCount+1);
 	  m_vi_Edges.clear();
 	  m_vi_LeftVertices.push_back(m_vi_Edges.size());
 
@@ -928,6 +1046,7 @@ namespace ColPack
 		  }
 		  m_vi_LeftVertices.push_back(m_vi_Edges.size());
 	  }
+	  m_vi_Edges.reserve(2*m_vi_Edges.size());
 
 	  //put together the right vertices
 	  map< int,vector<int> >::iterator curr;

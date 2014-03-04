@@ -51,8 +51,8 @@ namespace ColPack
 		- dp3_HessianValue points to a 2d matrix contains the numerical values of the Hessian. Row Compressed Format is used
 		The memory allocated for this output vector is managed by ColPack. The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.
 
-		Return value:
-		- _TRUE upon successful
+		
+		Return value: size of (*dp3_HessianValue) array
 
 		About input parameters:
 		- This routine doesn't need to take (star) coloring result m_vi_VertexColors of the Hessian as another paramenter because that information is known already (because of the 1st precondition). The cologin result can be retrieved from the first parameter "GraphColoringInterface* g"
@@ -108,70 +108,74 @@ namespace ColPack
 		/// A routine for recovering a Hessian from a star-coloring based compressed representation.
 		/**
 		Precondition:
-		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		- (*uip2_RowIndex), (*uip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
+		Return value: size of (*uip2_RowIndex) array
 		
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_5
-		- unsigned int** ip2_RowIndex
-		- unsigned int** ip2_ColumnIndex
+		- unsigned int** uip2_RowIndex
+		- unsigned int** uip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		NOTE: Since we are returning a symmetric matrix, only the upper triangle are stored.
 		
 		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		//*/
-		int DirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		int DirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 				
 		/// Same as DirectRecover_CoordinateFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
 		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
-		int DirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		int DirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 
 		/// Same as DirectRecover_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
 		/** Notes:
 		- This function will assume the user has properly allocate memory output vector(s).
 		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
 		*/
-		int DirectRecover_CoordinateFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		int DirectRecover_CoordinateFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 
 		
 		/// A routine for recovering a Hessian from a star-coloring based compressed representation.
 		/**
 		Precondition:
-		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		- (*uip2_RowIndex), (*uip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
+		Return value: size of (*uip2_RowIndex) array
 		
 		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
-		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
-		- unsigned int** ip2_RowIndex
-		- unsigned int** ip2_ColumnIndex
+		http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
+		- unsigned int** uip2_RowIndex
+		- unsigned int** uip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
-
 		NOTE: Since we are returning a symmetric matrix, according to format, only the upper triangle are stored.
 		
 		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		*/
-		int DirectRecover_SparseSolversFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		int DirectRecover_SparseSolversFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 				
 		/// Same as DirectRecover_SparseSolversFormat(), except that the output is NOT managed by ColPack 
 		/** 
 		About input parameters:
-		- numOfNonZerosInHessianValue: the size of (*ip2_ColumnIndex) and (*dp2_HessianValue) arrays.
+		- numOfNonZerosInHessianValue: the size of (*uip2_ColumnIndex) and (*dp2_HessianValue) arrays.
 		The value of numOfNonZerosInHessianValue will be calculated if not provided (i.e. <1).
 		
 		Notes:
 		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
-		int DirectRecover_SparseSolversFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue = 0);
+		int DirectRecover_SparseSolversFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue = 0);
 
 		/// Same as DirectRecover_SparseSolversFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
 		/** 
 		About input parameters:
-		- numOfNonZerosInHessianValue: the size of (*ip2_ColumnIndex) and (*dp2_HessianValue) arrays.
+		- numOfNonZerosInHessianValue: the size of (*uip2_ColumnIndex) and (*dp2_HessianValue) arrays.
 		
 		Notes:
 		- This function will assume the user has properly allocate memory output vector(s).
 		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
 		*/
-		int DirectRecover_SparseSolversFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue);
+		int DirectRecover_SparseSolversFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue);
 
 		
 		/// A routine for recovering a Hessian from a acyclic-coloring based compressed representation.
@@ -192,9 +196,8 @@ namespace ColPack
 		Postcondition:
 		- dp3_HessianValue points to a 2d matrix contains the numerical values of the Hessian. Row Compressed Format is used
 		The memory allocated for this output vector is managed by ColPack. The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.
-
-		Return value:
-		- _TRUE upon successful
+		
+		Return value: size of (*dp3_HessianValue) array
 
 		About input parameters:
 		- This routine doesn't need to take (acyclic) coloring result m_vi_VertexColors of the Hessian as another paramenter because that information is known already (because of the 1st precondition).
@@ -222,70 +225,74 @@ namespace ColPack
 		/// A routine for recovering a Hessian from a acyclic-coloring based compressed representation.
 		/**
 		Precondition:
-		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		- (*uip2_RowIndex), (*uip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
+		Return value: size of (*uip2_RowIndex) array
 		
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_5
-		- unsigned int** ip2_RowIndex
-		- unsigned int** ip2_ColumnIndex
+		- unsigned int** uip2_RowIndex
+		- unsigned int** uip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		NOTE: Since we are returning a symmetric matrix, only the upper triangle are stored.
 		
 		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		//*/
-		int IndirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		int IndirectRecover_CoordinateFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 				
 		/// Same as IndirectRecover_CoordinateFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
 		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
-		int IndirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		int IndirectRecover_CoordinateFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 
 		/// Same as IndirectRecover_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
 		/** Notes:
 		- This function will assume the user has properly allocate memory output vector(s).
 		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
 		*/
-		int IndirectRecover_CoordinateFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		int IndirectRecover_CoordinateFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 
 		
 		/// A routine for recovering a Hessian from a acyclic-coloring based compressed representation.
 		/**
 		Precondition:
-		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		- (*uip2_RowIndex), (*uip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
+		Return value: size of (*uip2_RowIndex) array
 		
 		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
-		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
-		- unsigned int** ip2_RowIndex
-		- unsigned int** ip2_ColumnIndex
+		http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
+		- unsigned int** uip2_RowIndex
+		- unsigned int** uip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
-
 		NOTE: Since we are returning a symmetric matrix, according to format, only the upper triangle are stored.
 		
 		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		*/
-		int IndirectRecover_SparseSolversFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue);
+		int IndirectRecover_SparseSolversFormat(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue);
 		
 		/// Same as IndirectRecover_SparseSolversFormat(), except that the output is NOT managed by ColPack 
 		/** 
 		About input parameters:
-		- numOfNonZerosInHessianValue: the size of (*ip2_ColumnIndex) and (*dp2_HessianValue) arrays.
+		- numOfNonZerosInHessianValue: the size of (*uip2_ColumnIndex) and (*dp2_HessianValue) arrays.
 		The value of numOfNonZerosInHessianValue will be calculated if not provided (i.e. <1).
 		
 		Notes:
 		- The output is NOT managed by ColPack. Therefore, the user should free the output manually using free() (NOT delete) function when it is no longer needed.
 		*/
-		int IndirectRecover_SparseSolversFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue = 0);
+		int IndirectRecover_SparseSolversFormat_unmanaged(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue = 0);
 
 		/// Same as IndirectRecover_SparseSolversFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
 		/** 
 		About input parameters:
-		- numOfNonZerosInHessianValue: the size of (*ip2_ColumnIndex) and (*dp2_HessianValue) arrays.
+		- numOfNonZerosInHessianValue: the size of (*uip2_ColumnIndex) and (*dp2_HessianValue) arrays.
 		
 		Notes:
 		- This function will assume the user has properly allocate memory output vector(s).
 		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
 		*/
-		int IndirectRecover_SparseSolversFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue);
+		int IndirectRecover_SparseSolversFormat_usermem(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, unsigned int** uip2_RowIndex, unsigned int** uip2_ColumnIndex, double** dp2_HessianValue, unsigned int numOfNonZerosInHessianValue);
 
 	  private:
 		int DirectRecover_CoordinateFormat_vectors(GraphColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_HessianSparsityPattern, vector<unsigned int> &RowIndex, vector<unsigned int> &ColumnIndex, vector<double> &HessianValue);

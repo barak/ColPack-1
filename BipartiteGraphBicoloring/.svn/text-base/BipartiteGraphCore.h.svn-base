@@ -33,14 +33,13 @@ namespace ColPack
 	class BipartiteGraphCore
 	{
 	public: //DOCUMENTED
-		//Public Function 2108:3108
+
 		/// LeftVertexCount = RowVertexCount = m_vi_LeftVertices.size() -1
 		int GetRowVertexCount();
 		/// LeftVertexCount = RowVertexCount = m_vi_LeftVertices.size() -1
 		int GetLeftVertexCount();
 
 		
-		//Public Function 2109:3109
 		/// RightVertexCount = ColumnVertexCount = m_vi_RightVertices.size() -1
 		int GetColumnVertexCount();
 		/// RightVertexCount = ColumnVertexCount = m_vi_RightVertices.size() -1
@@ -74,72 +73,43 @@ namespace ColPack
 
 	public:
 		
-		//Virtual Function 2100:3100
 		virtual ~BipartiteGraphCore(){}
-		
-		//Virtual Function 2101:3101
-		virtual void Initialize() = 0;
-	
-		//Virtual Function 2102:3102
+
 		virtual void Clear();
 		
-		//Public Function 2103:3103
 		string GetInputFile();
 
-
-		//Public Function 2104:3104
 		void GetRowVertices(vector<int> &output) const;
 		void GetLeftVertices(vector<int> &output) const;
 		
-		//Public Function 2105:3105
 		void GetColumnVertices(vector<int> &output) const;
 		void GetRightVertices(vector<int> &output) const;
 
 		unsigned int GetRowVertices(unsigned int** ip2_RowVertex);
 		unsigned int GetColumnIndices(unsigned int** ip2_ColumnIndex);
 
-		//Public Function 2106:3106
 		void GetEdges(vector<int> &output) const;
 		
-		//Public Function 2107:3107
 		void GetVertexEdgeMap(map< int, map<int, int> > &output);
 
-		
-		//Public Function 2110:3110
 		int GetEdgeCount();
 
-		
-		//Public Function 2111:3111
 		int GetMaximumRowVertexDegree();
 
-		
-		//Public Function 2112:3112
 		int GetMaximumColumnVertexDegree();
 
-		
-		//Public Function 2113:3113
 		int GetMaximumVertexDegree();
 
-		
-		//Public Function 2114:3114
 		int GetMinimumRowVertexDegree();
 
-		
-		//Public Function 2115:3115
 		int GetMinimumColumnVertexDegree();
 
-		
-		//Public Function 2116:3116
 		int GetMinimumVertexDegree();
 
-		
-		//Public Function 2117:3117
 		double GetAverageRowVertexDegree();
 		
-		//Public Function 2118:3118
 		double GetAverageColumnVertexDegree();
 		
-		//Public Function 2119:3119
 		double GetAverageVertexDegree();
 	};
 }

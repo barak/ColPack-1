@@ -282,6 +282,31 @@ namespace ColPack
 		return;
 	}
 
+	void GraphColoring::ClearColoringONLY()
+	{
+		m_i_VertexColorCount = _UNKNOWN;
+
+		m_i_LargestColorClass = _UNKNOWN;
+		m_i_SmallestColorClass = _UNKNOWN;
+
+		m_i_LargestColorClassSize = _UNKNOWN;
+		m_i_SmallestColorClassSize = _UNKNOWN;
+
+		m_d_AverageColorClassSize = _UNKNOWN;
+
+		m_i_ColoringUnits = _UNKNOWN;
+
+		m_d_ColoringTime = _UNKNOWN;
+		m_d_CheckingTime = _UNKNOWN;
+
+		m_s_VertexColoringVariant.clear();
+
+		m_vi_VertexColors.clear();
+
+		m_vi_VertexColorFrequency.clear();
+
+		return;
+	}
 
 	//Public Function 1454
 	int GraphColoring::DistanceOneColoring()

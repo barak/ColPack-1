@@ -50,9 +50,8 @@ namespace ColPack
 		Postcondition:
 		- dp3_JacobianValue points to a 2d matrix contains the numerical values of the Jacobian. Row Compressed Format is used.
 		The memory allocated for this output vector is managed by ColPack. The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.
-
-		Return value:
-		- _TRUE upon successful
+		
+		Return value: size of (*dp3_JacobianValue) array
 
 		About input parameters:
 		- This routine doesn't need to take (Star) Bicoloring results (m_vi_LeftVertexColors and m_vi_RightVertexColors) of the Jacobian as another paramenter because that information is known internally already (because of the 1st precondition).
@@ -99,6 +98,8 @@ namespace ColPack
 		Precondition:
 		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
 		
+		Return value: size of (*ip2_RowIndex) array
+		
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_5
 		- unsigned int** ip2_RowIndex
@@ -128,11 +129,16 @@ namespace ColPack
 		Precondition:
 		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
 		
-		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
-		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
+		Return value: size of (*ip2_RowIndex) array
+		
+		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (one-based indexing)
+		http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
 		- unsigned int** ip2_RowIndex
 		- unsigned int** ip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		Note: In case of Jacobian (non-symmetric matrix), Sparse Solvers Format is equivalent to 
+		one-based indexing, 3 array variation CSR format
+		http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#table_79228E147DA0413086BEFF4EFA0D3F04
 		
 		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		//*/

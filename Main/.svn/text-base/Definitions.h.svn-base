@@ -88,13 +88,16 @@ Time in seconds = # of clock-ticks / CLOCKS_PER_SEC => max Time in seconds = 2,1
 #define DIR_SEPARATOR "\\"
 #endif
 
-#define DEBUG _UNKNOWN
+//#define DEBUG _UNKNOWN
+//#define DEBUG 5103
 
 // definition for variadic Graph...Interface()
 #define SRC_WAIT -1
 #define SRC_FILE 0
 #define SRC_MEM_ADOLC 1
 #define SRC_MEM_ADIC 2
+#define SRC_MEM_SSF 3
+#define SRC_MEM_CSR 4
 
 
 enum boolean {FALSE=0, TRUE};

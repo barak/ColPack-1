@@ -34,7 +34,17 @@ namespace ColPack
 	 */
 	class GraphInputOutput : public GraphCore
 	{
-	public: //DOCUMENTED
+	public:
+
+		/// Read the sparsity pattern of Hessian matrix represented in ADOLC format (Compressed Sparse Row format) and build a corresponding adjacency graph.
+		/**
+		Precondition:
+		- The Hessian matrix must be stored in Row Compressed Format
+
+		Return value:
+		- i_HighestDegree
+		*/
+		int BuildGraphFromRowCompressedFormat(unsigned int ** uip2_HessianSparsityPattern, int i_RowCount);
 
 		/// Read the sparsity pattern of a symmetric matrix in the specified file format from the specified filename and build an adjacency  graph.
 		/**	This function will
@@ -59,17 +69,7 @@ namespace ColPack
 		*/
 		int ReadAdjacencyGraph(string s_InputFile, string s_fileFormat="AUTO_DETECTED");
 
-		/// Read the sparsity pattern of Hessian matrix represented in ADOLC format (Compressed Sparse Row format) and build a corresponding adjacency graph.
-		/**
-		Precondition:
-		- The Hessian matrix must be stored in Row Compressed Format
-
-		Return value:
-		- i_HighestDegree
-		*/
-		int BuildGraphFromRowCompressedFormat(unsigned int ** uip2_HessianSparsityPattern, int i_RowCount);
-
-		//!!! NEED TO BE FIXED
+		// !!! NEED TO BE FIXED
 		/// Read the entries of a symmetric matrix in Matrix Market format and build the corresponding adjacency graph
 		/**
 		Precondition:
@@ -79,39 +79,32 @@ namespace ColPack
 		If the input file contains only the graph structure, the value of b_getStructureOnly will be ignored
 		*/
 		int ReadMatrixMarketAdjacencyGraph(string s_InputFile, bool b_getStructureOnly = false);
+		
+		/// Write the structure of the graph into a file using Matrix Market format
+		/**
+		NOTES:
+		- Because ColPack's internal graph does not have self loop, the output graph will not have any self-loops that exist in the input,
+		i.e., diagonal entries of the input graph will be removed.
+		*/
+		int WriteMatrixMarket(string s_OutputFile = "-ColPack_debug.mtx", bool b_getStructureOnly = false);
 
 	private:
 
-		//Private Function 1201
+		// ??? Wonder if this function is useful any more
 		int ParseWidth(string FortranFormat);
 
-		//Private Function 1202
 		void CalculateVertexDegrees();
 
 	public:
 
-		//Public Constructor 1251
 		GraphInputOutput();
 
-		//Public Destructor 1252
 		~GraphInputOutput();
 
-		//Virtual Function 1253
-		//??? What is the purpose of this function? TO BE IMPLEMENTED
-		virtual void Initialize();
-
-		//Virtual Function 1254
 		virtual void Clear();
 
-		//Public Function 1255
 		string GetInputFile();
 
-		/*
-		//Public Function 1256
-		int ReadMatrixMarketAdjacencyGraph(string s_InputFile);
-		//*/
-
-		//Public Function 1258
 		/// Read the entries of symmetric matrix in Harwell Boeing format and build the corresponding adjacency graph.
 		/**
 		  Supported sub-format: MXTYPE[3] = (R | P) (S | U) (A)
@@ -119,24 +112,22 @@ namespace ColPack
 		*/
 		int ReadHarwellBoeingAdjacencyGraph(string s_InputFile);
 
-		//Public Function 1259
 		/// Read the entries of symmetric matrix in MeTiS format and build the corresponding adjacency graph.
 		int ReadMeTiSAdjacencyGraph(string s_InputFile);
+		
+		// TO BE DOCUMENTED
+		// ??? When do I need ReadMeTiSAdjacencyGraph2() instead of ReadMeTiSAdjacencyGraph() ?
+		//        probably need ReadMeTiSAdjacencyGraph2() when I need to read from a variant of MeTiS format
 		int ReadMeTiSAdjacencyGraph2(string s_InputFile);
 
-		//Public Function 1260
 		int PrintGraph();
 
-		//Public Function 1261
 		int PrintGraphStructure();
 
-		//Public Function 1262
 		int PrintMatrix();
 
-		//Public Function 1263
 		int PrintMatrix(vector<int> &, vector<int> &, vector<double> &);
 
-		//Public Function 1264
 		void PrintVertexDegrees();
 	};
 }

@@ -162,6 +162,7 @@ namespace ColPack
 
 		//Virtual Function 1453
 		virtual void Clear();
+		void ClearColoringONLY();
 
 		//Public Function 1454
 		int DistanceOneColoring();

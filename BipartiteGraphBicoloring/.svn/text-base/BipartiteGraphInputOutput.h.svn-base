@@ -35,7 +35,42 @@ namespace ColPack
 	 */
 	class BipartiteGraphInputOutput : public BipartiteGraphCore
 	{
-	public: //DOCUMENTED
+	public:
+
+	  // -----INPUT FUNCTIONS-----
+		
+		// !!! TO BE DOCUMENTED
+		int BuildBPGraphFromADICFormat(std::list<std::set<int> > *  lsi_SparsityPattern, int i_ColumnCount);
+
+		/// Read the sparsity pattern of Jacobian matrix represented in zero-based indexing, 3-array variation CSR format and build a corresponding adjacency graph.
+		/** 
+		Zero-based indexing, 3-array variation CSR format:
+		  http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#table_79228E147DA0413086BEFF4EFA0D3F04
+
+		Return value:
+		- _TRUE upon successful
+		*/
+		int BuildBPGraphFromCSRFormat(int* ip_RowIndex, int i_RowCount, int i_ColumnCount, int* ip_ColumnIndex);
+
+		/// Read the sparsity pattern of Jacobian matrix represented in ADOLC format (Row Compressed format) and build a corresponding adjacency graph.
+		/** Equivalent to RowCompressedFormat2BipartiteGraph
+		Precondition:
+		- The Jacobian matrix must be stored in Row Compressed Format
+
+		Return value:
+		- _TRUE upon successful
+		*/
+		int BuildBPGraphFromRowCompressedFormat(unsigned int ** uip2_JacobianSparsityPattern, int i_RowCount, int i_ColumnCount);
+
+		/// Given a compressed sparse row representation, build the corresponding bipartite graph representation
+		/**
+		Precondition:
+		- The Jacobian matrix must be stored in Row Compressed Format
+
+		Return value:
+		- _TRUE upon successful
+		*/
+		int RowCompressedFormat2BipartiteGraph(unsigned int ** uip2_JacobianSparsityPattern, int i_RowCount, int i_ColumnCount);
 
 		/// Read the sparsity pattern of a matrix in the specified file format from the specified filename and build a Bipartite Graph
 		/**	This function will
@@ -64,39 +99,6 @@ namespace ColPack
 		*/
 		int ReadBipartiteGraph(string  s_InputFile, string s_fileFormat="AUTO_DETECTED");
 
-		/// Read the sparsity pattern of Jacobian matrix represented in ADOLC format (Row Compressed format) and build a corresponding adjacency graph.
-		/** Equivalent to RowCompressedFormat2BipartiteGraph
-		Precondition:
-		- The Jacobian matrix must be stored in Row Compressed Format
-
-		Return value:
-		- _TRUE upon successful
-		*/
-		int BuildBPGraphFromRowCompressedFormat(unsigned int ** uip2_JacobianSparsityPattern, int i_RowCount, int i_ColumnCount);
-
-		/// Given a compressed sparse row representation, build the corresponding bipartite graph representation
-		/**
-		Precondition:
-		- The Jacobian matrix must be stored in Row Compressed Format
-
-		Return value:
-		- _TRUE upon successful
-		*/
-		int RowCompressedFormat2BipartiteGraph(unsigned int ** uip2_JacobianSparsityPattern, int i_RowCount, int i_ColumnCount);
-
-		/// Given a bipartite graph representation, build the corresponding compressed sparse row representation
-		/**
-		Postcondition:
-		- The Jacobian matrix is in compressed sparse rows format
-		- (*uip3_JacobianSparsityPattern) size is (GetRowVertexCount()) rows x (GetColumnVertexCount()) columns
-
-		Return value:
-		- _TRUE upon successful
-		*/
-		int BipartiteGraph2RowCompressedFormat(unsigned int *** uip3_JacobianSparsityPattern, unsigned int * uip1_RowCount, unsigned int * uip1_ColumnCount);
-
-		//Public Function 2258;3258
-
 		/// Read a file with explicit 1 and 0 representing sparsity structure and build corresponding bipartite graph
 		/** The format of the matrix is specified bellow (this file format .gen is NOT the same as the .gen2 files used by ReadGenericSquareMatrixBipartiteGraph() ):
 		- A matrix is specified row by row, each row ending with and endofline.
@@ -119,7 +121,6 @@ namespace ColPack
 		*/
 		int ReadGenericMatrixBipartiteGraph(string s_InputFile);
 
-		//Public Function 2259;3259
 		/// Read a file with explicit 1 and 0 representing sparsity sturcture of a square matrix whose order is specified in the extension of the filename and build a Bipartite Graph
 		/** The format of the matrix is specified bellow (this file format .gen2 is NOT the same as the .gen files used by ReadGenericMatrixBipartiteGraph() ):
 		- The number of rows, columns or nonzeros is not given in the file, but the filename indicates the number of rows and columns. Format: <matrix name>-<row>by<column>.gens
@@ -134,47 +135,50 @@ namespace ColPack
 		*/
 		int ReadGenericSquareMatrixBipartiteGraph(string s_InputFile);
 
-
-	private:
-
-		//Private Function 2201;3201
-		void CalculateVertexDegrees();
-
-	public:
-
-		//Public Constructor 2251;3251
-		BipartiteGraphInputOutput();
-
-		//Public Destructor 2252;3252
-		~BipartiteGraphInputOutput();
-
-		//Virtual Function 2253;3254
-		//??? What is the purpose of this function? TO BE IMPLEMENTED
-		virtual void Initialize();
-
-		//Virtual Function 2254;3254
-		virtual void Clear();
-
-		//Public Function 2255;3255
-		/// Read sparsity pattern of a matrix specified in Matrix Market format from a file and build a corresponding bipartite graph
-		int ReadMatrixMarketBipartiteGraph(string s_InputFile);
-
-		//Public Function 2256;3256
-		/// Read sparsity pattern of a matrix specified in MeTiS format from a file and build a corresponding bipartite graph
-		int ReadMeTiSBipartiteGraph(string s_InputFile);
-
-		//Public Function 2257;3257
 		/// Read sparsity pattern of a matrix specified in Harwell Boeing format from a file and build a corresponding bipartite graph
 		/**
 		  Supported sub-format: MXTYPE[3] = (R | P) (*) (A)
 		*/
 		int ReadHarwellBoeingBipartiteGraph(string s_InputFile);
 
-		//Public Function 2260;3260
+		/// Read sparsity pattern of a matrix specified in Matrix Market format from a file and build a corresponding bipartite graph
+		int ReadMatrixMarketBipartiteGraph(string s_InputFile);
+
+		/// Read sparsity pattern of a matrix specified in MeTiS format from a file and build a corresponding bipartite graph
+		int ReadMeTiSBipartiteGraph(string s_InputFile);
+
+	  // -----OUTPUT FUNCTIONS-----
+
 		void PrintBipartiteGraph();
 
-		//Public Function 2261;3261
 		void PrintVertexDegrees();
+		
+		/// Given a bipartite graph representation, build the corresponding compressed sparse row representation
+		/**
+		Postcondition:
+		- The Jacobian matrix is in compressed sparse rows format
+		- (*uip3_JacobianSparsityPattern) size is (GetRowVertexCount()) rows x (GetColumnVertexCount()) columns
+
+		Return value:
+		- _TRUE upon successful
+		*/
+		int BipartiteGraph2RowCompressedFormat(unsigned int *** uip3_JacobianSparsityPattern, unsigned int * uip1_RowCount, unsigned int * uip1_ColumnCount);
+
+		/// Write the structure of the bipartite graph into a file using Matrix Market format
+		int WriteMatrixMarket(string s_OutputFile = "-ColPack_debug.mtx");
+
+		
+	private:
+
+		void CalculateVertexDegrees();
+
+	public:
+
+		BipartiteGraphInputOutput();
+
+		~BipartiteGraphInputOutput();
+
+		virtual void Clear();
 	};
 }
 #endif

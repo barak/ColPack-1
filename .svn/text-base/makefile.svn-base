@@ -179,13 +179,15 @@ clean-SampleDrivers:
 
 ship: wipe
 	-rm -rf *.vcproj* *.ncb *.sln *.suo debug Debug core ColPack.exe libColPack.a libColPack.so build
+	fr "common_variables.in" "FLAGS = -g -fPIC" "#FLAGS = -g -fPIC"
+	fr "common_variables.in" "#FLAGS = -O5 -fPIC" "FLAGS = -O5 -fPIC"
 	d2ua
 	(cd .. && dz ColPack;chmod 755 ColPack.tar.gz;)
 
 ship-dev: ship
-	doxygen ../doxygen/ColPack_local_ubuntu_ship_html2
+	doxygen /home/nguyend/Desktop/Working_U/research_Assefaw/doxygen/ColPack_svn
 	chmod -R 755 ~/public_html/dox/
-	scp -r ~/public_html/dox/ColPack wiki:/home/csp-wiki/htdocs/dox/
+	#scp -r ~/public_html/dox/ColPack wiki:/home/csp-wiki/htdocs/dox/
 
 install:
 	@echo
@@ -234,3 +236,6 @@ test-banner:
 
 run-test: test
 	@export TOP_DIR=$(PWD); $(MAKE) -C SampleDrivers run-test
+
+run-extra: test
+	@export TOP_DIR=$(PWD); $(MAKE) -C SampleDrivers run-extra

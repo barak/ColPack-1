@@ -184,10 +184,9 @@ namespace ColPack
 		int rowCount = g->GetRowVertexCount();
 		vector<int> vi_LeftVertexColors;
 		g->GetLeftVertexColors(vi_LeftVertexColors);
-		unsigned int numOfNonZeros = 0;
 
-		numOfNonZeros = g->GetEdgeCount();
-
+		int numOfNonZeros;
+		
 		//Recover value of the Jacobian
 		unsigned int numOfNonZeros_count = 0;
 		for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
@@ -203,13 +202,13 @@ namespace ColPack
 		if(numOfNonZeros_count != g->GetEdgeCount()) {
 			cout<<"**Something fishing going on"<<endl;
 			cout<<"numOfNonZeros_count="<<numOfNonZeros_count<<endl;
-			cout<<"numOfNonZeros="<<numOfNonZeros<<endl;
+			cout<<"numOfNonZeros="<<g->GetEdgeCount()<<endl;
 		}
 		else cout<<"**Good!!!"<<endl;
 		Pause();
 		//*/
 		
-		return rowCount;
+		return numOfNonZeros_count;
 	}
 
 	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
@@ -239,6 +238,36 @@ namespace ColPack
 		dp_CF_Value = *dp2_JacobianValue;
 
 		return returnValue;
+	}
+	
+	int JacobianRecovery1D::RecoverD2Cln_ADICFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, std::list<std::set<int> >& lsi_SparsityPattern, std::list<std::vector<double> > &lvd_NewValue) {
+		if(g==NULL) {
+			cerr<<"g==NULL"<<endl;
+			return _FALSE;
+		}
+
+		int rowCount = g->GetRowVertexCount();
+		vector<int> vi_RightVertexColors;
+		g->GetRightVertexColors(vi_RightVertexColors);
+		unsigned int numOfNonZeros = 0;
+		std::list<std::set<int> >::iterator lsii_SparsityPattern = lsi_SparsityPattern.begin();
+
+		//Recover value of the Jacobian
+		//cout<<"Recover value of the Jacobian"<<endl;
+		for(unsigned int i=0; i < (unsigned int)rowCount; lsii_SparsityPattern++, i++) {
+			std::set<int> valset = *lsii_SparsityPattern;
+			std::set<int>::iterator valsetiter = valset.begin();
+			numOfNonZeros = valset.size(); //(*lsii_SparsityPattern) is equivalent to uip2_JacobianSparsityPattern[i]
+			std::vector<double> valuevector;
+			valuevector.resize(numOfNonZeros);
+			for(unsigned int j=0; j < numOfNonZeros; valsetiter++, j++) {
+				valuevector[j] = dp2_CompressedMatrix[i][vi_RightVertexColors[*valsetiter]];
+			}
+			
+			lvd_NewValue.push_back(valuevector);
+		}
+		
+		return rowCount;
 	}
 
 	int JacobianRecovery1D::RecoverD2Cln_RowCompressedFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue) {
@@ -409,7 +438,7 @@ namespace ColPack
 			}
 		}
 		
-		return rowCount;
+		return numOfNonZeros_count;
 	}
 	
 	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {

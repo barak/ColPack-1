@@ -28,9 +28,11 @@
 #include <iomanip>
 #include <ctime>
 #include <cstdlib>
+#include <stdarg.h> //  support for variadic functions
 //#include <cctype> //for toupper()
 
 #include <list>
+#include <set>
 #include <map>
 #include <string>
 #include <vector>
@@ -41,6 +43,20 @@ using namespace std;
 #include "Definitions.h"
 #include "Pause.h"
 */
+
+/// Write out to the file ADOLC Input using Matrix Market format
+/**
+Input parameters:
+- string s_postfix: postfix of the output file name
+- int i_mode:
+  - i_mode == 0: output the structure of the matrix only.
+  The next 3 parameter(s) are: unsigned int ** uip2_SparsityPattern, int i_Matrix_Row, int i_Matrix_Col
+  - i_mode == 1: output the structure of the matrix and values in the Compressed Matrix
+  The next 6 parameter(s) are: unsigned int ** uip2_SparsityPattern, int i_Matrix_Row, int i_Matrix_Col, double** dp2_CompressedMatrix, int i_CompressedMatrix_Row, int i_CompressedMatrix_Col
+  - i_mode == 2: output the structure and values of the matrix and values in the Compressed Matrix
+  The next 7 parameter(s) are: unsigned int ** uip2_SparsityPattern, int i_Matrix_Row, int i_Matrix_Col, double** dp2_CompressedMatrix, int i_CompressedMatrix_Row, int i_CompressedMatrix_Col, double** dp2_Values
+*/
+int WriteMatrixMarket_ADOLCInput(string s_postfix, int i_mode, ...);
 
 /// Convert a number string under Harwell-Boeing format to the format that C++ can understand
 /** For example: -6.310289677458059D-07 to -6.310289677458059E-07
@@ -75,7 +91,7 @@ string toUpper(string input);
 
 /// Build the index struture from Row Compressed Format to Sparse Solvers Format
 /**
-ip2_RowIndex and ip2_ColumnIndex will be allocated memory and populated with the matrix structure in Sparse Solvers Format
+ip2_RowIndex and ip2_ColumnIndex will be allocated memory (using malloc) and populated with the matrix structure in Sparse Solvers Format
 
 Input:
 - uip2_HessianSparsityPattern in Row Compressed Format
@@ -87,7 +103,26 @@ Output:
 
 
 */
-int RowCompressedFormat_2_SparseSolversFormat_StructureOnly(unsigned int ** uip2_HessianSparsityPattern, unsigned int ui_rowCount, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex);
+int ConvertRowCompressedFormat2SparseSolversFormat_StructureOnly(unsigned int ** uip2_HessianSparsityPattern, unsigned int ui_rowCount, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex);
+
+/// Convert Coordinate Format to Row Compressed Format
+/**
+dp3_Pattern and dp3_Values will be allocated memory (using malloc) and populated with the matrix structure in Row Compressed Format
+
+Input: (Coordinate Format)
+- unsigned int* uip1_RowIndex
+- unsigned int* uip1_ColumnIndex
+- double* dp1_HessianValue
+- int i_RowCount: number of rows of the matrix
+- int i_ColumnCount: number of columns of the matrix
+
+Output: (Row Compressed Format)
+- unsigned int *** dp3_Pattern
+- double*** dp3_Values
+
+*/
+int ConvertCoordinateFormat2RowCompressedFormat(unsigned int* uip1_RowIndex, unsigned int* uip1_ColumnIndex, double* dp1_HessianValue, int i_RowCount, int i_NonZeroCount, unsigned int *** dp3_Pattern, double*** dp3_Values );
+
 
 /// Covert file with DIMACS format to Matrix Market format
 /**
@@ -97,19 +132,34 @@ Note: DIMACS graph format is for directed graph => the equivalent matrix is squa
 Read input from file "<fileNameNoExt>.gr" (DIMACS graph format)
 and generate file "<fileNameNoExt>.mtx" (Matrix Market format)
 */
-void ConvertDIMACSFormat2MatrixMarketFormat(string fileNameNoExt);
+void ConvertFileDIMACSFormat2MatrixMarketFormat(string fileNameNoExt);
 
-///Read the sparse matrix from Matrix-Market-format file and convert to compress sparse row format "uip3_SparsityPattern" & "dp3_Value"
+///Read the sparse matrix from Matrix-Market-format file and convert to Row Compressed format (used by ADIC) "uip3_SparsityPattern" & "dp3_Value"
 /** Read in a matrix from matrix-market format file and create a matrix stored in compressed sparse row format
 The Matrix-Market-format has 3 values in each row, the row index, column index and numerical value of each nonzero.
 The last 4 parameters of this routine are output parameters (unsigned int *** uip3_SparsityPattern, double*** dp3_Value,int &rowCount, int &columnCount)
 */
-int ConvertMatrixMarketFormatToRowCompressedFormat(string s_InputFile, unsigned int *** uip3_SparsityPattern, double*** dp3_Value, int &rowCount, int &columnCount);
+int ConvertMatrixMarketFormat2RowCompressedFormat(string s_InputFile, unsigned int *** uip3_SparsityPattern, double*** dp3_Value, int &rowCount, int &columnCount);
+
+/* !!! the documentation here may not be accurate 
+"zero-based indexing, 3-array variation CSR format (used by ADIC)"
+Does ADIC use zero-based indexing, 3-array variation CSR format any more?
+//*/
+/// Convert Row Compressed format (used by ADOL-C) to zero-based indexing, 3-array variation CSR format (used by ADIC)
+/** 
+Return 0 upon successful.
+*/
+// !!! need to be fixed to accomodate dp2_Value parameter
+int ConvertRowCompressedFormat2CSR(unsigned int ** uip2_SparsityPattern_RowCompressedFormat, int i_rowCount, int** ip_RowIndex, int** ip_ColumnIndex);
+
+int ConvertRowCompressedFormat2ADIC(unsigned int ** uip2_SparsityPattern_RowCompressedFormat, int i_rowCount , double** dp2_Value, std::list<std::set<int> > &lsi_SparsityPattern, std::list<std::vector<double> > &lvd_Value);
 
 /// Multiply the original sparse matrix (uip3_SparsityPattern,dp3_Value) (in compress sparse row format) with the seed matrix dp2_seed and store the result in "dp3_CompressedMatrix"
 /** (*dp3_CompressedMatrix) = (*dp3_Value) * dp2_seed
 */
 int MatrixMultiplication_VxS(unsigned int ** uip3_SparsityPattern, double** dp3_Value, int rowCount, int columnCount, double** dp2_seed, int colorCount, double*** dp3_CompressedMatrix);
+
+int MatrixMultiplication_VxS__usingVertexPartialColors(std::list<std::set<int> > &lsi_SparsityPattern, std::list<std::vector<double> > &lvd_Value, int columnCount, vector<int> &vi_VertexPartialColors, int colorCount, double*** dp3_CompressedMatrix);
 
 /// Multiply the seed matrix dp2_seed with the original sparse matrix (uip3_SparsityPattern,dp3_Value) (in compress sparse row format) and store the result in "dp3_CompressedMatrix"
 /** (*dp3_CompressedMatrix) = dp2_seed * (*dp3_Value)
@@ -121,7 +171,9 @@ int MatrixMultiplication_SxV(unsigned int ** uip3_SparsityPattern, double** dp3_
 	If (compare_exact == 0) num1 and num2 are consider equal if 0.99 <= num1/num2 <= 1.02
 	If (print_all == 1) all cases of non-equal will be print out. Normally (when print_all == 0), this rountine will stop after the first non-equal.
 */
-bool CompressedRowMatricesREqual(double** dp3_Value, double** dp3_NewValue, int rowCount, bool compare_exact = 1, bool print_all = 0);
+bool CompressedRowMatricesAreEqual(double** dp3_Value, double** dp3_NewValue, int rowCount, bool compare_exact = 1, bool print_all = 0);
+
+bool ADICMatricesAreEqual(std::list<std::vector<double> >& lvd_Value, std::list<std::vector<double> >& lvd_NewValue, bool compare_exact = 1, bool print_all = 0);
 
 ///just manipulate the value of dp2_Values a little bit. Each non-zero entry in the matrix * 2 + 1.5.
 int Times2Plus1point5(double** dp2_Values, int i_RowCount, int i_ColumnCount);
@@ -134,6 +186,9 @@ int GenerateValues(unsigned int ** uip2_SparsityPattern, int rowCount, double***
 
 ///Allocate memory and generate random values for dp3_Value of a Symmetric Matrix.
 int GenerateValuesForSymmetricMatrix(unsigned int ** uip2_SparsityPattern, int rowCount, double*** dp3_Value);
+
+int DisplayADICFormat_Sparsity(std::list<std::set<int> > &lsi_SparsityPattern);
+int DisplayADICFormat_Value(std::list<std::vector<double> > &lvd_Value);
 
 #ifndef EXTRA_H_TEMPLATE_FUNCTIONS
 #define EXTRA_H_TEMPLATE_FUNCTIONS
@@ -199,6 +254,31 @@ int diffVectors(vector<T> array1, vector<T> array2, bool compare_exact = 1, bool
 }
 
 template<class T>
+int freeMatrix(T** xp2_matrix, int rowCount) {
+//cout<<"IN deleteM 2"<<endl<<flush;
+//printf("* deleteMatrix rowCount=%d \n",rowCount);
+//Pause();
+	for(int i = 0; i < rowCount; i++) {
+//printf("delete xp2_matrix[%d][0] = %7.2f \n", i, (float) xp2_matrix[i][0]);
+		free( xp2_matrix[i]);
+	}
+//cout<<"MID deleteM 2"<<endl<<flush;
+	free( xp2_matrix);
+//cout<<"OUT deleteM 2"<<endl<<flush;
+	return 0;
+}
+
+template<class T>
+int freeMatrix(T*** xp3_matrix, int rowCount) {
+//cout<<"IN deleteM 3"<<endl<<flush;
+	freeMatrix(*xp3_matrix,rowCount);
+//cout<<"MID deleteM 3"<<endl<<flush;
+	free( xp3_matrix);
+//cout<<"OUT deleteM 3"<<endl<<flush;
+	return 0;
+}
+
+template<class T>
 int deleteMatrix(T** xp2_matrix, int rowCount) {
 //cout<<"IN deleteM 2"<<endl<<flush;
 //printf("* deleteMatrix rowCount=%d \n",rowCount);
@@ -222,10 +302,11 @@ int deleteMatrix(T*** xp3_matrix, int rowCount) {
 //cout<<"OUT deleteM 3"<<endl<<flush;
 	return 0;
 }
+
 template<class T>
 void displayCompressedRowMatrix(T** xp2_Value, int rowCount, bool structureOnly = false) {
-	unsigned int estimateColumnCount = 30;
-	cout<<setw(4)<<"["<<setw(3)<<"\\"<<"]";
+	unsigned int estimateColumnCount = 20;
+	cout<<setw(4)<<"["<<setw(3)<<"\\"<<"]       ";
 	if(structureOnly) {
 		for(unsigned int j=0; j < estimateColumnCount; j++) cout<<setw(4)<<j;
 	}
@@ -237,18 +318,18 @@ void displayCompressedRowMatrix(T** xp2_Value, int rowCount, bool structureOnly 
 	for(unsigned int i=0; i < (unsigned int)rowCount; i++) {
 		cout<<setw(4)<<"["<<setw(3)<<i<<"]";
 		unsigned int numOfNonZeros = (unsigned int)xp2_Value[i][0];
+		cout<<"  ("<<setw(3)<<numOfNonZeros<<")";
 		if(structureOnly) {
-			for(unsigned int j=0; j <= numOfNonZeros; j++) {
-			  if (j==0) printf("  (%d)",(int)xp2_Value[i][j]);
-			  else printf("  %d",(int)xp2_Value[i][j]);
-			}
+			for(unsigned int j=1; j <= numOfNonZeros; j++) cout<<setw(4)<<(int)xp2_Value[i][j];
+			//for(unsigned int j=1; j <= numOfNonZeros; j++) {
+			//  printf("  %d",(int)xp2_Value[i][j]);
+			//}
 		}
 		else {
-			//for(unsigned int j=0; j <= numOfNonZeros; j++) cout<<setw(8)<<xp2_Value[i][j];
-			for(unsigned int j=0; j <= numOfNonZeros; j++) {
-			  if(j==0) printf("  (%7.2f)",(float)xp2_Value[i][j]);
-			  else printf("  %7.2f",(float)xp2_Value[i][j]);
-			}
+			for(unsigned int j=1; j <= numOfNonZeros; j++) cout<<setw(9)<<(float)xp2_Value[i][j];
+			//for(unsigned int j=1; j <= numOfNonZeros; j++) {
+			//  printf("  %7.2f",(float)xp2_Value[i][j]);
+			//}
 		}
 		cout<<endl<<flush;
 	}
@@ -314,7 +395,7 @@ int displayVector(vector<T> v) {
 /// Used mainly to debug GraphColoringInterface::IndirectRecover() routine
 template<class T>
 void displayAdjacencyMatrix(vector< vector<T> > &xp2_Value, bool structureOnly = false) {
-	unsigned int estimateColumnCount = 30;
+	unsigned int estimateColumnCount = 20;
 	cout<<setw(4)<<"["<<setw(3)<<"\\"<<"]";
 	if(structureOnly) {
 		for(unsigned int j=0; j < estimateColumnCount; j++) cout<<setw(3)<<j;

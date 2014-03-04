@@ -44,9 +44,8 @@ namespace ColPack
 		Postcondition:
 		- dp3_JacobianValue points to a 2d matrix contains the numerical values of the Jacobian. Row Compressed Format is used
 		The memory allocated for this output vector is managed by ColPack. The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.
-
-		Return value:
-		- _TRUE upon successful
+		
+		Return value: size of (*dp3_JacobianValue) array
 
 		About input parameters:
 		- This routine doesn't take (Row-wise Distance 2) coloring result m_vi_LeftVertexColors of the Jacobian as another paramenter because that information is known already (because of the 1st precondition).
@@ -56,21 +55,19 @@ namespace ColPack
 		- The first element of each row will specify the number of non-zeros in the Jacobian => Value of the first element + 1 will be the length of that row.
 		- The value of each element after the 1st element is the value of the non-zero in the Jacobian. The value of dp3_JacobianValue[col][row] is the value of element [col][uip2_JacobianSparsityPattern[col][row]] in the real (uncompressed) Jacobian
 
-		Example:
-		- Uncompressed matrix:
-		0	0	.5
-		1.2	0	3
-		0	2.3	-.5
-
-		- Corresponding uip2_JacobianSparsityPattern:
-		1	2
-		2	0	2
-		2	1	2
-
-		- Corresponding dp3_JacobianValue:
-		1	.5
-		2	1.2	3
-		2	2.3	-.5
+		An example of compressed sparse rows format:
+			- Uncompressed matrix:	<br>
+		1	.5	0	<br>
+		.2	2	3	<br>
+		0	6	-.5	<br>
+			- Corresponding uip2_JacobianSparsityPattern:	<br>
+		2	0	1		<br>
+		3	0	1	2	<br>
+		2	1	2		<br>
+			- Corresponding dp3_JacobianValue:	<br>
+		2	1	.5		<br>
+		3	.2	2	3	<br>
+		2	6	-.5		<br>
 		*/
 		int RecoverD2Row_RowCompressedFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue);
 		
@@ -94,11 +91,16 @@ namespace ColPack
 		Precondition:
 		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
 		
-		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
-		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
+		Return value: size of (*ip2_RowIndex) array
+		
+		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (one-based indexing)
+		http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
 		- unsigned int** ip2_RowIndex
 		- unsigned int** ip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		Note: In case of Jacobian (non-symmetric matrix), Sparse Solvers Format is equivalent to 
+		one-based indexing, 3 array variation CSR format
+		http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#table_79228E147DA0413086BEFF4EFA0D3F04
 		
 		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		//*/
@@ -122,6 +124,8 @@ namespace ColPack
 		/**
 		Precondition:
 		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
+		Return value: size of (*ip2_RowIndex) array
 		
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_5
@@ -159,9 +163,8 @@ namespace ColPack
 		Postcondition:
 		- dp3_JacobianValue points to a 2d matrix contains the numerical values of the Jacobian. Row Compressed Format is used
 		The memory allocated for this output vector is managed by ColPack. The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.
-
-		Return value:
-		- _TRUE upon successful
+		
+		Return value: size of (*dp3_JacobianValue) array
 
 		About input parameters:
 		- This routine doesn't take (Column-wise Distance 2) coloring result m_vi_RightVertexColors of the Jacobian as another paramenter because that information is known already (because of the 1st precondition).
@@ -171,23 +174,23 @@ namespace ColPack
 		- The first element of each row will specify the number of non-zeros in the Jacobian => Value of the first element + 1 will be the length of that row.
 		- The value of each element after the 1st element is the value of the non-zero in the Jacobian. The value of dp3_JacobianValue[col][row] is the value of element [col][uip2_JacobianSparsityPattern[col][row]] in the real (uncompressed) Jacobian
 
-		Example:
-		- Uncompressed matrix:
-		0	0	.5
-		1.2	0	3
-		0	2.3	-.5
-
-		- Corresponding uip2_JacobianSparsityPattern:
-		1	2
-		2	0	2
-		2	1	2
-
-		- Corresponding dp3_JacobianValue:
-		1	.5
-		2	1.2	3
-		2	2.3	-.5
+		An example of compressed sparse rows format:
+			- Uncompressed matrix:	<br>
+		1	.5	0	<br>
+		.2	2	3	<br>
+		0	6	-.5	<br>
+			- Corresponding uip2_JacobianSparsityPattern:	<br>
+		2	0	1		<br>
+		3	0	1	2	<br>
+		2	1	2		<br>
+			- Corresponding dp3_JacobianValue:	<br>
+		2	1	.5		<br>
+		3	.2	2	3	<br>
+		2	6	-.5		<br>
 		*/
 		int RecoverD2Cln_RowCompressedFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, double*** dp3_JacobianValue);
+		
+		int RecoverD2Cln_ADICFormat(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, std::list<std::set<int> >& lsi_SparsityPattern, std::list<std::vector<double> > &lvd_NewValue);
 				
 		/// Same as RecoverD2Cln_RowCompressedFormat(), except that the output is NOT managed by ColPack 
 		/** Notes:
@@ -209,11 +212,16 @@ namespace ColPack
 		Precondition:
 		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
 		
-		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (zero-based indexing)
-		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
+		Return value: size of (*ip2_RowIndex) array
+		
+		Return by recovery routine: three vectors in "Storage Formats for the Direct Sparse Solvers" (one-based indexing)
+		http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_1
 		- unsigned int** ip2_RowIndex
 		- unsigned int** ip2_ColumnIndex
 		- double** dp2_JacobianValue // corresponding non-zero values
+		Note: In case of Jacobian (non-symmetric matrix), Sparse Solvers Format is equivalent to 
+		one-based indexing, 3 array variation CSR format
+		http://software.intel.com/sites/products/documentation/hpc/mkl/webhelp/appendices/mkl_appA_SMSF.html#table_79228E147DA0413086BEFF4EFA0D3F04
 		
 		The memory allocated for these 3 output vectors are managed by ColPack.	The memory will be deallocated when this function is called again or when the Recovery ojbect is deallocated.	
 		//*/
@@ -237,6 +245,8 @@ namespace ColPack
 		/**
 		Precondition:
 		- (*ip2_RowIndex), (*ip2_ColumnIndex), and (*dp2_JacobianValue) are equal to NULL, i.e. no memory has been allocated for these 3 vectors yet
+		
+		Return value: size of (*ip2_RowIndex) array
 		
 		Return by recovery routine: three vectors in "Coordinate Format" (zero-based indexing)
 		http://www.intel.com/software/products/mkl/docs/webhelp/appendices/mkl_appA_SMSF.html#mkl_appA_SMSF_5

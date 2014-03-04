@@ -139,7 +139,7 @@ namespace ColPack
 		  BuildBPGraphFromRowCompressedFormat(uip2_JacobianSparsityPattern, i_RowCount, i_ColumnCount);
 		}
 		else if (i_type == SRC_MEM_ADIC) {
-		  //!!! add interface function that takes input from ADIC
+		  // !!! add interface function that takes input from ADIC
 		  cerr<<"ERR: GraphColoringInterface(): s_inputSource \"ADIC\" is not supported yet"<<endl;
 
 		  va_end(ap); /*cleanup*/
@@ -158,6 +158,11 @@ namespace ColPack
 		  va_end(ap); /*cleanup*/
 		  return;
 		}
+#ifdef	_COLPACK_CHECKPOINT_	
+		string s_OutputFile = "-ColPack_debug.mtx";
+		s_OutputFile = "BipartiteGraphBicoloringInterface-InternalBPGraph"+s_OutputFile;
+		WriteMatrixMarket(s_OutputFile);
+#endif
 
 		//cout<<"START PrintBipartiteGraph()"<<endl;
 		//PrintBipartiteGraph();

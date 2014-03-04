@@ -79,6 +79,7 @@ namespace ColPack
 
 		//Virtual Function 1353
 		virtual void Clear();
+		void ClearOrderingONLY();
 
 		//Public Function 1354
 		int NaturalOrdering();

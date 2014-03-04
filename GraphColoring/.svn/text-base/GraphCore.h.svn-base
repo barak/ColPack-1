@@ -79,48 +79,28 @@ namespace ColPack
 		DisjointSets m_ds_DisjointSets; //moved from int GraphColoring::AcyclicColoring()
 	public:
 
-		//Virtual Destructor 1100
 		virtual ~GraphCore() {}
 
-		//Virtual Function 1101
-		virtual void Initialize() = 0;
-
-		//Virtual Function 1102
 		virtual void Clear();
 
-		//Public Function 1103
 		int GetVertexCount();
 
-
-		//Public Function 1104
 		int GetEdgeCount();
 
-
-		//Public Function 1105
 		int GetMaximumVertexDegree();
 
-
-		//Public Function 1106
 		int GetMinimumVertexDegree();
 
-
-		//Public Function 1107
 		double GetAverageVertexDegree();
 
-
-		//Public Function 1108
 		string GetInputFile();
 
-		//Public Function 1109
 		void GetVertices(vector<int> &output) const;
 		vector <int>* GetVerticesPtr(){ return &m_vi_Vertices; }
 		
-
-		//Public Function 1110
 		void GetEdges(vector<int> &output) const;
 		vector <int>* GetEdgesPtr(){ return &m_vi_Edges; }
 
-		//Public Function 1111
 		void GetValues(vector<double> &output) const;
 
 		void GetVertexEdgeMap(map< int, map< int, int> > &output);

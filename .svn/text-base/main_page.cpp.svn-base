@@ -8,7 +8,7 @@
  * that arise in sparse derivative computation. It is written in an object-oriented fashion heavily using
  * the Standard Template Library (STL). It is designed to be simple, modular, extenable and efficient.
  *
- * \section SAMPLE_CODES
+ * \section SAMPLE_CODES SAMPLE CODES
  *
  * Sample codes (with comments) that quickly illustrate how ColPack interface functions are used
  * are available in the directory SampleDriver.<BR>
@@ -29,7 +29,7 @@
  *
  * \section CONTACT
  *
- * Email Assefaw Gebremedhin at agebreme [at] purdue [dot] edu or Duc Nguyen at nguyend [at] purdue [dot] edu </a>.
+ * Email Assefaw Gebremedhin at agebreme [at] purdue [dot] edu or Duc Nguyen at nguyend [at] purdue [dot] edu .
  *
  */
 

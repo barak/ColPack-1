@@ -32,7 +32,7 @@ run-test:
 
 run-extra: $(EXTRA_DRIVERS)
 	for i in $(EXTRA_DRIVERS) ; do \
-	( export LD_LIBRARY_PATH=$(TOP_DIR)/build/lib; echo "run-test: Running ./$$i"; ./$$i) ; \
+	( export LD_LIBRARY_PATH=$(TOP_DIR)/build/lib; echo "run-test: Running $$i"; $$i) ; \
 	done
 
 clean:

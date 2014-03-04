@@ -116,12 +116,6 @@ namespace ColPack
 		Clear();
 	}
 
-	//Virtual Function 1253
-	void GraphInputOutput::Initialize()
-	{
-
-	}
-
 	//Virtual Function 1254
 	void GraphInputOutput::Clear()
 	{
@@ -134,6 +128,46 @@ namespace ColPack
 	string GraphInputOutput::GetInputFile()
 	{
 		return(m_s_InputFile);
+	}
+	
+	int GraphInputOutput::WriteMatrixMarket(string s_OutputFile, bool b_getStructureOnly) {
+		ofstream out (s_OutputFile.c_str());
+		if(!out) {
+			cout<<"Error creating file: \""<<s_OutputFile<<"\""<<endl;
+			exit(1);
+		}
+		
+		bool b_printValue = ( (!b_getStructureOnly) && (m_vd_Values.size()==m_vi_Edges.size()) );
+		int i_NumOfLines = 0;
+		int max = m_vi_Vertices.size()-1;
+		
+		out<<"%%MatrixMarket matrix coordinate real symmetric"<<endl;
+		
+		//Count i_NumOfLines
+		for(int i = 1; i<max;i++) {
+		  for(int j = m_vi_Vertices[i]; j < m_vi_Vertices[i+1]; j++) {
+		    //Only print out the entries in the lower triangular portion of the matrix
+		    if(i>m_vi_Edges[j]) {
+		      i_NumOfLines++;
+		    }
+		  }
+		}
+		
+		out<<m_vi_Vertices.size()-1<<" "<<m_vi_Vertices.size()-1<<" "<< i_NumOfLines<<endl;
+		
+		out<<setprecision(10)<<scientific<<showpoint;
+		for(int i = 1; i<max;i++) {
+		  for(int j = m_vi_Vertices[i]; j < m_vi_Vertices[i+1]; j++) {
+		    //Only print out the entries in the lower triangular portion of the matrix
+		    if(i>m_vi_Edges[j]) {
+		      out<<i+1<<" "<<m_vi_Edges[j]+1;
+		      if (b_printValue) out<<" "<<m_vd_Values[j];
+		      out<<endl;
+		    }
+		  }
+		}
+		
+		return 0;
 	}
 
 

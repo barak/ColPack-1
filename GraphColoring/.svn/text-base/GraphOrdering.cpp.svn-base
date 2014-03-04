@@ -126,6 +126,16 @@ namespace ColPack
 		return;
 	}
 
+	void GraphOrdering::ClearOrderingONLY()
+	{
+		m_d_OrderingTime = _UNKNOWN;
+
+		m_s_VertexOrderingVariant.clear();
+		m_vi_OrderedVertices.clear();
+
+		return;
+	}
+
 
 	//Public Function 1354
 	int GraphOrdering::NaturalOrdering()

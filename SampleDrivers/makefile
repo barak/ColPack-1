@@ -6,7 +6,7 @@ endif
 
 include $(TOP_DIR)/common_variables.in
 
-SUBDIRS = Basic ADOL-C_Matrix_Compression_and_Recovery
+SUBDIRS = Basic Matrix_Compression_and_Recovery
 
 # TARGETS
 all: all-drivers
@@ -29,6 +29,9 @@ run-test:
 	@for i in $(SUBDIRS) ; do \
 	( export TOP_DIR=$(PWD); cd $$i && $(MAKE) run-test) ; \
 	done
+
+run-extra:
+	@export TOP_DIR=$(PWD); $(MAKE) -C Basic run-extra
 
 clean:
 	@for i in $(SUBDIRS) ; do \
