@@ -279,7 +279,7 @@ namespace ColPack
 		}
 		
 		int* row_size = new int[rowCount];
-		int total_length;
+		int total_length=0;
 		row_size[0]=0;
 		
 		#pragma omp parallel for default(none) schedule(static) shared(rowCount,row_size, uip2_HessianSparsityPattern) reduction(+:total_length) 
