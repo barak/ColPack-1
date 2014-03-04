@@ -22,9 +22,9 @@
  *
  * \section DOWNLOAD
  *
- * <a href="ColPack.tar.gz"> ColPack</a><BR>
- * <a href="MeTiS_Collection.zip"> Graph Collection in MeTis format</a><BR>
- * <a href="MM_Collection.zip"> Graph Collection in Matrix Market format</a><BR>
+ * <a href="http://www.cscapes.org/download/ColPack/"> ColPack</a><BR>
+ * <a href="http://www.cscapes.org/download/MM_Collection.zip"> Graph Collection in Matrix Market format</a><BR>
+ * <a href="http://www.cscapes.org/download/MeTiS_Collection.zip"> Graph Collection in MeTis format</a><BR>
  * To decompress .zip files on UNIX, run "unzip (targeted .zip file)"<BR>
  *
  * \section CONTACT

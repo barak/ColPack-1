@@ -100,11 +100,9 @@ namespace ColPack
 	}
 
 	//Public Constructor 1351
-	GraphOrdering::GraphOrdering()
+	GraphOrdering::GraphOrdering() :GraphInputOutput()
 	{
 		Clear();
-
-		GraphInputOutput::GraphInputOutput();
 	}
 
 

@@ -50,12 +50,16 @@ int free_2DMatrix(T **dp2_2DMatrix, unsigned int i_numOfRows) {
     delete[] (dp2_2DMatrix)[i];
   }
   delete[] (dp2_2DMatrix);
+
+  return _TRUE;
 }
 
 template<typename T>
 int free_2DMatrix(T ***dp3_2DMatrix, unsigned int i_numOfRows) {
 	free_2DMatrix(*dp3_2DMatrix,i_numOfRows);
 	delete dp3_2DMatrix;
+
+  return _TRUE;
 }
 
 #endif
