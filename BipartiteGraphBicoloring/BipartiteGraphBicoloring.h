@@ -275,6 +275,7 @@ namespace ColPack
 
 		//Public Function 3572
 		string GetVertexBicoloringVariant();
+		string GetVertexColoringVariant();
 
 		//Public Function 3575
 		void PrintVertexBicolors();

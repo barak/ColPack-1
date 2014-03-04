@@ -195,6 +195,151 @@ int WriteMatrixMarket_ADOLCInput(string s_postfix, int i_mode, ...) {
   return 0;
 }
 
+int displayGraph(map< int, map<int,bool> > *graph, vector<int>* vi_VertexColors,int i_RunInBackground , int filter ) {
+  static int ranNum = rand();
+  static int seq = 0;
+  seq++;
+  vector<string> ListOfColors = getListOfColors("");
+  string fileName = "/tmp/.";
+  fileName = fileName + "ColPack_"+ itoa(ranNum)+"_"+itoa(seq)+".dot";
+  
+  //build the dot file of the graph
+  if(vi_VertexColors == NULL) {
+    //build dot file represents graph without color info
+    buildDotWithoutColor(graph, ListOfColors, fileName);
+  } else {
+    //build dot file represents graph with color
+    buildDotWithColor(graph, vi_VertexColors, ListOfColors, fileName);
+  }
+  
+  //display the graph using xdot
+  string command;
+  switch (filter) {
+    case NEATO: command="xdot -f neato "; break;
+    case TWOPI: command="xdot -f twopi "; break;
+    case CIRCO: command="xdot -f circo "; break;
+    case FDP: command="xdot -f fdp "; break;
+    default: command="xdot -f dot "; // case DOT
+  }
+  
+  command = command + fileName;
+  if(i_RunInBackground) command = command + " &";
+  int i_ReturnValue = system(command.c_str());
+  return i_ReturnValue;
+}
+
+int buildDotWithoutColor(map< int, map<int,bool> > *graph, vector<string> &ListOfColors, string fileName) {
+  cerr<<"IN buildDotWithoutColor"<<endl;
+  ofstream OutputStream (fileName.c_str());
+  if(!OutputStream){
+    cout<<"CAN'T create File "<<fileName<<endl;
+    return 1;
+  } else {
+    cout<<"Create File "<<fileName<<endl;
+  }
+  
+  string line="";
+  
+  //build header
+  OutputStream<<"graph g {"<<endl;
+  
+  //build body
+  map< int, map<int,bool> >::iterator itr = graph->begin();
+  for(; itr != graph->end(); itr++) {
+    map<int,bool>::iterator itr2 = (itr->second).begin();
+    for(; itr2 != (itr->second).end(); itr2++) {
+      if(itr2->first<=itr->first) continue;
+      line = "";
+      line = line + "v"+itoa(itr->first)+" -- v"+ itoa(itr2->first) +" ;";
+      OutputStream<<line<<endl;
+    }
+  }
+  
+  //build footer
+  OutputStream<<"}"<<endl;
+  
+  OutputStream.close();
+  cout<<"\t File created"<<endl;
+  
+  return 0;
+}
+
+int buildDotWithColor(map< int, map<int,bool> > *graph, vector<int>* vi_VertexColors, vector<string> &ListOfColors, string fileName) {
+  cerr<<"IN buildDotWithColor"<<endl;
+  ofstream OutputStream (fileName.c_str());
+  if(!OutputStream){
+    cout<<"CAN'T create File "<<fileName<<endl;
+    return 1;
+  } else {
+    cout<<"Create File "<<fileName<<endl;
+  }
+  
+  //vector<int> m_vi_Vertices, m_vi_Edges, m_vi_VertexColors;
+  //g.GetVertices(m_vi_Vertices);
+  //g.GetEdges(m_vi_Edges);
+  //g.GetVertexColors(m_vi_VertexColors);
+  //int i_VertexCount = STEP_DOWN((signed) m_vi_Vertices.size());
+  int i_NumberOfColors = ListOfColors.size();
+  string line="", color_str="", colorID_str="", colorID_str2="";
+  
+  //build header
+  OutputStream<<"graph g {"<<endl;
+  
+  //build node colors
+  map< int, map<int,bool> >::iterator itr = graph->begin();
+  for(; itr != graph->end(); itr++) {
+    line="";
+    if((*vi_VertexColors)[itr->first] != _UNKNOWN) {
+      color_str = ListOfColors[(*vi_VertexColors)[itr->first]%i_NumberOfColors];
+      colorID_str = itoa((*vi_VertexColors)[itr->first]);
+    }
+    else {
+      color_str="green";
+      colorID_str = "_";
+    }
+    //a_1 [color=aliceblue]
+    line = line + "v"+itoa(itr->first)+"_c"+ colorID_str +" [style=filled fillcolor="+color_str+"]";
+    OutputStream<<line<<endl;
+  }
+  cout<<endl<<endl;
+  
+
+  //build body
+  itr = graph->begin();
+  for(; itr != graph->end(); itr++) {
+    map<int,bool>::iterator itr2 = (itr->second).begin();
+    for(; itr2 != (itr->second).end(); itr2++) {
+      if(itr2->first <= itr->first) continue;
+      
+      if((*vi_VertexColors)[itr->first] != _UNKNOWN) {
+	colorID_str = itoa((*vi_VertexColors)[itr->first]);
+      }
+      else {
+	colorID_str = "_";
+      }
+      
+      if((*vi_VertexColors)[itr2->first] != _UNKNOWN) {
+	colorID_str2 = itoa((*vi_VertexColors)[itr2->first]);
+      }
+      else {
+	colorID_str2 = "_";
+      }
+      
+      line = "";
+      line = line + "v"+itoa(itr->first)+"_c"+colorID_str+" -- v"+ itoa(itr2->first)+"_c"+colorID_str2 ;
+      OutputStream<<line<<" ;"<<endl;
+    }
+  }
+  
+  //build footer
+  OutputStream<<"}"<<endl;
+  
+  OutputStream.close();
+  cout<<"\t File created"<<endl;
+  return 0;
+}
+
+
 int ConvertHarwellBoeingDouble(string & num_string) {
   for(int i=num_string.size()-1; i>=0; i--) {
     if(num_string[i] == 'D') {
@@ -235,36 +380,194 @@ vector<string> getListOfColors(string s_InputFile) {
   return ListOfColors;
 }
 
-int displayGraph(ColPack::GraphColoring &g) {
-  static int ranNum = rand();
-  static int seq = 0;
-  seq++;
-  vector<string> ListOfColors = getListOfColors("");
-  string fileName = "/tmp/.";
-  fileName = fileName + "ColPack_"+ itoa(ranNum)+"_"+itoa(seq)+".dot";
-  
-  //build the dot file of the graph
-  string m_s_VertexColoringVariant = g.GetVertexColoringVariant();
-  if(m_s_VertexColoringVariant.empty()) {
-    //build dot file represents graph without color info
-    buildDotWithoutColor(g, ListOfColors, fileName);
+
+int buildDotWithoutColor(ColPack::BipartiteGraphPartialColoringInterface &g, vector<string> &ListOfColors, string fileName) {
+  cerr<<"IN buildDotWithoutColor - BipartiteGraphPartialColoring"<<endl;
+  ofstream OutputStream (fileName.c_str());
+  if(!OutputStream){
+    cout<<"CAN'T create File "<<fileName<<endl;
+    return 1;
   } else {
-    //build dot file represents graph with color
-    buildDotWithColor(g, ListOfColors, fileName);
+    cout<<"Create File "<<fileName<<endl;
   }
   
-  //display the graph using xdot
-  string command;
-  command="xdot -f dot ";
-  //command="xdot -f neato ";
-  //command="xdot -f twopi ";
-  //command="xdot -f circo ";
-  //command="xdot -f fdp ";
-  command = command + fileName;
-  system(command.c_str());
+  vector<int> m_vi_Vertices, m_vi_Edges;
+  g.GetLeftVertices(m_vi_Vertices);
+  g.GetEdges(m_vi_Edges);
+  int i_VertexCount = STEP_DOWN((signed) m_vi_Vertices.size());
+  string line="";
+  
+  //build header
+  OutputStream<<"graph g {"<<endl;
+  
+  //build body
+  for(int i=0; i < i_VertexCount; i++) {
+    for(int j=m_vi_Vertices[i] ; j< m_vi_Vertices[i + 1]; j++) {
+      line = "";
+      line = line + "v"+itoa(i)+" -- v"+ itoa(m_vi_Edges[j] + i_VertexCount) +" ;";
+      OutputStream<<line<<endl;
+    }
+  }
+  
+  //build footer
+  OutputStream<<"}"<<endl;
+  
+  OutputStream.close();
+  cout<<"\t File created"<<endl;
+  
+  return 0;
 }
 
-int buildDotWithoutColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, string fileName) {
+int buildDotWithColor(ColPack::BipartiteGraphPartialColoringInterface &g, vector<string> &ListOfColors, string fileName) {
+  cerr<<"IN buildDotWithColor - BipartiteGraphPartialColoringInterface"<<endl;
+  ofstream OutputStream (fileName.c_str());
+  if(!OutputStream){
+    cout<<"CAN'T create File "<<fileName<<endl;
+    return 1;
+  } else {
+    cout<<"Create File "<<fileName<<endl;
+  }
+  
+  vector<int> m_vi_Vertices, m_vi_Edges, m_vi_LeftVertexColors, m_vi_RightVertexColors;
+  g.GetLeftVertices(m_vi_Vertices);
+  //cout<<"displayVector(m_vi_Vertices);"<<endl;
+  //displayVector(m_vi_Vertices);
+  g.GetEdges(m_vi_Edges);
+  //cout<<"displayVector(m_vi_Edges);"<<endl;
+  //displayVector(m_vi_Edges);
+  g.GetLeftVertexColors(m_vi_LeftVertexColors);
+  //cout<<"displayVector(m_vi_LeftVertexColors);"<<endl;
+  //displayVector(m_vi_LeftVertexColors);
+  g.GetRightVertexColors(m_vi_RightVertexColors);
+  //cout<<"displayVector(m_vi_RightVertexColors);"<<endl;
+  //displayVector(m_vi_RightVertexColors);
+  int i_VertexCount = STEP_DOWN((signed) m_vi_Vertices.size());
+  int i_RightVertexCount = g.GetRightVertexCount();
+  //cout<<"i_RightVertexCount="<<i_RightVertexCount<<endl;
+  int i_NumberOfColors = ListOfColors.size();
+  string line="", color_str="";
+  
+  //build header
+  OutputStream<<"graph g {"<<endl;
+  
+  //build node colors
+  //colors for left vertices
+  for(int i=0; i < i_VertexCount; i++) {
+    line="";
+    if(m_vi_LeftVertexColors.size()>0) {
+      color_str = ListOfColors[m_vi_LeftVertexColors[i]%i_NumberOfColors];
+    //v2_c4 [color=aliceblue]
+    line = line + "v"+itoa(i)+"_c"+itoa(m_vi_LeftVertexColors[i])+" [style=filled fillcolor="+color_str+"]";
+    }
+    else {
+      color_str = ListOfColors[0];
+      line = line + "v"+itoa(i)+"_c_"+" [style=filled fillcolor="+color_str+"]";
+    }
+    OutputStream<<line<<endl;
+  }
+  //colors for right vertices
+  for(int i=0; i < i_RightVertexCount; i++) {
+    line="";
+    if(m_vi_RightVertexColors.size()>0) {
+      color_str = ListOfColors[m_vi_RightVertexColors[i]%i_NumberOfColors];
+      //v2_c4 [color=aliceblue]
+      line = line + "v"+itoa(i+i_VertexCount)+"_c"+itoa(m_vi_RightVertexColors[i])+" [style=filled fillcolor="+color_str+"]";
+    }
+    else {
+      color_str = ListOfColors[0];
+      line = line + "v"+itoa(i+i_VertexCount)+"_c_"+" [style=filled fillcolor="+color_str+"]";
+    }
+    OutputStream<<line<<endl;
+  }
+  cout<<endl<<endl;
+  
+  //Find conflicts
+  vector<bool> m_vi_ConflictEdges;
+  /*
+  vector<vector<int> > ListOfConflicts;
+  g.GetStarColoringConflicts(ListOfConflicts);
+  
+  //Mark conflict edge
+  m_vi_ConflictEdges.resize(m_vi_Edges.size(),false);
+  if(ListOfConflicts.size()>0) {
+    for(int i=0; i<ListOfConflicts.size();i++) {
+      for(int j=0; j<ListOfConflicts[i].size()-1;j++) {
+	int Vertex1 = ListOfConflicts[i][j];
+	int Vertex2 = ListOfConflicts[i][j+1];
+	if(Vertex1 > Vertex2) { //swap order
+	  for(int k=m_vi_Vertices[Vertex2]; k < m_vi_Vertices[Vertex2+1]; k++) {
+	    if(m_vi_Edges[k] == Vertex1) {
+	      m_vi_ConflictEdges[ k ]=true;
+	      break;
+	    }
+	  }
+	}
+	else {
+	  for(int k=m_vi_Vertices[Vertex1]; k < m_vi_Vertices[Vertex1+1]; k++) {
+	    if(m_vi_Edges[k] == Vertex2) {
+	      m_vi_ConflictEdges[ k ]=true;
+	      break;
+	    }
+	  }
+	}
+	
+      }
+    }
+  }
+  //*/
+  
+  //build body
+  for(int i=0; i < i_VertexCount; i++) {
+    for(int j=m_vi_Vertices[i] ; j< m_vi_Vertices[i + 1]; j++) {
+      line = "";
+      line = line + "v"+itoa(i)+"_c";
+
+      if(m_vi_LeftVertexColors.size() > 0) {
+	line = line + itoa(m_vi_LeftVertexColors[i]);
+      }
+      else {
+	line = line + '_';
+      }
+      
+      line = line + " -- v"+ itoa(m_vi_Edges[j] + i_VertexCount)+"_c";
+      
+      if(m_vi_RightVertexColors.size() > 0) {
+	line = line + itoa(m_vi_RightVertexColors[m_vi_Edges[j]]);
+      }
+      else {
+	line = line + '_';
+      }
+      
+      if(m_vi_ConflictEdges.size()>0 && m_vi_ConflictEdges[j]) { // make the line bolder if the edge is conflict
+	line = line + "[style=\"setlinewidth(3)\"]";
+      }
+      OutputStream<<line<<" ;"<<endl;
+    }
+  }
+  
+  //build footer
+  OutputStream<<"}"<<endl;
+  
+  OutputStream.close();
+  cout<<"\t File created"<<endl;
+  return 0;
+}
+
+int buildDotWithoutColor(ColPack::BipartiteGraphBicoloringInterface &g, vector<string> &ListOfColors, string fileName) {
+  cerr<<"Function to be built! int buildDotWithoutColor(ColPack::BipartiteGraphBicoloringInterface &g, vector<string> &ListOfColors, string fileName)"<<endl;
+  Pause();
+  return 0;
+}
+
+int buildDotWithColor(ColPack::BipartiteGraphBicoloringInterface &g, vector<string> &ListOfColors, string fileName) {
+  cerr<<"Function to be built! int buildDotWithColor(ColPack::BipartiteGraphBicoloringInterface &g, vector<string> &ListOfColors, string fileName)"<<endl;
+  Pause();
+  return 0;
+}
+
+
+
+int buildDotWithoutColor(ColPack::GraphColoringInterface &g, vector<string> &ListOfColors, string fileName) {
   cerr<<"IN buildDotWithoutColor"<<endl;
   ofstream OutputStream (fileName.c_str());
   if(!OutputStream){
@@ -302,8 +605,8 @@ int buildDotWithoutColor(ColPack::GraphColoring &g, vector<string> &ListOfColors
   return 0;
 }
 
-int buildDotWithColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, string fileName) {
-  cerr<<"IN buildDotWithoutColor"<<endl;
+int buildDotWithColor(ColPack::GraphColoringInterface &g, vector<string> &ListOfColors, string fileName) {
+  cerr<<"IN buildDotWithColor"<<endl;
   ofstream OutputStream (fileName.c_str());
   if(!OutputStream){
     cout<<"CAN'T create File "<<fileName<<endl;
@@ -318,7 +621,7 @@ int buildDotWithColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, s
   g.GetVertexColors(m_vi_VertexColors);
   int i_VertexCount = STEP_DOWN((signed) m_vi_Vertices.size());
   int i_NumberOfColors = ListOfColors.size();
-  string line="", color_str="";
+  string line="", color_str="", colorID_str="", colorID_str2="";
   
   //build header
   OutputStream<<"graph g {"<<endl;
@@ -326,9 +629,16 @@ int buildDotWithColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, s
   //build node colors
   for(int i=0; i < i_VertexCount; i++) {
     line="";
-    color_str = ListOfColors[m_vi_VertexColors[i]%i_NumberOfColors];
+    if(m_vi_VertexColors[i] != _UNKNOWN) {
+      color_str = ListOfColors[m_vi_VertexColors[i]%i_NumberOfColors];
+      colorID_str = itoa(m_vi_VertexColors[i]);
+    }
+    else {
+      color_str="green";
+      colorID_str = "_";
+    }
     //a_1 [color=aliceblue]
-    line = line + "v"+itoa(i)+"_c"+itoa(m_vi_VertexColors[i])+" [style=filled fillcolor="+color_str+"]";
+    line = line + "v"+itoa(i)+"_c"+ colorID_str +" [style=filled fillcolor="+color_str+"]";
     OutputStream<<line<<endl;
   }
   cout<<endl<<endl;
@@ -370,8 +680,23 @@ int buildDotWithColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, s
   for(int i=0; i < i_VertexCount; i++) {
     for(int j=m_vi_Vertices[i] ; j< m_vi_Vertices[i + 1]; j++) {
       if(m_vi_Edges[j]<=i) continue;
+      
+      if(m_vi_VertexColors[i] != _UNKNOWN) {
+	colorID_str = itoa(m_vi_VertexColors[i]);
+      }
+      else {
+	colorID_str = "_";
+      }
+      
+      if(m_vi_VertexColors[m_vi_Edges[j]] != _UNKNOWN) {
+	colorID_str2 = itoa(m_vi_VertexColors[m_vi_Edges[j]]);
+      }
+      else {
+	colorID_str2 = "_";
+      }
+      
       line = "";
-      line = line + "v"+itoa(i)+"_c"+itoa(m_vi_VertexColors[i])+" -- v"+ itoa(m_vi_Edges[j])+"_c"+itoa(m_vi_VertexColors[m_vi_Edges[j]]) ;
+      line = line + "v"+itoa(i)+"_c"+colorID_str+" -- v"+ itoa(m_vi_Edges[j])+"_c"+colorID_str2 ;
       if(m_vi_ConflictEdges.size()>0 && m_vi_ConflictEdges[j]) { // make the line bolder if the edge is conflict
 	line = line + "[style=\"setlinewidth(3)\"]";
       }
@@ -723,7 +1048,7 @@ int ConvertMatrixMarketFormat2RowCompressedFormat(string s_InputFile, unsigned i
 	string m_s_InputFile=s_InputFile;
 
 	//initialize local data
-	int rowCounter=0, nonzeros=0, rowIndex=0, colIndex=0, nz_counter=0;
+	int rowCounter=0, nonzeros=0, rowIndex=0, colIndex=0, nz_counter=0, entries=0;
 	//int num=0, numCount=0;
 	float value;
 	bool b_getValue, b_symmetric;
@@ -790,17 +1115,18 @@ int ConvertMatrixMarketFormat2RowCompressedFormat(string s_InputFile, unsigned i
 		getline(in,line);
 	}
 	in2.str(line);
-	in2 >> rowCount >> columnCount >> nonzeros;
+	in2 >> rowCount >> columnCount >> entries;
 	//cout<<"rowCount="<<rowCount<<"; columnCount="<<columnCount<<"; nonzeros="<<nonzeros<<endl;
 	// DONE - FIND OUT THE SIZE OF THE MATRIX
 
-	while(!in.eof() && nz_counter<nonzeros) //there should be (nonzeros+1) lines in the input file
+	while(!in.eof() && rowCounter<=entries) //there should be (nonzeros+1) lines in the input file
 	{
 		getline(in,line);
-		rowCounter++;
-		//cout<<"Line "<<rowCounter<<"="<<line<<endl;
 		if(line!="")
 		{
+			rowCounter++;
+			//cout<<"Line "<<rowCounter<<"="<<line<<endl;
+			
 			in2.clear();
 			in2.str(line);
 			in2>>rowIndex>>colIndex;
@@ -856,12 +1182,6 @@ int ConvertMatrixMarketFormat2RowCompressedFormat(string s_InputFile, unsigned i
 			cerr<<"\t total non-zeros so far: "<<nz_counter<<endl;
 			exit( -1);
 		}
-	}
-	if(nz_counter<nonzeros) { //nz_counter should be == nonzeros
-			cerr<<"* WARNING: ConvertMatrixMarketFormatToRowCompressedFormat()"<<endl;
-			cerr<<"*\t nz_counter<nonzeros+1. Wrong input format. Can't process."<<endl;
-			cerr<<"\t total non-zeros so far: "<<nz_counter<<endl;
-			exit( -1);
 	}
 
 

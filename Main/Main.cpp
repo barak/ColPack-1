@@ -1,5 +1,20 @@
-/* Notes:
- * - This code will crash if the matrix only has patterns (no value)
+// An example for using GraphColoringInterface to color Graph
+/*
+How to compile this driver manually:
+	Please make sure that "baseDir" point to the directory (folder) containing the input matrix file, and
+		s_InputFile should point to the input file that you want to use
+	To compile the code, replace the Main.cpp file in Main directory with this file
+		and run "make" in ColPack installation directory. Make will generate "ColPack.exe" executable
+	Run "ColPack.exe"
+
+Note: If you got "symbol lookup error ... undefined symbol "
+  Please make sure that your LD_LIBRARY_PATH contains libColPack.so
+
+Any time you have trouble understanding what a routine does, how to use a routine, or what are the accepted values for a parameter,
+please reference the COLPACK's online documentation (temporarily located at
+http://www.cscapes.org/dox/ColPack/html/ ).
+
+For more information, please visit our webpage http://www.cscapes.org/coloringpage/
 //*/
 
 #include "ColPackHeaders.h"
@@ -14,173 +29,91 @@ using namespace std;
 // baseDir should point to the directory (folder) containing the input file
 string baseDir=TOP_DIR;
 
-#include "extra.h" //This .h file contains functions that are used in the below examples:
-					//ReadMM(), MatrixMultiplication...(), Times2Plus1point5(), displayMatrix() and displayCompressedRowMatrix()
-#include "stat.h"
-
-int test_graph(string s_InputFile);
-
-int main(int argc, const char* argv[]) {
-  
+//*	A SHORT VERSION
+int main(int argc, char ** argv)
+{
 	// s_InputFile = baseDir + <name of the input file>
-	string s_InputFile; //path of the input file
-	//s_InputFile = baseDir;
-	//s_InputFile += DIR_SEPARATOR; s_InputFile += "Graphs"; s_InputFile += DIR_SEPARATOR; s_InputFile += "column-compress.mtx";
+	string s_InputFile; //path of the input file. PICK A SYMMETRIC MATRIX!!!
+	s_InputFile = baseDir;
+	s_InputFile += DIR_SEPARATOR; s_InputFile += "Graphs"; s_InputFile += DIR_SEPARATOR; s_InputFile += "mtx-spear-head.mtx";
 
-	// Step 1: Determine sparsity structure of the Jacobian.
-	// This step is done by an AD tool. For the purpose of illustration here, we read the structure from a file,
-	// and store the structure in a Compressed Row Format.
-	unsigned int *** uip3_SparsityPattern = new unsigned int **;	//uip3_ means triple pointers of type unsigned int
-	double*** dp3_Value = new double**;	//dp3_ means triple pointers of type double. Other prefixes follow the same notation
-	int rowCount, columnCount;
-	ConvertMatrixMarketFormat2RowCompressedFormat(s_InputFile, uip3_SparsityPattern, dp3_Value,rowCount, columnCount);
+	//Generate and color the graph
+	GraphColoringInterface * g = new GraphColoringInterface(SRC_FILE, s_InputFile.c_str(), "AUTO_DETECTED");
 
-	//cout<<"just for debugging purpose, display the 2 matrices: the matrix with SparsityPattern only and the matrix with Value"<<endl;
-	//cout<<fixed<<showpoint<<setprecision(2); //formatting output
-	//cout<<"(*uip3_SparsityPattern)"<<endl;
-	//displayCompressedRowMatrix((*uip3_SparsityPattern),rowCount);
-	//cout<<"(*dp3_Value)"<<endl;
-	//displayCompressedRowMatrix((*dp3_Value),rowCount);
-	//cout<<"Finish ConvertMatrixMarketFormat2RowCompressedFormat()"<<endl;
-	//Pause();
+	//Color the bipartite graph with the specified ordering
+	g->Coloring("LARGEST_FIRST", "DISTANCE_TWO");
 
-	//Step 2: Obtain the seed matrix via coloring.
-	double*** dp3_Seed = new double**;
-	int *ip1_SeedRowCount = new int;
-	int *ip1_SeedColumnCount = new int;
-	int *ip1_ColorCount = new int; //The number of distinct colors used to color the graph
-	
-	// !!! START TIMING HERE
+	/*Done with coloring. Below are possible things that you may
+	want to do after coloring:
+	//*/
 
-	//Step 2.1: Read the sparsity pattern of the given Jacobian matrix (compressed sparse rows format)
-	//and create the corresponding bipartite graph
-	BipartiteGraphPartialColoringInterface *g = new BipartiteGraphPartialColoringInterface(SRC_MEM_ADOLC, *uip3_SparsityPattern, rowCount, columnCount);
+	/* 1. Check DISTANCE_TWO coloring result
+	cout<<"Check DISTANCE_TWO coloring result"<<endl;
+	g->CheckDistanceTwoColoring();
+	Pause();
+	//*/
 
-	//Step 2.2: Do Partial-Distance-Two-Coloring the bipartite graph with the specified ordering
-	g->PartialDistanceTwoColoring("SMALLEST_LAST", "COLUMN_PARTIAL_DISTANCE_TWO");
+	//* 2. Print coloring results
+	g->PrintVertexColoringMetrics();
+	Pause();
+	//*/
 
-	//Step 2.3 (Option 1): From the coloring information, create and return the seed matrix
-	(*dp3_Seed) = g->GetSeedMatrix(ip1_SeedRowCount, ip1_SeedColumnCount);
-	/* Notes:
-	Step 2.3 (Option 2): From the coloring information, you can also get the vector of colorIDs of left or right vertices  (depend on the s_ColoringVariant that you choose)
-		vector<int> vi_VertexPartialColors;
-		g->GetVertexPartialColors(vi_VertexPartialColors);
-	*/
-	//cout<<"Finish GenerateSeed()"<<endl;
-	*ip1_ColorCount = *ip1_SeedColumnCount;
+	//* 3. Get the list of colorID of vertices
+	vector<int> vi_VertexColors;
+	g->GetVertexColors(vi_VertexColors);
 
-	//Display results of step 2
-	//printf(" dp3_Seed %d x %d \n", *ip1_SeedRowCount, *ip1_SeedColumnCount);
-	//displayMatrix(*dp3_Seed, *ip1_SeedRowCount, *ip1_SeedColumnCount);
-	//Pause();
+	//Display vector of VertexColors
+	printf("vector of VertexColors (size %d) \n", (int)vi_VertexColors.size());
+	displayVector(&vi_VertexColors[0], vi_VertexColors.size(), 1);
+	Pause();
+	//*/
 
-	// Step 3: Obtain the Jacobian-seed matrix product.
-	// This step will also be done by an AD tool. For the purpose of illustration here, the orginial matrix V
-	// (for Values) is multiplied with the seed matrix S. The resulting matrix is stored in dp3_CompressedMatrix.
-	double*** dp3_CompressedMatrix = new double**;
-	cout<<"Start MatrixMultiplication()"<<endl;
-	MatrixMultiplication_VxS(*uip3_SparsityPattern, *dp3_Value, rowCount, columnCount, *dp3_Seed, *ip1_ColorCount, dp3_CompressedMatrix);
-	cout<<"Finish MatrixMultiplication()"<<endl;
+	/* 4. Get seed matrix
+	int i_SeedRowCount = 0;
+	int i_SeedColumnCount = 0;
+	double** Seed = g->GetSeedMatrix(&i_SeedRowCount, &i_SeedColumnCount);
 
-	//displayMatrix(*dp3_CompressedMatrix,rowCount,*ip1_ColorCount);
-	//Pause();
-
-	//Step 4: Recover the numerical values of the original matrix from the compressed representation.
-	// The new values are store in "dp2_JacobianValue"
-	unsigned int** ip2_RowIndex = new unsigned int*;
-	unsigned int** ip2_ColumnIndex = new unsigned int*;
-	double** dp2_JacobianValue = new double*;
-	JacobianRecovery1D* jr1d = new JacobianRecovery1D;
-	Timer timer;
-	timer.Start();
-	int i_rowCount = jr1d->RecoverD2Cln_CoordinateFormat(g, *dp3_CompressedMatrix, *uip3_SparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
-	timer.Stop();
-	cout<<"Finish Recover() time="<<timer.GetWallTime()<<endl;
-
-	unsigned int** ip2_RowIndex2 = new unsigned int*;
-	unsigned int** ip2_ColumnIndex2 = new unsigned int*;
-	double** dp2_JacobianValue2 = new double*;
-	JacobianRecovery1D* jr1d2 = new JacobianRecovery1D;
-	Timer timer2;
-	timer2.Start();
-	jr1d2->RecoverD2Cln_CoordinateFormat_OMP(g, *dp3_CompressedMatrix, *uip3_SparsityPattern, ip2_RowIndex2, ip2_ColumnIndex2, dp2_JacobianValue2);
-	timer2.Stop();
-	cout<<"Finish Recover2() time="<<timer2.GetWallTime()<<endl;
-	
-	// !!! END TIMING HERE
-	
-	bool fail_flag=false;
-	for(int i=0;i<i_rowCount;i++) {
-	  if((*ip2_RowIndex)[i]!=(*ip2_RowIndex2)[i]) {
-	    cout<<"i="<<i<<" (*ip2_RowIndex)[i] ("<< (*ip2_RowIndex)[i] <<")!=(*ip2_RowIndex2)[i] ("<< (*ip2_RowIndex2)[i] <<")"<<endl;
-	    fail_flag=true;
-	    Pause();
-	  }
-
-	  if((*ip2_ColumnIndex)[i]!=(*ip2_ColumnIndex2)[i]) {
-	    cout<<"i="<<i<<" (*ip2_ColumnIndex)[i] ("<< (*ip2_ColumnIndex)[i] <<")!=(*ip2_ColumnIndex2)[i] ("<< (*ip2_ColumnIndex2)[i] <<")"<<endl;
-	    fail_flag=true;
-	    Pause();
-	  }
-
-	  if((*dp2_JacobianValue)[i]!=(*dp2_JacobianValue2)[i]) {
-	    cout<<"i="<<i<<" (*dp2_JacobianValue)[i] ("<< (*dp2_JacobianValue)[i] <<")!=(*dp2_JacobianValue2)[i] ("<< (*dp2_JacobianValue2)[i] <<")"<<endl;
-	    fail_flag=true;
-	    Pause();
-	  }
-
-	}
-	if(fail_flag) {
-	  cout<<"FAIL"<<endl;
-	  Pause();
-	}
-	cout<<"SUCCESS!"<<endl;
-
-	//cout<<endl<<"Display result, the structure and values should be similar to the original one"<<endl;
-	//cout<<"Display *ip2_RowIndex"<<endl;
-	//displayVector(*ip2_RowIndex,g->GetEdgeCount());
-	//cout<<"Display *ip2_ColumnIndex"<<endl;
-	//displayVector(*ip2_ColumnIndex, g->GetEdgeCount());
-	//cout<<"Display *dp2_JacobianValue"<<endl;
-	//displayVector(*dp2_JacobianValue, g->GetEdgeCount());
-	//Pause();
-
-	//Deallocate memory using functions in Utilities/MatrixDeallocation.h
-
-	free_2DMatrix(uip3_SparsityPattern, rowCount);
-	uip3_SparsityPattern=NULL;
-
-	free_2DMatrix(dp3_Value, rowCount);
-	dp3_Value=NULL;
-
-	delete dp3_Seed;
-	dp3_Seed = NULL;
-
-	delete ip1_SeedRowCount;
-	ip1_SeedRowCount=NULL;
-
-	delete ip1_SeedColumnCount;
-	ip1_SeedColumnCount = NULL;
-
-	free_2DMatrix(dp3_CompressedMatrix, rowCount);
-	dp3_CompressedMatrix = NULL;
-
-	delete ip1_ColorCount;
-	ip1_ColorCount = NULL;
-	
-	delete jr1d;
-	jr1d = NULL;
-
-	delete ip2_RowIndex;
-	delete ip2_ColumnIndex;
-	delete dp2_JacobianValue;
-	ip2_RowIndex=NULL;
-	ip2_ColumnIndex=NULL;
-	dp2_JacobianValue=NULL;
+	//Display Seed
+	printf("Seed matrix %d x %d \n", i_SeedRowCount, i_SeedColumnCount);
+	displayMatrix(Seed, i_SeedRowCount, i_SeedColumnCount, 1);
+	Pause();
+	//*/
 
 	delete g;
-	g=NULL;
-
 	return 0;
 }
+//*/
 
+/* A LONGER VERSION showing steps actually executed by the constructor.
+int main(int argc, char ** argv)
+{
+	// s_InputFile = baseDir + <name of the input file>
+	string s_InputFile; //path of the input file. PICK A SYMMETRIC MATRIX!!!
+	s_InputFile = baseDir + "bcsstk01_symmetric\\bcsstk01_symmetric.mtx";
+	GraphColoringInterface * g = new GraphColoringInterface();
+
+	//Read a matrix from an input file and generate a corresponding graph.
+	//The input format will be determined based on the file extension and a correct reading routine will be used to read the file.
+	//Note: the input matrix MUST be SYMMETRIC in order for a graph to be generated correctly
+	//		If you are new to COLPACK, pick either a .graph file (MeTiS format) or a symmetric .mtx (Matrix Market format)
+	if ( g->ReadAdjacencyGraph(s_InputFile) == _FALSE) {
+		cout<<"ReadAdjacencyGraph() Failed!!!"<<endl;
+		return _FALSE;
+	}
+	cout<<"Done with ReadAdjacencyGraph()"<<endl;
+	//Pause();
+
+	//(Distance-2)Color the graph using "LARGEST_FIRST" Ordering. Other coloring and ordering can also be used.
+	g->Coloring("DISTANCE_TWO", "LARGEST_FIRST");
+	cout<<"Done with Coloring()"<<endl;
+	//Pause();
+
+	//Print coloring results
+	g->PrintVertexColoringMetrics();
+	cout<<"Done with PrintVertexColoringMetrics()"<<endl;
+	delete g;
+	//Pause();
+
+	return _TRUE;
+}
+//*/

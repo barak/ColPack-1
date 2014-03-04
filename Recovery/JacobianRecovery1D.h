@@ -145,13 +145,14 @@ namespace ColPack
 		int RecoverD2Row_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 		int RecoverD2Row_CoordinateFormat_unmanaged_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 
-		/// Same as RecoverD2Row_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
+		/// Same as RecoverD2Row_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user. (OpenMP enabled)
 		/** Notes:
 		- This function will assume the user has properly allocate memory output vector(s).
 		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
 		*/
+		int RecoverD2Row_CoordinateFormat_usermem_serial(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 		int RecoverD2Row_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
-		int RecoverD2Row_CoordinateFormat_usermem_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
+		//int RecoverD2Row_CoordinateFormat_usermem_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 
 		
 		/// A routine for recovering a Jacobian from a "Column-wise Distance 2 coloring"-based compressed representation.
@@ -269,14 +270,21 @@ namespace ColPack
 		int RecoverD2Cln_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 		int RecoverD2Cln_CoordinateFormat_unmanaged_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 
-		/// Same as RecoverD2Cln_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user.
+		/// Same as RecoverD2Cln_CoordinateFormat_unmanaged(), except that memory allocation for output vector(s) is done by user. (OpenMP enabled)
 		/** Notes:
 		- This function will assume the user has properly allocate memory output vector(s).
 		No checking will be done so if you got a SEGMENTATION FAULT in this function, you should check and see if you have allocated memory properly for the output vector(s).
 		*/
+		int RecoverD2Cln_CoordinateFormat_usermem_serial(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 		int RecoverD2Cln_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
-		int RecoverD2Cln_CoordinateFormat_usermem_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
+		//int RecoverD2Cln_CoordinateFormat_usermem_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue);
 		
+		// Compare 2 matrices in Coordinate Format. Return 1 if they are the same, return 0 if they are different
+		int CompareMatrix_CoordinateFormat_vs_CoordinateFormat(int i_rowCount, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue, unsigned int** ip2_RowIndex2, unsigned int** ip2_ColumnIndex2, double** dp2_JacobianValue2);
+		
+		// Compare 2 matrices (the first one in Coordinate Format and the second one in Row Compressed Format). Return 1 if they are the same, return 0 if they are different
+		// !!! not tested
+		int CompareMatrix_CoordinateFormat_vs_RowCompressedFormat(int i_rowCount, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue, int rowCount2, unsigned int *** uip3_SparsityPattern, double*** dp3_Value);
 	};
 }
 #endif

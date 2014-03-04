@@ -72,8 +72,10 @@ namespace ColPack
 		int ColumnLargestFirstOrdering();
 
 		int RowSmallestLastOrdering();
+		int RowSmallestLastOrdering_serial();
 		int RowSmallestLastOrdering_OMP();
 		int ColumnSmallestLastOrdering();
+		int ColumnSmallestLastOrdering_serial();
 		int ColumnSmallestLastOrdering_OMP();
 
 		int RowIncidenceDegreeOrdering();

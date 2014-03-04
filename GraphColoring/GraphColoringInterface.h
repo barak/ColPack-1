@@ -100,7 +100,7 @@ namespace ColPack
 		*/
 		int Coloring(string s_OrderingVariant = "NATURAL", string s_ColoringVariant = "DISTANCE_ONE");
 
-		/// Generate and return the seed matrix
+		/// Generate and return the seed matrix (OpenMP enabled for STAR coloring)
 		/**	This function will
 		- 1. Color the graph based on the specified ordering and coloring
 		- 2. Create and return the seed matrix (*dp3_seed) from the coloring information
@@ -127,7 +127,7 @@ namespace ColPack
 		void GenerateSeedHessian(double*** dp3_seed, int *ip1_SeedRowCount, int *ip1_SeedColumnCount, string s_OrderingVariant="NATURAL", string s_ColoringVariant="STAR");
 
 
-		/// Same as GenerateSeedHessian(), except that this Seed matrix is NOT managed by ColPack 
+		/// Same as GenerateSeedHessian(), except that this Seed matrix is NOT managed by ColPack  (OpenMP enabled for STAR coloring)
 		/** Notes:
 		- This Seed matrix is NOT managed by ColPack. Therefore, the user should free the Seed matrix manually when the matrix is no longer needed.
 		*/

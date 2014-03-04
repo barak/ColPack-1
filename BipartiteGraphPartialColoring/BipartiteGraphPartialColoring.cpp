@@ -295,6 +295,7 @@ namespace ColPack
 		vector<int> vi_forbiddenColors, vi_VerticesToBeColored, vi_verticesNeedNewColor;
 		i_LeftVertexCount = (int) m_vi_LeftVertices.size() - 1;
 		i_RightVertexCount = (int)m_vi_RightVertices.size () - 1;
+		m_i_LeftVertexColorCount = m_i_RightVertexColorCount = m_i_VertexColorCount = 0;
 
 		// !!! do sections for this part ? forbiddenColors may need to be private for each thread
 		// resize the colors
@@ -304,28 +305,47 @@ namespace ColPack
 		//Algo 4 - Line 2: U <- V . U is vi_VerticesToBeColored
 		vi_VerticesToBeColored.reserve(i_LeftVertexCount);
 		for(int i=0; i<i_LeftVertexCount; i++) {
-			vi_VerticesToBeColored.push_back(i);
+			vi_VerticesToBeColored.push_back(m_vi_OrderedVertices[i]);
+			//vi_VerticesToBeColored.push_back(i);
 		}
 		// !!! pick reasonable amount to reserve 
 		vi_verticesNeedNewColor.reserve(i_LeftVertexCount);
 
 		int i_NumOfVerticesToBeColored = vi_VerticesToBeColored.size();
+		
+// 		cout<<"m_vi_Edges.size() = "<<m_vi_Edges.size()<<endl;
+// 		cout<<"m_vi_LeftVertexColors.size() = "<<m_vi_LeftVertexColors.size()<<endl;
 
 		//Algo 4 - Line 3: while U != 0 ; do
 		while(i_NumOfVerticesToBeColored!=0) {
-		  cout<<"i_NumOfVerticesToBeColored = "<<i_NumOfVerticesToBeColored<<endl;
+// 		  cout<<"i_NumOfVerticesToBeColored = "<<i_NumOfVerticesToBeColored<<endl;
 			//Phase 1: tentative coloring
 			//Algo 4 - Line 4: for each right vertex v in U (in parallel) do
-#pragma omp parallel for default(none) schedule(dynamic) shared(i_NumOfVerticesToBeColored, vi_VerticesToBeColored) firstprivate(vi_forbiddenColors)
+#pragma omp parallel for default(none) schedule(dynamic) shared(cout, i_NumOfVerticesToBeColored, vi_VerticesToBeColored) firstprivate(vi_forbiddenColors)
 			for(int i=0; i<i_NumOfVerticesToBeColored; i++) {
 				int v = vi_VerticesToBeColored[i];
+// 				CoutLock::set(); cout<<"t"<< omp_get_thread_num() <<": i="<<i<<", left vertex v="<<v<<endl;CoutLock::unset(); 
 				//Algo 4 - Line 5: for each left vertex w in adj (v) do
 				for (int w=m_vi_LeftVertices [v]; w<m_vi_LeftVertices [v+1]; w++ ) {
+// 					CoutLock::set(); 
+// 					cout<<"\t t"<< omp_get_thread_num() <<": w="<<w<<", right vertex m_vi_Edges [w]="<<m_vi_Edges [w]<<endl;
+// 					CoutLock::unset(); 
 					//Algo 4 - Line 6: mark color [w] as forbidden to vertex v. NOTE: !!! Not needed
 					//Algo 4 - Line 7: for each right vertex x in adj (w) and x != v do
-					for (int x=m_vi_LeftVertices [m_vi_Edges [w]]; x<m_vi_LeftVertices [m_vi_Edges [w]+1]; x++ ) {
+					for (int x=m_vi_RightVertices [m_vi_Edges [w]]; x<m_vi_RightVertices [m_vi_Edges [w]+1]; x++ ) {
 						//Algo 4 - Line 8: mark color [x] as forbidden to vertex v
 						if ( m_vi_LeftVertexColors [m_vi_Edges [x]] != _UNKNOWN ) {
+// 							CoutLock::set(); 
+// 							cout<<"\t\t t"<< omp_get_thread_num() <<": x="<<x<<endl;
+// 							if(x>=m_vi_Edges.size()) {
+// 							  cout<<"ERR: x>=m_vi_Edges.size()"<<endl;
+// 							  PrintBipartiteGraph();
+// 							  Pause();
+// 							}
+// 							cout<<"\t\t left vertex m_vi_Edges [x] = "<<m_vi_Edges [x]<<endl;
+// 							cout<<"\t\t m_vi_LeftVertexColors [m_vi_Edges [x]] = "<<m_vi_LeftVertexColors [m_vi_Edges [x]]<<endl;
+// 							cout<<"\t\t v="<<v<<endl;
+// 							CoutLock::unset(); 
 							// !!! each thread should has their own vi_forbiddenColors[] vector just to make sure the don't override each other
 							vi_forbiddenColors [m_vi_LeftVertexColors [m_vi_Edges [x]]] = v;
 						}
@@ -339,6 +359,9 @@ namespace ColPack
 					while(vi_forbiddenColors[i_cadidateColor]==v) i_cadidateColor++;
 				}
 				m_vi_LeftVertexColors[v] = i_cadidateColor;
+				if(m_i_LeftVertexColorCount < i_cadidateColor)	{
+						m_i_LeftVertexColorCount = i_cadidateColor;
+				}
 			}
 			
 			//Algo 4 - Line 10: R.clear()   ; R denotes the set of vertices to be recolored
@@ -356,7 +379,7 @@ namespace ColPack
 					//Algo 4 - Line 14: if color [v] = color [w] and f (v) > f (w) then . NOTE: !!! Not needed
 						//Algo 4 - Line 15: add [v] to R ; break . NOTE: !!! Not needed
 					//Algo 4 - Line 16: for each vertex x in adj (w) and v != x do
-					for (int x=m_vi_LeftVertices [m_vi_Edges [w]]; x<m_vi_LeftVertices [m_vi_Edges [w]+1]; x++ ) {
+					for (int x=m_vi_RightVertices [m_vi_Edges [w]]; x<m_vi_RightVertices [m_vi_Edges [w]+1]; x++ ) {
 					  //cout<<" m_vi_LeftVertexColors [m_vi_Edges [x]="<<x<<"]"<< m_vi_LeftVertexColors [m_vi_Edges [x]] <<endl;
 					  // cout<<" m_vi_LeftVertexColors [v="<<v<<"]"<< m_vi_LeftVertexColors [v] <<endl;
 					  //cout<<"f(v="<<v<<")="<<f(v)<<endl;
@@ -393,12 +416,23 @@ namespace ColPack
 
 		}
 		
+		// Note that m_i_LeftVertexColorCount has not been updated yet
+		m_i_VertexColorCount = m_i_LeftVertexColorCount;
+		
 		return _TRUE;
 	  
 	}
 
+	int BipartiteGraphPartialColoring::PartialDistanceTwoRowColoring() {
+#ifdef _OPENMP
+		return BipartiteGraphPartialColoring::PartialDistanceTwoRowColoring_OMP();
+#else
+		return BipartiteGraphPartialColoring::PartialDistanceTwoRowColoring_serial();
+#endif
+	}
+	
 	//Public Function 2455
-	int BipartiteGraphPartialColoring::PartialDistanceTwoRowColoring()
+	int BipartiteGraphPartialColoring::PartialDistanceTwoRowColoring_serial()
 	{
 		if(CheckVertexColoring("ROW_PARTIAL_DISTANCE_TWO"))
 		{
@@ -415,7 +449,7 @@ namespace ColPack
 		// resize the forbidden colors
 		vi_forbiddenColors.resize ( i_LeftVertexCount, _UNKNOWN );
 
-		m_i_LeftVertexColorCount = m_i_RightVertexColorCount = m_i_VertexColorCount;
+		m_i_LeftVertexColorCount = m_i_RightVertexColorCount = m_i_VertexColorCount = 0;
 
 		for ( i=0; i<i_LeftVertexCount; ++i )
 		{
@@ -466,6 +500,7 @@ namespace ColPack
 		vector<int> vi_forbiddenColors, vi_VerticesToBeColored, vi_verticesNeedNewColor;
 		i_LeftVertexCount = (int) m_vi_LeftVertices.size() - 1;
 		i_RightVertexCount = (int)m_vi_RightVertices.size () - 1;
+		m_i_LeftVertexColorCount = m_i_RightVertexColorCount = m_i_VertexColorCount = 0;
 
 		// !!! do sections for this part ? forbiddenColors may need to be private for each thread
 		// resize the colors
@@ -475,7 +510,8 @@ namespace ColPack
 		//Algo 4 - Line 2: U <- V . U is vi_VerticesToBeColored
 		vi_VerticesToBeColored.reserve(i_RightVertexCount);
 		for(int i=0; i<i_RightVertexCount; i++) {
-			vi_VerticesToBeColored.push_back(i);
+			vi_VerticesToBeColored.push_back(m_vi_OrderedVertices[i] - i_LeftVertexCount);
+			//vi_VerticesToBeColored.push_back(i);
 		}
 		// !!! pick reasonable amount to reserve 
 		vi_verticesNeedNewColor.reserve(i_RightVertexCount);
@@ -484,7 +520,7 @@ namespace ColPack
 
 		//Algo 4 - Line 3: while U != 0 ; do
 		while(i_NumOfVerticesToBeColored!=0) {
-		  cout<<"i_NumOfVerticesToBeColored = "<<i_NumOfVerticesToBeColored<<endl;
+		  //cout<<"i_NumOfVerticesToBeColored = "<<i_NumOfVerticesToBeColored<<endl;
 			//Phase 1: tentative coloring
 			//Algo 4 - Line 4: for each right vertex v in U (in parallel) do
 #pragma omp parallel for default(none) schedule(dynamic) shared(i_NumOfVerticesToBeColored, vi_VerticesToBeColored) firstprivate(vi_forbiddenColors)
@@ -510,6 +546,9 @@ namespace ColPack
 					while(vi_forbiddenColors[i_cadidateColor]==v) i_cadidateColor++;
 				}
 				m_vi_RightVertexColors[v] = i_cadidateColor;
+				if(m_i_RightVertexColorCount < i_cadidateColor)	{
+						m_i_RightVertexColorCount = i_cadidateColor;
+				}
 			}
 			
 			//Algo 4 - Line 10: R.clear()   ; R denotes the set of vertices to be recolored
@@ -563,11 +602,24 @@ namespace ColPack
 			//*/
 
 		}
+		
+		//note that m_i_RightVertexColorCount has not been updated yet
+		m_i_VertexColorCount = m_i_RightVertexColorCount;
+		
+		return _TRUE;
 
 	}
 
+	int BipartiteGraphPartialColoring::PartialDistanceTwoColumnColoring() {
+#ifdef _OPENMP
+		return BipartiteGraphPartialColoring::PartialDistanceTwoColumnColoring_OMP();
+#else
+		return BipartiteGraphPartialColoring::PartialDistanceTwoColumnColoring_serial();
+#endif
+	}
+
 	//Public Function 2456
-	int BipartiteGraphPartialColoring::PartialDistanceTwoColumnColoring()
+	int BipartiteGraphPartialColoring::PartialDistanceTwoColumnColoring_serial()
 	{
 		if(CheckVertexColoring("COLUMN_PARTIAL_DISTANCE_TWO"))
 		{
@@ -587,7 +639,7 @@ namespace ColPack
 		// resize the forbidden colors
 		vi_forbiddenColors.resize ( i_RightVertexCount, _UNKNOWN );
 
-		m_i_LeftVertexColorCount = m_i_RightVertexColorCount = m_i_VertexColorCount;
+		m_i_LeftVertexColorCount = m_i_RightVertexColorCount = m_i_VertexColorCount = 0;
 
 		//cout<<" i_RightVertexCount = " <<i_RightVertexCount<<endl;
 		for ( i=0; i<i_RightVertexCount; ++i )
@@ -683,12 +735,22 @@ namespace ColPack
 	//Public Function 2459
 	int BipartiteGraphPartialColoring::GetLeftVertexColorCount()
 	{
+	  if(m_i_LeftVertexColorCount<0 && GetVertexColoringVariant() == "Row Partial Distance Two" ) {
+	    for(int i=0; i<m_vi_LeftVertexColors.size();i++) {
+	      if(m_i_LeftVertexColorCount<m_vi_LeftVertexColors[i]) m_i_LeftVertexColorCount = m_vi_LeftVertexColors[i];
+	    }
+	  }
 		return(STEP_UP(m_i_LeftVertexColorCount));
 	}
 
 	//Public Function 2460
 	int BipartiteGraphPartialColoring::GetRightVertexColorCount()
 	{
+	  if(m_i_RightVertexColorCount<0 && GetVertexColoringVariant() == "Column Partial Distance Two" ) {
+	    for(int i=0; i<m_vi_RightVertexColors.size();i++) {
+	      if(m_i_RightVertexColorCount<m_vi_RightVertexColors[i]) m_i_RightVertexColorCount = m_vi_RightVertexColors[i];
+	    }
+	  }
 		return(STEP_UP(m_i_RightVertexColorCount));
 	}
 
@@ -696,6 +758,14 @@ namespace ColPack
 	//Public Function 2461
 	int BipartiteGraphPartialColoring::GetVertexColorCount()
 	{
+	  if(m_i_VertexColorCount<0 && GetVertexColoringVariant() != "Unknown" ) {
+	    if(GetVertexColoringVariant() == "Row Partial Distance Two") {
+	      m_i_VertexColorCount = GetLeftVertexColorCount() - 1;
+	    }
+	    else { // GetVertexColoringVariant() == "Column Partial Distance Two"
+	      m_i_VertexColorCount = GetRightVertexColorCount() - 1;
+	    }
+	  }
 		return(STEP_UP(m_i_VertexColorCount));
 	}
 
@@ -757,7 +827,7 @@ namespace ColPack
 		}
 
 		cout<<endl;
-		cout<<"[Total Row Colors = "<<STEP_UP(m_i_VertexColorCount)<<"]"<<endl;
+		cout<<"[Total Row Colors = "<<GetLeftVertexColorCount()<<"]"<<endl;
 		cout<<endl;
 
 		return;
@@ -788,7 +858,7 @@ namespace ColPack
 		}
 
 		cout<<endl;
-		cout<<"[Total Column Colors = "<<STEP_UP(m_i_VertexColorCount)<<"]"<<endl;
+		cout<<"[Total Column Colors = "<<GetRightVertexColorCount()<<"]"<<endl;
 		cout<<endl;
 
 		return;
@@ -929,7 +999,7 @@ namespace ColPack
 	double** BipartiteGraphPartialColoring::GetLeftSeedMatrix_unmanaged(int* i_SeedRowCount, int* i_SeedColumnCount) {
 
 		int i_size = m_vi_LeftVertexColors.size();
-		int i_num_of_colors = m_i_LeftVertexColorCount + 1;
+		int i_num_of_colors = GetLeftVertexColorCount();
 		(*i_SeedRowCount) = i_num_of_colors;
 		(*i_SeedColumnCount) = i_size;
 		if(i_num_of_colors == 0 || i_size == 0) return NULL;
@@ -952,7 +1022,7 @@ namespace ColPack
 	double** BipartiteGraphPartialColoring::GetRightSeedMatrix_unmanaged(int* i_SeedRowCount, int* i_SeedColumnCount) {
 
 		int i_size = m_vi_RightVertexColors.size();
-		int i_num_of_colors = m_i_RightVertexColorCount + 1;
+		int i_num_of_colors = GetRightVertexColorCount();
 		(*i_SeedRowCount) = i_size;
 		(*i_SeedColumnCount) = i_num_of_colors;
 		if(i_num_of_colors == 0 || i_size == 0) return NULL;
@@ -966,6 +1036,11 @@ namespace ColPack
 
 		// populate Seed matrix
 		for (int i=0; i < i_size; i++) {
+// 			if(m_vi_RightVertexColors[i]>=i_num_of_colors) {
+// 				cout<<"i="<<i<<endl;
+// 				cout<<"m_vi_RightVertexColors[i]="<<m_vi_RightVertexColors[i]<<endl;
+// 				cout<<"i_num_of_colors="<<i_num_of_colors<<endl;
+// 			}
 			Seed[i][m_vi_RightVertexColors[i]] = 1.;
 		}
 
@@ -1059,6 +1134,10 @@ namespace ColPack
 	
 	double BipartiteGraphPartialColoring::GetVertexColoringTime() {
 	  return m_d_ColoringTime;
+	}
+	
+	void BipartiteGraphPartialColoring::SetVertexColoringVariant(string s_VertexColoringVariant) {
+	  m_s_VertexColoringVariant = s_VertexColoringVariant;
 	}
 }
 

@@ -153,6 +153,7 @@ namespace ColPack
 	public:
 
 		void SetStringVertexColoringVariant(string s);
+		void SetVertexColorCount(int i_VertexColorCount);
 
 		//Public Constructor 1451
 		GraphColoring();
@@ -174,11 +175,143 @@ namespace ColPack
 		int NaiveStarColoring();
 
 		//Public Function 1457
+		/// Star Coloring with an additional restriction
+		/**
+		 * The additional restriction: When we try to decide the color of a vertex:
+		 * - If D1 neighbor has color id > D2 neighbor's color id, then that D2 neighbor's color is forbidden (the current vertex cannot use that color)
+		 * - Else, we can just reuse the color of that D2 neighbor
+		 */
 		int RestrictedStarColoring();
-		int RestrictedStarColoring_OMP();
-
+		
 		//Public Function 1458
+		/*
+		 * Related paper: A. Gebremedhin, A. Tarafdar, F. Manne and A. Pothen, New Acyclic and Star Coloring Algorithms with Applications to Hessian Computation, SIAM Journal on Scientific Computing, Vol 29, No 3, pp 1042--1072, 2007.
+		 *    http://www.cs.purdue.edu/homes/agebreme/publications/SISC29-2-2009.pdf
+		 * ?This is the algorithm 4.1 in the above paper
+		 */
+		int StarColoring_serial();
+		int StarColoring_serial2(); // Essentially based on StarColoring_OMP() v1
+		
+		// TO BE IMPLEMENTED
 		int StarColoring();
+		
+		/// Build the collection of 2-color star from the coloring result
+		/**
+		 * NOTE: At this point, this routine will not work correctly if there are conflicts
+		 */
+		int BuildStarCollection(vector<int> & vi_VerticesToBeRecolored);
+		int PrintStarCollection(vector<int>& vi_EdgeStarMap, vector<int>& vi_StarHubMap, map< int, map<int, int> >& mimi2_VertexEdgeMap);
+		
+		struct lt_pii
+		{
+			bool operator()(const pair<int, int> pii_ColorCombination1, const pair<int, int> pii_ColorCombination2) const
+			{
+				if(pii_ColorCombination1.first < pii_ColorCombination2.first) {
+					return true;
+				}
+				else if (pii_ColorCombination1.first > pii_ColorCombination2.first) {
+					return false;
+				}
+				// pii_ColorCombination1.first == pii_ColorCombination2.first
+				return (pii_ColorCombination1.second < pii_ColorCombination2.second);
+			}
+		};
+		
+		struct Colors2Edge_Value {
+			Colors2Edge_Value() {
+				visited=false;
+			}
+			vector< pair<int, int> > value;
+			bool visited;
+		};
+		/// Build the collection of 2-color star from the coloring result
+		/**
+		 * This function also helps us identify a list of vertices need to be recolored if conlict is detected
+		 * If vi_VerticesToBeRecolored.size() == 0, then the coloring is a valid star coloring.
+		 * The algorithm is done in parallel
+		 */
+		int DetectConflictInColorCombination(int i_MaxNumThreads, int i_thread_num, pair<int, int> pii_ColorCombination, map< pair<int, int>, Colors2Edge_Value , lt_pii>* Colors2Edge_Private, 
+					     map< int, vector< pair<int, int> > > *Vertex2ColorCombination_Private, map< int, int> * PotentialHub_Private, vector< pair<int, int> >* ConflictedEdges_Private, vector<int>* ConflictCount_Private);
+		/// This function assume that there is no conflicts in the color assignment
+		int BuildStarFromColorCombination(int i_MaxNumThreads, int i_thread_num, pair<int, int> pii_ColorCombination, map< pair<int, int>, Colors2Edge_Value , lt_pii>* Colors2Edge_Private,
+							 map< int, vector< pair<int, int> > > *Vertex2ColorCombination_Private, map< int, int> * PotentialHub_Private);
+		
+		ofstream fout; // !!!
+		int i_ProcessedEdgeCount; // !!!
+		/// Build Vertex2ColorCombination from Vertex2ColorCombination_Private
+		/**
+		 * This process is done in parallel
+		 * After Vertex2ColorCombination is built, Vertex2ColorCombination_Private will be deallocated
+		 */
+		int BuildVertex2ColorCombination(int i_MaxNumThreads, map< int, vector< pair<int, int> > > *Vertex2ColorCombination_Private, vector<  map <int, int > > *Vertex2ColorCombination);
+		/* 
+		 * if(i_Mode==1) : stop at the first failure
+		 * else if(i_Mode==0): pause but then continue
+		 * 
+		 * Return values:
+		 * - >= 0: Fail. the vertex that causes conflict as this routine progress. Note: this may not be the latest-added vertex that cause coloring conflict in the graph
+		 * - -2: Fail. 2 potential hub are connected
+		 * - -1: Pass.
+		 * 
+		 * If pii_ConflictColorCombination is provided (i.e. pii_ConflictColorCombination!=NULL) and this Check fail, pii_ConflictColorCombination will contain the 2 problematic colors
+		 */
+		int CheckStarColoring_OMP(int i_Mode, pair<int,int> *pii_ConflictColorCombination);
+		int BuildStarFromColorCombination_forChecking(int i_Mode, int i_MaxNumThreads, int i_thread_num, pair<int, int> pii_ColorCombination, map< pair<int, int>, Colors2Edge_Value , lt_pii>* Colors2Edge_Private,
+							  map< int, int> * PotentialHub_Private);
+		int BuildForbiddenColors(int i_MaxNumThreads, int i_thread_num, int i_CurrentVertex, map<int, bool>* mip_ForbiddenColors, map<int, int>* D1Colors, vector<  map <int, int > > *Vertex2ColorCombination);
+		int PrintVertex2ColorCombination (vector<  map <int, int > > *Vertex2ColorCombination);
+		int PrintVertex2ColorCombination_raw (vector<  map <int, int > > *Vertex2ColorCombination);
+		int PrintVertexAndColorAdded(int i_MaxNumThreads, vector< pair<int, int> > *vi_VertexAndColorAdded, int i_LastNEntries = 999999999);
+		int PrintForbiddenColors(map<int, bool>* mip_ForbiddenColors,int i_thread_num);
+		int PickVerticesToBeRecolored(int i_MaxNumThreads, vector< pair<int, int> > *ConflictedEdges_Private, vector<int> &ConflictCount);
+		int PrintAllColorCombination(map< pair<int, int>, Colors2Edge_Value , lt_pii>* Colors2Edge_Private, int i_MaxNumThreads, int i_MaxNumOfCombination=1000000, int i_MaxElementsOfCombination=100000);
+		int PrintColorCombination(map< pair<int, int>, Colors2Edge_Value , lt_pii>* Colors2Edge_Private, int i_MaxNumThreads, pair<int, int> pii_ColorCombination, int i_MaxElementsOfCombination=100000);
+		int PrintPotentialHub(map< int, int> *PotentialHub_Private, int i_thread_num, pair<int, int> pii_ColorCombination);
+		int PrintConflictEdges(vector< pair<int, int> > *ConflictedEdges_Private, int i_MaxNumThreads);
+		int PrintConflictCount(vector<int> &ConflictCount);
+		int PrintVertex2ColorCombination(int i_MaxNumThreads, map< int, vector< pair<int, int> > > *Vertex2ColorCombination_Private);
+		int PrintD1Colors(map<int, int>* D1Colors, int i_thread_num);
+		int PrintVertexColorCombination(map <int, int >* VertexColorCombination);
+		
+		/// Note: FDP and CIRCO  are the 2 good filters to display this subgraph
+		/** Sample code:
+		 	map< int, map<int,bool> > *graph = new map< int, map<int,bool> >;
+			map<int, bool> *mib_FilterByColors = new map<int, bool>;
+			(*mib_FilterByColors)[m_vi_VertexColors[i_CurrentVertex]]=true;
+			(*mib_FilterByColors)[color2]=true;
+			(*mib_FilterByColors)[color3]=true;
+		
+			BuildSubGraph(graph, i_CurrentVertex, 2, mib_FilterByColors);
+			
+			vector<int> vi_VertexColors; 
+			GetVertexColors(vi_VertexColors);
+			displayGraph(graph, &vi_VertexColors, true, FDP);
+			delete graph;
+		 */
+		int BuildSubGraph(map< int, map<int,bool> > *graph, int i_CenterVertex, int distance=1, map<int, bool> *mib_FilterByColors=NULL);
+		
+		/** Sample code: (see function int BuildSubGraph() )
+		 */
+		int BuildConnectedSubGraph(map< int, map<int,bool> > *graph, int i_CenterVertex, int distance=1, map<int, bool> *mib_FilterByColors=NULL);
+
+		/** Sample code:
+		 	map< int, map<int,bool> > *graph = new map< int, map<int,bool> >;
+			map<int, bool> *mib_Colors = new map<int, bool>;
+			(*mib_Colors)[m_vi_VertexColors[i_CurrentVertex]]=true;
+			(*mib_Colors)[color2]=true;
+			(*mib_Colors)[color3]=true;
+		
+			BuildSubGraph(graph, mib_Colors);
+			
+			vector<int> vi_VertexColors; 
+			GetVertexColors(vi_VertexColors);
+			displayGraph(graph, &vi_VertexColors, true, FDP);
+			delete graph;
+		 */
+		int BuildColorsSubGraph(map< int, map<int,bool> > *graph, map<int,bool> *mib_Colors);
+		int PrintSubGraph(map< int, map<int,bool> > *graph);
+		int PrintVertexD1NeighborAndColor(int VertexIndex, int excludedVertex=-1);
+		int FindDistance(int v1, int v2);
 
 		//Public Function 1459
 		int StarColoring(vector<int> &, vector<int> &, map< int, map<int, int> > &);
@@ -218,6 +351,7 @@ namespace ColPack
 
 		//Public Function 1467
 		string GetVertexColoringVariant();
+		void SetVertexColoringVariant(string s_VertexColoringVariant);
 
 		//Public Function 1468
 		int GetVertexColorCount();

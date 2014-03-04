@@ -160,10 +160,12 @@ namespace ColPack
 
 		//Public Function 2455
 		int PartialDistanceTwoRowColoring();
+		int PartialDistanceTwoRowColoring_serial();
 		int PartialDistanceTwoRowColoring_OMP();
 
 		//Public Function 2456
 		int PartialDistanceTwoColumnColoring();
+		int PartialDistanceTwoColumnColoring_serial();
 		int PartialDistanceTwoColumnColoring_OMP();
 
 		//Public Function 2457
@@ -206,6 +208,8 @@ namespace ColPack
 		void PrintVertexPartialColorClasses();
 		
 		double GetVertexColoringTime();
+		
+		void SetVertexColoringVariant(string s_VertexColoringVariant);
 	};
 }
 #endif

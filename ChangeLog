@@ -1,4 +1,7 @@
 2011-09-01 Duc Nguyen
+  displayGraph() is updated to accept BipartiteGraphPartialColoringInterface &g
+    At this point, displayGraph(BipartiteGraphPartialColoringInterface &g) cannot highlight coloring conflicts yet
+2011-09-01 Duc Nguyen
   Add "int displayGraph(ColPack::GraphColoring &g);" in extra.cpp to support debugging
     this function will create the DOT-file that describe the graph (with or without color) , and then utilize GraphViz to display the graph in image.
     In the case of Star Coloring, if there are conflict(s), the conflict(s) will be highlighted in bold edges.

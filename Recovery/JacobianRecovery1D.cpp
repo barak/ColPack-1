@@ -175,7 +175,7 @@ namespace ColPack
 		return returnValue;
 	}
 
-	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_usermem_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
 			return _FALSE;
@@ -212,7 +212,7 @@ namespace ColPack
 		return (*LeftVerticesPtr)[rowCount];
 	}
 	
-	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_usermem_serial(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
 			return _FALSE;
@@ -273,7 +273,7 @@ namespace ColPack
 		    (*dp2_JacobianValue) = (double*) malloc(numOfNonZeros * sizeof(double)); //allocate memory for *dp2_JacobianValue.
 		  }
 		}
-		return RecoverD2Row_CoordinateFormat_usermem_OMP(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+		return RecoverD2Row_CoordinateFormat_usermem(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
 	}
 	
 	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
@@ -288,7 +288,7 @@ namespace ColPack
 		(*ip2_ColumnIndex) = (unsigned int*) malloc(numOfNonZeros * sizeof(unsigned int));
 		(*dp2_JacobianValue) = (double*) malloc(numOfNonZeros * sizeof(double)); //allocate memory for *dp2_JacobianValue.
 
-		return RecoverD2Row_CoordinateFormat_usermem(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+		return RecoverD2Row_CoordinateFormat_usermem_serial(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
 	}
 	
 	int JacobianRecovery1D::RecoverD2Row_CoordinateFormat_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
@@ -493,7 +493,7 @@ namespace ColPack
 		return returnValue;
 	}
 
-	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_usermem_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
 			return _FALSE;
@@ -520,7 +520,7 @@ namespace ColPack
 		return (*LeftVerticesPtr)[rowCount];
 	}
 	
-	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_usermem(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
+	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_usermem_serial(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
 		if(g==NULL) {
 			cerr<<"g==NULL"<<endl;
 			return _FALSE;
@@ -572,7 +572,7 @@ namespace ColPack
 		  }
 		}
 		
-		return RecoverD2Cln_CoordinateFormat_usermem_OMP(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+		return RecoverD2Cln_CoordinateFormat_usermem(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
 	}
 	
 	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_unmanaged(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
@@ -587,7 +587,7 @@ namespace ColPack
 		(*ip2_ColumnIndex) = (unsigned int*) malloc(numOfNonZeros * sizeof(unsigned int));
 		(*dp2_JacobianValue) = (double*) malloc(numOfNonZeros * sizeof(double)); //allocate memory for *dp2_JacobianValue.
 
-		return RecoverD2Cln_CoordinateFormat_usermem(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
+		return RecoverD2Cln_CoordinateFormat_usermem_serial(g, dp2_CompressedMatrix, uip2_JacobianSparsityPattern, ip2_RowIndex, ip2_ColumnIndex, dp2_JacobianValue);
 	}
 	
 	int JacobianRecovery1D::RecoverD2Cln_CoordinateFormat_OMP(BipartiteGraphPartialColoringInterface* g, double** dp2_CompressedMatrix, unsigned int ** uip2_JacobianSparsityPattern, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue) {
@@ -616,5 +616,61 @@ namespace ColPack
 		dp_CF_Value = *dp2_JacobianValue;
 
 		return returnValue;
+	}
+	
+	int JacobianRecovery1D::CompareMatrix_CoordinateFormat_vs_CoordinateFormat(int i_rowCount, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue, unsigned int** ip2_RowIndex2, unsigned int** ip2_ColumnIndex2, double** dp2_JacobianValue2) {
+		bool fail_flag=false;
+		for(int i=0;i<i_rowCount;i++) {
+		  if((*ip2_RowIndex)[i]!=(*ip2_RowIndex2)[i]) {
+		    cout<<"i="<<i<<" (*ip2_RowIndex)[i] ("<< (*ip2_RowIndex)[i] <<")!=(*ip2_RowIndex2)[i] ("<< (*ip2_RowIndex2)[i] <<")"<<endl;
+		    fail_flag=true;
+		    break;
+		  }
+
+		  if((*ip2_ColumnIndex)[i]!=(*ip2_ColumnIndex2)[i]) {
+		    cout<<"i="<<i<<" (*ip2_ColumnIndex)[i] ("<< (*ip2_ColumnIndex)[i] <<")!=(*ip2_ColumnIndex2)[i] ("<< (*ip2_ColumnIndex2)[i] <<")"<<endl;
+		    fail_flag=true;
+		    break;
+		  }
+
+		  
+		  if(!(*dp2_JacobianValue)[i]==(*dp2_JacobianValue2)[i] ) {
+		    cout<<"i="<<i<<" (*dp2_JacobianValue)[i] ("<< (*dp2_JacobianValue)[i] <<")!=(*dp2_JacobianValue2)[i] ("<< (*dp2_JacobianValue2)[i] <<")"<<endl;
+		    fail_flag=true;
+		    break;
+		  }
+
+		}
+		
+		return (fail_flag)?0:1;
+	}
+	
+	int JacobianRecovery1D::CompareMatrix_CoordinateFormat_vs_RowCompressedFormat(int i_rowCount, unsigned int** ip2_RowIndex, unsigned int** ip2_ColumnIndex, double** dp2_JacobianValue,  int rowCount2, unsigned int *** uip3_SparsityPattern, double*** dp3_Value) {
+		bool fail_flag=false;
+		for(int i=0;i<i_rowCount;i++) {
+		  if((*ip2_RowIndex)[i] >= rowCount2) {
+		    fail_flag = true;
+		    break;
+		  }
+
+		  int j =0;
+		  for(;j<= (*uip3_SparsityPattern)[ (*ip2_RowIndex)[i] ][0];j++) {
+		    if((*uip3_SparsityPattern)[ (*ip2_RowIndex)[i] ][j] == (*ip2_ColumnIndex)[i]) break;
+		  }
+		  if(j>(*uip3_SparsityPattern)[ (*ip2_RowIndex)[i] ][0]) {
+		    fail_flag = true;
+		    break;
+		  }
+		  //cout<<"found j = "<<j<<endl;
+		  
+		  if( !(*dp2_JacobianValue)[i]==(*dp3_Value)[(*ip2_RowIndex)[i]][j]) {
+		    cout<<"i="<<i<<" (*dp2_JacobianValue)[i] ("<< (*dp2_JacobianValue)[i] <<")!=(*dp3_Value)["<< (*ip2_RowIndex)[i] <<"]["<< (*ip2_ColumnIndex)[i] <<"] ("<<(*dp3_Value)[(*ip2_RowIndex)[i]][j]<<")"<<endl;
+		    fail_flag=true;
+		    break;
+		  }
+
+		}
+		
+		return (fail_flag)?0:1;
 	}
 }

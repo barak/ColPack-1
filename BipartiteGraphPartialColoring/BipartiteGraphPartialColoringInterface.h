@@ -112,7 +112,7 @@ namespace ColPack
 		*/
 		int PartialDistanceTwoColoring(string s_OrderingVariant = "NATURAL", string s_ColoringVariant = "COLUMN_PARTIAL_DISTANCE_TWO");
 
-		/// Generate and return the seed matrix
+		/// Generate and return the seed matrix (OpenMP enabled)
 		/**	This function will
 		- 1. Color the graph by (Row or Column)-Partial-Distance-2-Coloring  with the specified ordering
 		- 2. Create and return the seed matrix (*dp3_seed) from the coloring information
@@ -136,7 +136,7 @@ namespace ColPack
 		void GenerateSeedJacobian(double*** dp3_seed, int *ip1_SeedRowCount, int *ip1_SeedColumnCount, string s_OrderingVariant="NATURAL", string s_ColoringVariant = "COLUMN_PARTIAL_DISTANCE_TWO");
 
 
-		/// Same as GenerateSeedJacobian(), except that this Seed matrix is NOT managed by ColPack 
+		/// Same as GenerateSeedJacobian(), except that this Seed matrix is NOT managed by ColPack  (OpenMP enabled)
 		/** Notes:
 		- This Seed matrix is NOT managed by ColPack. Therefore, the user should free the Seed matrix manually when the matrix is no longer needed.
 		*/

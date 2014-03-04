@@ -46,6 +46,14 @@ using namespace std;
 #include "Pause.h"
 */
 
+
+//Definition for dot
+#define DOT 1
+#define NEATO 2
+#define TWOPI 3
+#define CIRCO 4
+#define FDP 5
+
 /// Write out to the file ADOLC Input using Matrix Market format
 /**
 Input parameters:
@@ -75,9 +83,23 @@ string itoa(int i);
 
 vector<string> getListOfColors(string s_InputFile);
 
-int displayGraph(ColPack::GraphColoring &g);
-int buildDotWithoutColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, string fileName);
-int buildDotWithColor(ColPack::GraphColoring &g, vector<string> &ListOfColors, string fileName);
+int buildDotWithoutColor(ColPack::GraphColoringInterface &g, vector<string> &ListOfColors, string fileName);
+
+/// Build dot file with colors, also highlight StarColoringConflicts
+/**
+ * !!! TO DO: improve this function so that it can detect conflicts of all coloring types
+ */
+int buildDotWithColor(ColPack::GraphColoringInterface &g, vector<string> &ListOfColors, string fileName);
+
+int buildDotWithoutColor(ColPack::BipartiteGraphPartialColoringInterface &g, vector<string> &ListOfColors, string fileName);
+// !!! TODO: enable conflict detection
+int buildDotWithColor(ColPack::BipartiteGraphPartialColoringInterface &g, vector<string> &ListOfColors, string fileName);
+
+// !!! TO BE BUILT
+int buildDotWithoutColor(ColPack::BipartiteGraphBicoloringInterface &g, vector<string> &ListOfColors, string fileName);
+// !!! TO BE BUILT
+int buildDotWithColor(ColPack::BipartiteGraphBicoloringInterface &g, vector<string> &ListOfColors, string fileName);
+
 
 /// Read a Row Compressed Format file
 /** Read a Row Compressed Format file
@@ -200,8 +222,48 @@ int GenerateValuesForSymmetricMatrix(unsigned int ** uip2_SparsityPattern, int r
 int DisplayADICFormat_Sparsity(std::list<std::set<int> > &lsi_SparsityPattern);
 int DisplayADICFormat_Value(std::list<std::vector<double> > &lvd_Value);
 
+int displayGraph(map< int, map<int,bool> > *graph, vector<int>* vi_VertexColors=NULL,int i_RunInBackground = false, int filter = DOT);
+int buildDotWithoutColor(map< int, map<int,bool> > *graph, vector<string> &ListOfColors, string fileName);
+int buildDotWithColor(map< int, map<int,bool> > *graph, vector<int>* vi_VertexColors, vector<string> &ListOfColors, string fileName);
+
 #ifndef EXTRA_H_TEMPLATE_FUNCTIONS
 #define EXTRA_H_TEMPLATE_FUNCTIONS
+
+template<class T>
+int displayGraph(T &g,int i_RunInBackground = false, int filter = DOT) {
+  static int ranNum = rand();
+  static int seq = 0;
+  seq++;
+  vector<string> ListOfColors = getListOfColors("");
+  string fileName = "/tmp/.";
+  fileName = fileName + "ColPack_"+ itoa(ranNum)+"_"+itoa(seq)+".dot";
+  
+  //build the dot file of the graph
+  string m_s_VertexColoringVariant = g.GetVertexColoringVariant();
+  if(m_s_VertexColoringVariant.empty() || m_s_VertexColoringVariant=="Unknown") {
+    //build dot file represents graph without color info
+    buildDotWithoutColor(g, ListOfColors, fileName);
+  } else {
+    //build dot file represents graph with color
+    buildDotWithColor(g, ListOfColors, fileName);
+  }
+  
+  //display the graph using xdot
+  string command;
+  switch (filter) {
+    case NEATO: command="xdot -f neato "; break;
+    case TWOPI: command="xdot -f twopi "; break;
+    case CIRCO: command="xdot -f circo "; break;
+    case FDP: command="xdot -f fdp "; break;
+    default: command="xdot -f dot "; // case DOT
+  }
+  
+  command = command + fileName;
+  if(i_RunInBackground) command = command + " &";
+  int i_ReturnValue = system(command.c_str());
+  return i_ReturnValue;
+}
+
 
 ///Find the difference between 2 arrays. Return 0 if there is no difference, 1 if there is at least 1 difference
 template<class T>

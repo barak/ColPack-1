@@ -67,6 +67,7 @@
 #include "MatrixDeallocation.h"
 #include "mmio.h"
 #include "current_time.h"
+#include "CoutLock.h"
 
 #include "StringTokenizer.h"
 #include "DisjointSets.h"

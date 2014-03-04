@@ -331,17 +331,25 @@ namespace ColPack
 	}
 
 
+	int BipartiteGraphPartialOrdering::RowSmallestLastOrdering() {
+		return BipartiteGraphPartialOrdering::RowSmallestLastOrdering_serial();
+/*#ifdef _OPENMP
+		return BipartiteGraphPartialOrdering::RowSmallestLastOrdering_OMP();
+#else
+		return BipartiteGraphPartialOrdering::RowSmallestLastOrdering_serial();
+#endif*/
+	}
 
 	//Line 1: procedure SMALLESTLASTORDERING-EASY(G = (V;E))
 	int BipartiteGraphPartialOrdering::RowSmallestLastOrdering_OMP()
 	{
-		cout<<"IN ROW_SMALLEST_LAST_OMP()"<<endl<<flush;
+// 		cout<<"IN ROW_SMALLEST_LAST_OMP()"<<endl<<flush;
 		if(CheckVertexOrdering("ROW_SMALLEST_LAST_OMP"))
 		{
 			return(_TRUE);
 		}
 		
-		PrintBipartiteGraph(); 
+// 		PrintBipartiteGraph(); 
 		
 		int j, k, l, u;
 		int i_LeftVertexCount = (signed) m_vi_LeftVertices.size() - 1;
@@ -466,12 +474,12 @@ namespace ColPack
 #endif
 				//Line 8: Let delta be the smallest index j such that B_k [j] is non-empty
 				//update delta
-				cout<<"delta[i_thread_num] 1="<< delta[i_thread_num] <<endl;
-				cout<<"B[i_thread_num]:"<<endl<<'\t';
-				for(int i=0; i<=i_MaxDegree; i++) {cout<<B[i_thread_num][i].size()<<' ';}
-				cout<<'*'<<endl;
+// 				cout<<"delta[i_thread_num] 1="<< delta[i_thread_num] <<endl;
+// 				cout<<"B[i_thread_num]:"<<endl<<'\t';
+// 				for(int i=0; i<=i_MaxDegree; i++) {cout<<B[i_thread_num][i].size()<<' ';}
+// 				cout<<'*'<<endl;
 				if(delta[i_thread_num]!=0 && B[ i_thread_num ][ delta[i_thread_num] - 1 ].size() != 0) delta[i_thread_num] --;
-				cout<<"delta[i_thread_num] 2="<< delta[i_thread_num] <<endl;
+// 				cout<<"delta[i_thread_num] 2="<< delta[i_thread_num] <<endl;
 				
 				//Line 9: Let v be a vertex drawn from B_k [delta]
 				int v; 
@@ -488,8 +496,8 @@ namespace ColPack
 					}
 					else delta[i_thread_num]++;
 				}
-				cout<<"Select vertex v="<<v<<" ; d[v]="<< d[v]<<endl;
-				cout<<"delta[i_thread_num] 3="<< delta[i_thread_num] <<endl;
+// 				cout<<"Select vertex v="<<v<<" ; d[v]="<< d[v]<<endl;
+// 				cout<<"delta[i_thread_num] 3="<< delta[i_thread_num] <<endl;
 				
 				//Line 11: for each vertex w which is distance-2-neighbor of (v) do
 				for(int l = m_vi_LeftVertices[v]; l < m_vi_LeftVertices[v+1]; l++) {
@@ -503,15 +511,15 @@ namespace ColPack
 						//Line 13: remove w from B_k [d (w)]
 						// find location of w in B_k [d (w)] and pop it . !!! naive, improvable by keeping extra data. See if the extra data affacts concurrency
 						int i_w_location = B[ i_thread_num ][ d[w] ].size() - 1;
-						cout<<"d[w]="<<d[w]<<endl;
-						cout<<"i_w_location before="<<i_w_location<<endl;
-						for(int ii = 0; ii <= i_w_location; ii++) {cout<<' '<< B[ i_thread_num ][ d[w] ][ii] ;}
-						cout<<"find w="<<w<<endl;
+// 						cout<<"d[w]="<<d[w]<<endl;
+// 						cout<<"i_w_location before="<<i_w_location<<endl;
+// 						for(int ii = 0; ii <= i_w_location; ii++) {cout<<' '<< B[ i_thread_num ][ d[w] ][ii] ;}
+// 						cout<<"find w="<<w<<endl;
 						while(i_w_location>=0 && B[ i_thread_num ][ d[w] ][i_w_location] != w) i_w_location--;
-						if(i_w_location<0) {
-							cout<<"*** i_w_location<0"<<endl<<flush;
-						}
-						cout<<"i_w_location after="<<i_w_location<<endl;
+// 						if(i_w_location<0) {
+// 							cout<<"*** i_w_location<0"<<endl<<flush;
+// 						}
+// 						cout<<"i_w_location after="<<i_w_location<<endl;
 						if(i_w_location != (B[ i_thread_num ][ d[w] ].size() - 1) ) B[ i_thread_num ] [ d[w] ][i_w_location] = B[ i_thread_num ] [ d[w] ][ B[ i_thread_num ][ d[w] ].size() - 1 ];
 						B[ i_thread_num ] [ d[w] ].pop_back();
 						
@@ -532,15 +540,17 @@ namespace ColPack
 					//!!! improvable
 					m_vi_OrderedVertices.push_back(v);
 					i_NumOfVerticesToBeColored--;
-					cout<<"i_NumOfVerticesToBeColored="<<i_NumOfVerticesToBeColored<<endl;
+// 					cout<<"i_NumOfVerticesToBeColored="<<i_NumOfVerticesToBeColored<<endl;
 				}
 			}
 		}
-		cout<<"OUT ROW_SMALLEST_LAST_OMP()"<<endl<<flush;
+// 		cout<<"OUT ROW_SMALLEST_LAST_OMP()"<<endl<<flush;
+
+		return(_TRUE);
 	}
 
 	//Public Function 2359
-	int BipartiteGraphPartialOrdering::RowSmallestLastOrdering()
+	int BipartiteGraphPartialOrdering::RowSmallestLastOrdering_serial()
 	{
 		if(CheckVertexOrdering("ROW_SMALLEST_LAST"))
 		{
@@ -721,16 +731,25 @@ namespace ColPack
 		return(_TRUE);
 	}
 
+	int BipartiteGraphPartialOrdering::ColumnSmallestLastOrdering() {
+		return BipartiteGraphPartialOrdering::ColumnSmallestLastOrdering_serial();
+/*#ifdef _OPENMP
+		return BipartiteGraphPartialOrdering::ColumnSmallestLastOrdering_OMP();
+#else
+		return BipartiteGraphPartialOrdering::ColumnSmallestLastOrdering_serial();
+#endif*/
+	}
+	
 	//Line 1: procedure SMALLESTLASTORDERING-EASY(G = (V;E))
 	int BipartiteGraphPartialOrdering::ColumnSmallestLastOrdering_OMP()
 	{
-	  cout<<"IN COLUMN_SMALLEST_LAST_OMP()"<<endl<<flush;
+// 	  cout<<"IN COLUMN_SMALLEST_LAST_OMP()"<<endl<<flush;
 		if(CheckVertexOrdering("COLUMN_SMALLEST_LAST_OMP"))
 		{
 			return(_TRUE);
 		}
 		
-		PrintBipartiteGraph(); 
+// 		PrintBipartiteGraph(); 
 		
 		int j, k, l, u;
 		int i_LeftVertexCount = (signed) m_vi_LeftVertices.size() - 1;
@@ -839,7 +858,7 @@ namespace ColPack
 		
 		//Line 6: for k = 1 to p in parallel do
 #ifdef _OPENMP
-		#pragma omp parallel for default(none) schedule(static) shared(i_MaxNumThreads, i_NumOfVerticesToBeColored, B, delta, VertexThreadGroup, d, cout, i_MaxDegree, i_MaxDegree_Private ) firstprivate(vi_Visited)
+		#pragma omp parallel for default(none) schedule(static) shared(i_LeftVertexCount, i_MaxNumThreads, i_NumOfVerticesToBeColored, B, delta, VertexThreadGroup, d, cout, i_MaxDegree, i_MaxDegree_Private ) firstprivate(vi_Visited)
 #endif
 		for(int k=0; k< i_MaxNumThreads; k++) {
 			//reset vi_Visited
@@ -855,12 +874,12 @@ namespace ColPack
 #endif
 				//Line 8: Let delta be the smallest index j such that B_k [j] is non-empty
 				//update delta
-				cout<<"delta[i_thread_num] 1="<< delta[i_thread_num] <<endl;
-				cout<<"B[i_thread_num]:"<<endl<<'\t';
-				for(int i=0; i<=i_MaxDegree; i++) {cout<<B[i_thread_num][i].size()<<' ';}
-				cout<<'*'<<endl;
+// 				cout<<"delta[i_thread_num] 1="<< delta[i_thread_num] <<endl;
+// 				cout<<"B[i_thread_num]:"<<endl<<'\t';
+// 				for(int i=0; i<=i_MaxDegree; i++) {cout<<B[i_thread_num][i].size()<<' ';}
+// 				cout<<'*'<<endl;
 				if(delta[i_thread_num]!=0 && B[ i_thread_num ][ delta[i_thread_num] - 1 ].size() != 0) delta[i_thread_num] --;
-				cout<<"delta[i_thread_num] 2="<< delta[i_thread_num] <<endl;
+// 				cout<<"delta[i_thread_num] 2="<< delta[i_thread_num] <<endl;
 				
 				//Line 9: Let v be a vertex drawn from B_k [delta]
 				int v; 
@@ -877,8 +896,8 @@ namespace ColPack
 					}
 					else delta[i_thread_num]++;
 				}
-				cout<<"Select vertex v="<<v<<" ; d[v]="<< d[v]<<endl;
-				cout<<"delta[i_thread_num] 3="<< delta[i_thread_num] <<endl;
+// 				cout<<"Select vertex v="<<v<<" ; d[v]="<< d[v]<<endl;
+// 				cout<<"delta[i_thread_num] 3="<< delta[i_thread_num] <<endl;
 				
 				//Line 11: for each vertex w which is distance-2-neighbor of (v) do
 				for(int l = m_vi_RightVertices[v]; l < m_vi_RightVertices[v+1]; l++) {
@@ -892,15 +911,15 @@ namespace ColPack
 						//Line 13: remove w from B_k [d (w)]
 						// find location of w in B_k [d (w)] and pop it . !!! naive, improvable by keeping extra data. See if the extra data affacts concurrency
 						int i_w_location = B[ i_thread_num ][ d[w] ].size() - 1;
-						cout<<"d[w]="<<d[w]<<endl;
-						cout<<"i_w_location before="<<i_w_location<<endl;
-						for(int ii = 0; ii <= i_w_location; ii++) {cout<<' '<< B[ i_thread_num ][ d[w] ][ii] ;}
-						cout<<"find w="<<w<<endl;
+// 						cout<<"d[w]="<<d[w]<<endl;
+// 						cout<<"i_w_location before="<<i_w_location<<endl;
+// 						for(int ii = 0; ii <= i_w_location; ii++) {cout<<' '<< B[ i_thread_num ][ d[w] ][ii] ;}
+// 						cout<<"find w="<<w<<endl;
 						while(i_w_location>=0 && B[ i_thread_num ][ d[w] ][i_w_location] != w) i_w_location--;
-						if(i_w_location<0) {
-							cout<<"*** i_w_location<0"<<endl<<flush;
-						}
-						cout<<"i_w_location after="<<i_w_location<<endl;
+// 						if(i_w_location<0) {
+// 							cout<<"*** i_w_location<0"<<endl<<flush;
+// 						}
+// 						cout<<"i_w_location after="<<i_w_location<<endl;
 						if(i_w_location != (B[ i_thread_num ][ d[w] ].size() - 1) ) B[ i_thread_num ] [ d[w] ][i_w_location] = B[ i_thread_num ] [ d[w] ][ B[ i_thread_num ][ d[w] ].size() - 1 ];
 						B[ i_thread_num ] [ d[w] ].pop_back();
 						
@@ -919,18 +938,20 @@ namespace ColPack
 #endif
 				{
 					//!!! improvable
-					m_vi_OrderedVertices.push_back(v);
+					m_vi_OrderedVertices.push_back(v + i_LeftVertexCount);
 					i_NumOfVerticesToBeColored--;
-					cout<<"i_NumOfVerticesToBeColored="<<i_NumOfVerticesToBeColored<<endl;
+// 					cout<<"i_NumOfVerticesToBeColored="<<i_NumOfVerticesToBeColored<<endl;
 				}
 			}
 		}
-		cout<<"OUT COLUMN_SMALLEST_LAST_OMP()"<<endl<<flush;
+// 		cout<<"OUT COLUMN_SMALLEST_LAST_OMP()"<<endl<<flush;
+
+		return(_TRUE);
 	}
 
 
 	//Public Function 2360
-	int BipartiteGraphPartialOrdering::ColumnSmallestLastOrdering()
+	int BipartiteGraphPartialOrdering::ColumnSmallestLastOrdering_serial()
 	{
 		if(CheckVertexOrdering("COLUMN_SMALLEST_LAST"))
 		{

@@ -5238,6 +5238,10 @@ namespace ColPack
 		return(i_RightVertexDefaultColor);
 	}
 
+	string BipartiteGraphBicoloring::GetVertexColoringVariant()
+	{
+	  return GetVertexBicoloringVariant();
+	}
 
 	//Public Function 3572
 	string BipartiteGraphBicoloring::GetVertexBicoloringVariant()

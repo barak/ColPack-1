@@ -49,8 +49,14 @@ namespace ColPack
 			return(DistanceTwoLargestFirstOrdering());
 		}
 		else
-		if((s_OrderingVariant.compare("SMALLEST_LAST") == 0))
+		if((s_OrderingVariant.compare("SMALLEST_LAST_SERIAL") == 0))
 		{
+			return(SmallestLastOrdering_serial());
+		}
+		else
+		if((s_OrderingVariant.substr(0,13).compare("SMALLEST_LAST") == 0)) // match both SMALLEST_LAST_SERIAL and SMALLEST_LAST_OMP
+		{
+			//cout<<"Match "<<s_OrderingVariant.substr(0,13)<<endl;
 			return(SmallestLastOrdering());
 		}
 		else
@@ -81,6 +87,10 @@ namespace ColPack
 		}
 
 		return(_TRUE);
+	}
+	
+	int GraphOrdering::CheckVertexOrdering() {
+		return isValidOrdering(m_vi_OrderedVertices);
 	}
 
 	//Private Function 1301
@@ -276,7 +286,7 @@ namespace ColPack
 	//Public Function 1355
 	int GraphOrdering::LargestFirstOrdering()
 	{
-		if(CheckVertexOrdering("LARGEST FIRST") == _TRUE)
+		if(CheckVertexOrdering("LARGEST_FIRST") == _TRUE)
 		{
 			return(_TRUE);
 		}
@@ -361,7 +371,7 @@ namespace ColPack
 
 	//Public Function 1356
         int GraphOrdering::DynamicLargestFirstOrdering() {
-                if(CheckVertexOrdering("DYNAMIC LARGEST FIRST") == _TRUE)
+                if(CheckVertexOrdering("DYNAMIC_LARGEST_FIRST") == _TRUE)
                 {
                         return(_TRUE);
                 }
@@ -579,7 +589,7 @@ namespace ColPack
 	//Public Function 1357
 	int GraphOrdering::DistanceTwoLargestFirstOrdering()
 	{
-		if(CheckVertexOrdering("DISTANCE TWO LARGEST FIRST") == _TRUE)
+		if(CheckVertexOrdering("DISTANCE_TWO_LARGEST_FIRST") == _TRUE)
 		{
 			return(_TRUE);
 		}
@@ -659,11 +669,15 @@ namespace ColPack
 		return(_TRUE);
 	}
 
+        int GraphOrdering::SmallestLastOrdering() {
+		return GraphOrdering::SmallestLastOrdering_serial();
+	}
+//*
 
 	//Public Function 1358
-        int GraphOrdering::SmallestLastOrdering()
+        int GraphOrdering::SmallestLastOrdering_serial()
         {
-                if(CheckVertexOrdering("SMALLEST LAST") == _TRUE)
+                if(CheckVertexOrdering("SMALLEST_LAST_SERIAL") == _TRUE)
                 {
                         return(_TRUE);
                 }
@@ -1000,7 +1014,7 @@ namespace ColPack
 	//Public Function 1359
 	int GraphOrdering::DistanceTwoSmallestLastOrdering()
 	{
-		if(CheckVertexOrdering("DISTANCE TWO SMALLEST LAST") == _TRUE)
+		if(CheckVertexOrdering("DISTANCE_TWO_SMALLEST_LAST") == _TRUE)
 		{
 			return(_TRUE);
 		}
@@ -1203,7 +1217,7 @@ namespace ColPack
 	//Public Function 1360
         int GraphOrdering::IncidenceDegreeOrdering()
         {
-                if(CheckVertexOrdering("INCIDENCE DEGREE") == _TRUE)
+                if(CheckVertexOrdering("INCIDENCE_DEGREE") == _TRUE)
                 {
                         return(_TRUE);
                 }
@@ -1363,7 +1377,7 @@ namespace ColPack
 	//Public Function 1361
 	int GraphOrdering::DistanceTwoIncidenceDegreeOrdering()
 	{
-		if(CheckVertexOrdering("DISTANCE TWO INCIDENCE DEGREE") == _TRUE)
+		if(CheckVertexOrdering("DISTANCE_TWO_INCIDENCE_DEGREE") == _TRUE)
 		{
 			return(_TRUE);
 		}

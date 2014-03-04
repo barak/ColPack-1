@@ -246,13 +246,11 @@ namespace ColPack
 				i_LeftVertexCount = i_RowCount;
 				i_RightVertexCount = i_ColumnCount;
 
-
 				v2i_LeftVertexAdjacency.clear();
 				v2i_LeftVertexAdjacency.resize((unsigned) i_LeftVertexCount);
 
 				v2i_RightVertexAdjacency.clear();
 				v2i_RightVertexAdjacency.resize((unsigned) i_RightVertexCount);
-
 			}
 
 			if((i_LineCount > _TRUE) && (i_LineCount <= STEP_UP(i_EdgeCount)))
