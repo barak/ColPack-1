@@ -5,6 +5,7 @@
 .dirstamp
 .libs/
 /ColPack
+/ar-lib
 /autom4te.cache/
 /compile
 /m4/
