@@ -1,0 +1,10 @@
+*.la
+*.lo
+*.o
+.deps/
+.dirstamp
+.libs/
+/ColPack
+/autom4te.cache/
+/compile
+/m4/
