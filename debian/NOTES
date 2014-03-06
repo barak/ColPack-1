@@ -1,0 +1,14 @@
+Other git repositories of possible relevance:
+
+Ancient:
+ git://github.com/b45ch1/colpack.git
+
+Fedora packaging information:
+ http://pkgs.fedoraproject.org/cgit/ColPack.git
+
+Clone of debian collab-maint packaging repo:
+ git://github.com/barak/colpack.git (fetch)
+
+Upstream contacts for modifications etc:
+ Assefaw Gebremedhin <agebreme@purdue.edu>
+ Duc Nguyen <nguyend@purdue.edu>
