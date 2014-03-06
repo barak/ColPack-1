@@ -19,4 +19,4 @@ override_dh_compress:
 
 override_dh_installexamples:
 	dh_installexamples
-	find debian/libcolpack-dev -name .gitignore -exec rm '{}' \;
+	find debian/libcolpack-dev -name .gitignore -exec rm --verbose '{}' \;
