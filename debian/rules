@@ -3,6 +3,9 @@
 %:
 	dh $@ --with autoreconf --parallel
 
+override_dh_auto_clean:
+	-dh_auto_clean
+
 # Disable built-time compilation of examples.  Enabling would be a
 # harmless reality check, except we want to install the example
 # sources as documentation, and compiling them leaves the compilation
