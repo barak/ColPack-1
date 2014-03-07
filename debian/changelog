@@ -1,3 +1,9 @@
+colpack (1.0.9-2) unstable; urgency=medium
+
+  * Move package into debian-science
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 07 Mar 2014 12:09:57 +0000
+
 colpack (1.0.9-1) unstable; urgency=medium
 
   * Initial release. (Closes: #740822)
