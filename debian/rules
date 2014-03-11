@@ -20,3 +20,7 @@ override_dh_compress:
 override_dh_installexamples:
 	dh_installexamples
 	find debian/libcolpack-dev -name .gitignore -exec rm --verbose '{}' \;
+	@echo compensate for upstream tarball containing executable example source
+	find debian/libcolpack-dev/usr/share/doc/libcolpack-dev/examples \
+		-type f -executable \
+		-exec chmod --verbose a-x '{}' \;
