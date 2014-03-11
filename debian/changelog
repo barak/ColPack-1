@@ -1,3 +1,9 @@
+colpack (1.0.9-3) unstable; urgency=medium
+
+  * chmod -x /usr/share/doc/libcolpack-dev/examples/.../*.cpp
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 11 Mar 2014 21:38:55 +0000
+
 colpack (1.0.9-2) unstable; urgency=medium
 
   * Move package into debian-science
