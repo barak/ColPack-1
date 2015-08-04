@@ -1,0 +1,139 @@
+Description: <short summary of the patch>
+ TODO: Put a short summary on the line above and replace this paragraph
+ with a longer explanation of this change. Complete the meta-information
+ with other relevant fields (see below for details). To make it easier, the
+ information below has been extracted from the changelog. Adjust it or drop
+ it.
+ .
+ colpack (1.0.9-3) unstable; urgency=medium
+ .
+   * chmod -x /usr/share/doc/libcolpack-dev/examples/.../*.cpp
+Author: Barak A. Pearlmutter <bap@debian.org>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- colpack-1.0.9.orig/Makefile.am
++++ colpack-1.0.9/Makefile.am
+@@ -1,7 +1,7 @@
+-ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
++ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
+ COLPACK_COMMON_FLAGS = $(EXTRA_FLAGS)  -O5  
+ 
+-INCLUDES =  $(COLPACK_COMMON_FLAGS) \
++AM_CPPFLAGS =  $(COLPACK_COMMON_FLAGS) \
+ 		-I$(top_srcdir)/Main \
+ 		-I$(top_srcdir)/Utilities \
+ 		-I$(top_srcdir)/BipartiteGraphPartialColoring \
+@@ -17,8 +17,7 @@ endif
+ LDADD = libColPack.la
+ AM_DEFAULT_SOURCE_EXT = .cpp
+ 
+-noinst_bin_PROGRAMS = ColPack
+-noinst_bindir = $(abs_top_builddir)/progs
++noinst_PROGRAMS = ColPack
+ lib_LTLIBRARIES = libColPack.la
+ pkginclude_HEADERS = \
+ 			Utilities/CoutLock.h Utilities/command_line_parameter_processor.h  \
+--- colpack-1.0.9.orig/SampleDrivers/Matrix_Compression_and_Recovery/SMB/sparse_jac_hess.cpp
++++ colpack-1.0.9/SampleDrivers/Matrix_Compression_and_Recovery/SMB/sparse_jac_hess.cpp
+@@ -67,7 +67,7 @@ int main()
+   double** J;
+   //double* s;
+   //int p_H_dir, p_H_indir;
+-  int tape_stats[11];
++  size_t tape_stats[11];
+   int num;
+   FILE *fp_JP;
+ 
+@@ -143,12 +143,12 @@ int main()
+   //return 1;
+ 
+   tapestats(tag_c,tape_stats);              // reading of tape statistics
+-  printf("\n    independents   %d\n",tape_stats[0]);
+-  printf("    dependents     %d\n",tape_stats[1]);
+-  printf("    operations     %d\n",tape_stats[5]);
+-  printf("    buffer size    %d\n",tape_stats[4]);
+-  printf("    maxlive        %d\n",tape_stats[2]);
+-  printf("    valstack size  %d\n\n",tape_stats[3]);
++  printf("\n    independents   %ld\n",(long)tape_stats[0]);
++  printf("    dependents     %ld\n",(long)tape_stats[1]);
++  printf("    operations     %ld\n",(long)tape_stats[5]);
++  printf("    buffer size    %ld\n",(long)tape_stats[4]);
++  printf("    maxlive        %ld\n",(long)tape_stats[2]);
++  printf("    valstack size  %ld\n\n",(long)tape_stats[3]);
+ 
+ 
+ //------------------------------------------------------------------------------------
+@@ -360,7 +360,8 @@ void printmatint(char* kette, int n, int
+ 
+ 
+ void printmatint_c(char* kette, int m,unsigned int** M)
+-{ int i,j;
++{ int i;
++  unsigned int j;
+ 
+   printf("%s \n",kette);
+   for (i=0;i<m;i++)
+--- colpack-1.0.9.orig/Utilities/mmio.cpp
++++ colpack-1.0.9/Utilities/mmio.cpp
+@@ -74,7 +74,11 @@ int mm_read_unsymmetric_sparse(const cha
+  
+     for (i=0; i<nz; i++)
+     {
+-        fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
++        if (fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]) != 3)
++        {
++          fprintf(stderr, "error: mm read error\n");
++          return -1;
++        }
+         I[i]--;  /* adjust from 1-based to 0-based */
+         J[i]--;
+     }
+@@ -455,7 +459,7 @@ char *mm_strdup(const char *s)
+ char  *mm_typecode_to_str(MM_typecode matcode)
+ {
+     char buffer[MM_MAX_LINE_LENGTH];
+-    char *types[4];
++    const char *types[4];
+ 	char *mm_strdup(const char *);
+     int error =0;
+ 
+--- colpack-1.0.9.orig/configure.ac
++++ colpack-1.0.9/configure.ac
+@@ -20,17 +20,19 @@
+ 
+ define([COLPACK_VER], [1])
+ define([COLPACK_SUB], [0])
+-define([COLPACK_LVL], [8])
++define([COLPACK_LVL], [9])
+ 
+ 
+-AC_INIT(ColPack, COLPACK_VER.COLPACK_SUB.COLPACK_LVL, agebreme@purdue.edu, ColPack, http://www.cscapes.org/coloringpage/)
+-#LT_INIT
+-AC_PREREQ(2.57)
+-AM_INIT_AUTOMAKE([1.10 no-define])
++AC_INIT([ColPack],[COLPACK_VER.COLPACK_SUB.COLPACK_LVL],[agebreme@purdue.edu],[ColPack],[http://www.cscapes.org/coloringpage/])
++AC_PREREQ([2.57])
++AC_CONFIG_SRCDIR([Main/ColPackHeaders.h])
++AC_CONFIG_MACRO_DIR([m4])
++AM_INIT_AUTOMAKE([1.10 no-define subdir-objects -Wall])
+ AC_CONFIG_HEADERS(config.h)
+ AC_PROG_CXX
+ AC_CONFIG_FILES(Makefile)
+-AC_PROG_LIBTOOL
++AM_PROG_AR
++LT_INIT
+ 
+ AC_MSG_CHECKING(Build examples)
+ AC_ARG_ENABLE([examples],
