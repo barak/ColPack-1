@@ -1,3 +1,10 @@
+colpack (1.0.9-3.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Rename libcolpack0 to libcolpack0v5 (see #791009)
+
+ -- Jonathan Wiltshire <jmw@debian.org>  Tue, 04 Aug 2015 17:56:18 +0100
+
 colpack (1.0.9-3) unstable; urgency=medium
 
   * chmod -x /usr/share/doc/libcolpack-dev/examples/.../*.cpp

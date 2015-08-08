@@ -15,7 +15,7 @@ Section: libdevel
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${shlibs:Depends}, ${misc:Depends}, libcolpack0 (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, libcolpack0v5 (= ${binary:Version})
 Description: Specialized graph vertex coloring library, development files
  ColPack is a package comprising of implementation of algorithms for
  specialized vertex coloring problems that arise in sparse derivative
@@ -27,7 +27,7 @@ Description: Specialized graph vertex coloring library, development files
  This package contains the development library, header files, and
  documentation.
 
-Package: libcolpack0
+Package: libcolpack0v5
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
