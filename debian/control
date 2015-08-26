@@ -32,6 +32,8 @@ Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libcolpack0
+Replaces: libcolpack0
 Description: Specialized graph vertex coloring library, shared library
  ColPack is a package comprising of implementation of algorithms for
  specialized vertex coloring problems that arise in sparse derivative

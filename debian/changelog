@@ -1,3 +1,10 @@
+colpack (1.0.9-3.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add conflicts/replaces libcolpack0 (closes: #794909)
+
+ -- Jonathan Wiltshire <jmw@debian.org>  Sun, 09 Aug 2015 17:51:36 +0100
+
 colpack (1.0.9-3.1) unstable; urgency=medium
 
   * Non-maintainer upload.
