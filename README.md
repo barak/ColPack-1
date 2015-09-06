@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/CSCsw/ColPack.svg?branch=master)](https://travis-ci.org/CSCsw/ColPack)
+
 ColPack's Doxygen documentation is available here:
 http://cscapes.cs.purdue.edu/coloringpage/software.htm
 
