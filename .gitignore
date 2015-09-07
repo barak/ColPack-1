@@ -5,8 +5,10 @@
 *.la
 *.lai
 *.lo
+*.log
 *.o
 *.so
+*.trs
 .deps/
 .dirstamp
 .libs/
@@ -34,3 +36,4 @@
 /m4/
 /missing
 /stamp-h1
+/test-driver
