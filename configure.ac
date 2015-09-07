@@ -36,7 +36,7 @@ AC_CONFIG_FILES(Makefile)
 AM_PROG_AR
 LT_INIT
 
-AC_MSG_CHECKING(Build examples)
+AC_MSG_CHECKING([Build examples])
 AC_ARG_ENABLE([examples],
      [AS_HELP_STRING([--enable-examples],[Build examples])],
      [case "${enableval}" in
@@ -45,8 +45,9 @@ AC_ARG_ENABLE([examples],
        *) AC_MSG_ERROR([bad value ${enableval} for --enable-examples]) ;;
      esac],[examples=false])
      AM_CONDITIONAL([EXAMPLES], [test x$examples = xtrue])
+AC_MSG_RESULT([$examples])
 
-AC_MSG_CHECKING(OpenMP)
+AC_MSG_CHECKING([OpenMP])
 AC_ARG_ENABLE([openmp],
      [AS_HELP_STRING([--enable-openmp],[Enable OpenMP])],
      [case "${enableval}" in
@@ -55,6 +56,7 @@ AC_ARG_ENABLE([openmp],
        *) AC_MSG_ERROR([bad value ${enableval} for --enable-openmp]) ;;
      esac],[openmp=false])
      AM_CONDITIONAL([ENABLE_OPENMP], [test x$openmp = xtrue])
+AC_MSG_RESULT([$openmp])
 
 AC_OUTPUT
 
