@@ -11,7 +11,7 @@ override_dh_auto_clean:
 # sources as documentation, and compiling them leaves the compilation
 # outputs in place, which then need to be filtered out.
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-examples=no
+	dh_auto_configure -- --enable-examples=no --enable-openmp
 
 # Do not compress the example source code.
 override_dh_compress:
