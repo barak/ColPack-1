@@ -61,20 +61,17 @@ AC_MSG_RESULT([$openmp])
 AC_OUTPUT
 
 # echo configuration
-echo \
-"
------------------------------------------------------------------------------
-Configuration:
-
-  C compiler:                       ${CC}
-  C++ compiler:                     ${CXX}
-  Linker:                           ${LD}
-  Source code location:             `pwd`
-  Install path:                     ${prefix}
-  
-  CFLAGS:                           ${CFLAGS}
-  CXXFLAGS:                         ${CXXFLAGS}
-
-  Use OpenMP:                       ${openmp}
-  Build examples:                   ${examples}
-"
+AS_ECHO(["-----------------------------------------------------------------------------"])
+AS_ECHO(["Configuration:"])
+AS_ECHO([""])
+AS_ECHO(["  C compiler:                       ${CC}"])
+AS_ECHO(["  C++ compiler:                     ${CXX}"])
+AS_ECHO(["  Linker:                           ${LD}"])
+AS_ECHO(["  Source code location:             `pwd`"])
+AS_ECHO(["  Install path:                     ${prefix}"])
+AS_ECHO(["  "])
+AS_ECHO(["  CFLAGS:                           ${CFLAGS}"])
+AS_ECHO(["  CXXFLAGS:                         ${CXXFLAGS}"])
+AS_ECHO([""])
+AS_ECHO(["  Use OpenMP:                       ${openmp}"])
+AS_ECHO(["  Build examples:                   ${examples}"])
