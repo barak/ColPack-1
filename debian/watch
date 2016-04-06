@@ -1,3 +1,8 @@
-version=3
+version=4
+opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%colpack-$1.tar.gz%" \
+    https://github.com/CSCsw/ColPack/tags \
+    (?:.*?/)?v?(\d[\d.]*)\.tar\.gz debian uupdate
+
+# Older:
 # http://www.cscapes.org/coloringpage/ http://cscapes.cs.purdue.edu/download/ColPack/ColPack-(.*)\.tar\.gz
 http://cscapes.cs.purdue.edu/download/ColPack/ ColPack-([0-9.]+)\.tar\.gz
