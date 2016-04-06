@@ -20,7 +20,7 @@
 
 define([COLPACK_VER], [1])
 define([COLPACK_SUB], [0])
-define([COLPACK_LVL], [9])
+define([COLPACK_LVL], [10])
 
 
 AC_INIT([ColPack],[COLPACK_VER.COLPACK_SUB.COLPACK_LVL],[assefaw@eecs.wsu.edu],[ColPack],[http://cscapes.cs.purdue.edu/coloringpage/])
@@ -69,7 +69,7 @@ AS_ECHO(["  C++ compiler:                     ${CXX}"])
 AS_ECHO(["  Linker:                           ${LD}"])
 AS_ECHO(["  Source code location:             `pwd`"])
 AS_ECHO(["  Install path:                     ${prefix}"])
-AS_ECHO(["  "])
+AS_ECHO([""])
 AS_ECHO(["  CFLAGS:                           ${CFLAGS}"])
 AS_ECHO(["  CXXFLAGS:                         ${CXXFLAGS}"])
 AS_ECHO([""])
