@@ -3,9 +3,9 @@ Priority: optional
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Barak A. Pearlmutter <bap@debian.org>
 DM-Upload-Allowed: yes
-Build-Depends: debhelper (>= 9),
+Build-Depends: debhelper (>= 10),
 	dh-autoreconf, autoconf-archive
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Section: libs
 Homepage: http://www.cscapes.org/coloringpage/
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/colpack.git
