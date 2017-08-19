@@ -3,7 +3,8 @@
 /*.substvars
 /autoreconf.after
 /autoreconf.before
+/debhelper-build-stamp
 /files
 /libcolpack-dev/
-/libcolpack0/
+/libcolpack0v5/
 /tmp/
