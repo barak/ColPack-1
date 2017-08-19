@@ -13,14 +13,15 @@ override_dh_auto_clean:
 override_dh_auto_configure:
 	dh_auto_configure -- --enable-examples=no --enable-openmp
 
-# Do not compress the example source code.
-override_dh_compress:
-	dh_compress -X.cpp -Xeval_fun_chem.c
-
 override_dh_installexamples:
-	dh_installexamples
-	find debian/libcolpack-dev -name .gitignore -exec rm --verbose '{}' \;
+	dh_installexamples -X.o -X.log -X.trs -X.gitignore -X.deps -X.libs -X.dirstamp
 	@echo compensate for upstream tarball containing executable example source
 	find debian/libcolpack-dev/usr/share/doc/libcolpack-dev/examples \
 		-type f -executable \
 		-exec chmod --verbose a-x '{}' \;
+	-rm --verbose \
+	 debian/libcolpack-dev/usr/share/doc/libcolpack-dev/examples/SampleDrivers/Basic/*.gz
+
+# Do not compress the example source code.
+override_dh_compress:
+	dh_compress -X.cpp -Xeval_fun_chem.c
