@@ -1,3 +1,15 @@
+colpack (1.0.10-2) unstable; urgency=medium
+
+  * bump to dh10
+  * bump policy
+  * remove unnecessary build dependency
+  * prune inappropriate files from examples (squelching reproducability &
+    multiarch issues)
+  * harden
+  * secure repo URLs
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sat, 19 Aug 2017 18:24:47 +0200
+
 colpack (1.0.10-1) unstable; urgency=medium
 
   * Add github pointer to uscan debian/watch
