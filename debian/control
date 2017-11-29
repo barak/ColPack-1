@@ -5,7 +5,7 @@ Uploaders: Barak A. Pearlmutter <bap@debian.org>
 DM-Upload-Allowed: yes
 Build-Depends: debhelper (>= 10),
 	autoconf-archive
-Standards-Version: 4.0.1
+Standards-Version: 4.1.1
 Section: libs
 Homepage: http://www.cscapes.org/coloringpage/
 Vcs-Git: https://anonscm.debian.org/git/debian-science/packages/colpack.git
