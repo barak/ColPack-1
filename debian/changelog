@@ -1,10 +1,17 @@
+colpack (1.0.10-3) unstable; urgency=medium
+
+  * bump policy
+  * track unused upstream mods
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Wed, 29 Nov 2017 11:39:53 +0000
+
 colpack (1.0.10-2) unstable; urgency=medium
 
   * bump to dh10
   * bump policy
   * remove unnecessary build dependency
   * prune inappropriate files from examples (squelching reproducability &
-    multiarch issues)
+    multiarch issues) (closes: #820311)
   * harden
   * secure repo URLs
 
