@@ -2,7 +2,6 @@ Source: colpack
 Priority: optional
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Barak A. Pearlmutter <bap@debian.org>
-DM-Upload-Allowed: yes
 Build-Depends: debhelper (>= 10),
 	autoconf-archive
 Standards-Version: 4.1.1
