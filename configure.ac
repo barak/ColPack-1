@@ -36,43 +36,42 @@ AC_CONFIG_FILES(Makefile)
 AM_PROG_AR
 LT_INIT
 
-AC_MSG_CHECKING(Build examples)
+AC_MSG_CHECKING([Build examples])
 AC_ARG_ENABLE([examples],
      [AS_HELP_STRING([--enable-examples],[Build examples])],
-     [case "${enableval}" in
-       yes) examples=true ;;
-       no)  examples=false ;;
-       *) AC_MSG_ERROR([bad value ${enableval} for --enable-examples]) ;;
-     esac],[examples=false])
-     AM_CONDITIONAL([EXAMPLES], [test x$examples = xtrue])
+     [AS_CASE([${enableval}],
+       [yes],[examples=true],
+       [no],[examples=false],
+       [AC_MSG_ERROR([bad value ${enableval} for --enable-examples])])],
+     [examples=false])
+AM_CONDITIONAL([EXAMPLES], [test x$examples = xtrue])
+AC_MSG_RESULT([$examples])
 
-AC_MSG_CHECKING(OpenMP)
+AC_MSG_CHECKING([OpenMP])
 AC_ARG_ENABLE([openmp],
      [AS_HELP_STRING([--disable-openmp],[Disable OpenMP])],
-     [case "${enableval}" in
-       yes) openmp=true ;;
-       no)  openmp=false ;;
-       *) AC_MSG_ERROR([bad value ${enableval} for --disable-openmp]) ;;
-     esac],[openmp=true])
-     AM_CONDITIONAL([ENABLE_OPENMP], [test x$openmp = xtrue])
+     [AS_CASE([${enableval}],
+       [yes],[openmp=true],
+       [no],[openmp=false],
+       [AC_MSG_ERROR([bad value ${enableval} for --disable-openmp])])],
+     [openmp=true])
+AM_CONDITIONAL([ENABLE_OPENMP], [test x$openmp = xtrue])
+AC_MSG_RESULT([$openmp])
 
 AC_OUTPUT
 
 # echo configuration
-echo \
-"
------------------------------------------------------------------------------
-Configuration:
-
-  C compiler:                       ${CC}
-  C++ compiler:                     ${CXX}
-  Linker:                           ${LD}
-  Source code location:             `pwd`
-  Install path:                     ${prefix}
-
-  CFLAGS:                           ${CFLAGS}
-  CXXFLAGS:                         ${CXXFLAGS}
-
-  Use OpenMP:                       ${openmp}
-  Build examples:                   ${examples}
-"
+AS_ECHO(["-----------------------------------------------------------------------------"])
+AS_ECHO(["Configuration:"])
+AS_ECHO([""])
+AS_ECHO(["  C compiler:                       ${CC}"])
+AS_ECHO(["  C++ compiler:                     ${CXX}"])
+AS_ECHO(["  Linker:                           ${LD}"])
+AS_ECHO(["  Source code location:             `pwd`"])
+AS_ECHO(["  Install path:                     ${prefix}"])
+AS_ECHO([""])
+AS_ECHO(["  CFLAGS:                           ${CFLAGS}"])
+AS_ECHO(["  CXXFLAGS:                         ${CXXFLAGS}"])
+AS_ECHO([""])
+AS_ECHO(["  Use OpenMP:                       ${openmp}"])
+AS_ECHO(["  Build examples:                   ${examples}"])
