@@ -7,8 +7,8 @@ Build-Depends: debhelper (>= 10),
 Standards-Version: 4.1.1
 Section: libs
 Homepage: http://www.cscapes.org/coloringpage/
-Vcs-Git: https://anonscm.debian.org/git/debian-science/packages/colpack.git
-Vcs-Browser: https://anonscm.debian.org/gitweb/?p=debian-science/packages/colpack.git
+Vcs-Git: https://salsa.debian.org/science-team/colpack.git
+Vcs-Browser: https://salsa.debian.org/science-team/colpack
 
 Package: libcolpack-dev
 Section: libdevel
