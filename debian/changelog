@@ -1,3 +1,12 @@
+colpack (1.0.10-4) unstable; urgency=medium
+
+  * swizzle packaging repo to salsa
+  * bump policy
+  * bump to dh11
+  * merge upstream mods
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Wed, 28 Mar 2018 11:06:24 +0100
+
 colpack (1.0.10-3) unstable; urgency=medium
 
   * bump policy
