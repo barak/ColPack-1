@@ -5,4 +5,4 @@ opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%colpack-$1.tar.gz%" \
 
 # Older:
 # http://www.cscapes.org/coloringpage/ http://cscapes.cs.purdue.edu/download/ColPack/ColPack-(.*)\.tar\.gz
-http://cscapes.cs.purdue.edu/download/ColPack/ ColPack-([0-9.]+)\.tar\.gz
+https://cscapes.cs.purdue.edu/download/ColPack/ ColPack-([0-9.]+)\.tar\.gz

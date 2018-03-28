@@ -1,10 +1,10 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: ColPack
 Source: http://www.cscapes.org/coloringpage/
  http://cscapes.cs.purdue.edu/download/ColPack/ColPack-1.0.9.tar.gz
  http://cscapes.cs.purdue.edu/download/ColPack/
  http://cscapes.cs.purdue.edu/download/ColPack/earlier_version/
- git://github.com/CSCsw/ColPack
+ https://github.com/CSCsw/ColPack
 
 Files: *
 Copyright: 2005-2010 Assefaw H. Gebremedhin, Duc Nguyen, Arijit Tarafdar, Md. Mostofa Ali Patwary, Alex Pothen
