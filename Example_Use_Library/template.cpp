@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
         BipartiteGraphBicoloringInterface *p = new BipartiteGraphBicoloringInterface(0, fname.c_str(), "AUTO_DETECTED");
         p->Bicoloring(order.c_str(), methd.c_str());
         if(bVerbose) fprintf(stdout, "number of colors: ");
-        fprintf(stdout,"%d", p->GetVertexColorCount());
+        fprintf(stdout,"%d\n", p->GetVertexColorCount());
         delete p; p=nullptr;
     }
     else if(PartialColor.count(methd)){
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
         BipartiteGraphPartialColoringInterface *p = new BipartiteGraphPartialColoringInterface(0, fname.c_str(), "AUTO_DETECTED");
         p->PartialDistanceTwoColoring(order.c_str(), methd.c_str());
         if(bVerbose) fprintf(stdout, "number of colors: ");
-        fprintf(stdout,"%d", p->GetVertexColorCount());
+        fprintf(stdout,"%d\n", p->GetVertexColorCount());
         delete p; p=nullptr;   
     }
     else if(ParaD1Color.count(methd)){
@@ -60,10 +60,10 @@ int main(int argc, char* argv[]) {
         GraphColoringInterface *g = new GraphColoringInterface(SRC_FILE, fname.c_str(), "AUTO_DETECTED");
         g->Coloring(order.c_str(), methd.c_str());
         if(bVerbose) fprintf(stdout, "number of colors: ");
-        fprintf(stdout,"%d",g->GetVertexColorCount());
+        fprintf(stdout,"%d\n",g->GetVertexColorCount());
         delete g; g=nullptr;
     }
-    if(bVerbose)fprintf(stdout,"\n\n"); 
+    if(bVerbose) fprintf(stdout,"\n"); 
     return 0;
 }
 
@@ -93,7 +93,7 @@ void usage(){
             "               COLUMN_PARTIAL_DISTANCE_TWO\n"
             "               ROW_PARTIAL_DISTANCE_TWO\n"
             "\n"
-            "-v          :  verbose for debug infomation\n"
+            "-v          :  verbose infomation\n"
             "\n"
             "\n"
             "Examples:\n"

@@ -49,12 +49,12 @@ AC_MSG_RESULT([$examples])
 
 AC_MSG_CHECKING([OpenMP])
 AC_ARG_ENABLE([openmp],
-     [AS_HELP_STRING([--enable-openmp],[Enable OpenMP])],
+     [AS_HELP_STRING([--disable-openmp],[Disable OpenMP])],
      [AS_CASE([${enableval}],
        [yes],[openmp=true],
        [no],[openmp=false],
-       [AC_MSG_ERROR([bad value ${enableval} for --enable-openmp])])],
-     [openmp=false])
+       [AC_MSG_ERROR([bad value ${enableval} for --disable-openmp])])],
+     [openmp=true])
 AM_CONDITIONAL([ENABLE_OPENMP], [test x$openmp = xtrue])
 AC_MSG_RESULT([$openmp])
 
