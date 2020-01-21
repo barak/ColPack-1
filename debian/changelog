@@ -1,6 +1,7 @@
 colpack (1.0.10-5) UNRELEASED; urgency=medium
 
   * Bump debhelper from old 11 to 12.
+  * Set debhelper-compat version in Build-Depends.
 
  -- Barak A. Pearlmutter <bap@debian.org>  Tue, 21 Jan 2020 17:41:28 +0000
 
