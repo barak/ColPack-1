@@ -2,11 +2,11 @@ Source: colpack
 Priority: optional
 Maintainer: Debian Science Maintainers <debian-science-maintainers@alioth-lists.debian.net>
 Uploaders: Barak A. Pearlmutter <bap@debian.org>
-Build-Depends: debhelper-compat (= 12),
+Build-Depends: debhelper-compat (= 13),
 	autoconf-archive
-Standards-Version: 4.2.1
+Standards-Version: 4.5.0
 Section: libs
-Homepage: http://www.cscapes.org/coloringpage/
+Homepage: https://cscapes.cs.purdue.edu/coloringpage/
 Vcs-Git: https://salsa.debian.org/science-team/colpack.git
 Vcs-Browser: https://salsa.debian.org/science-team/colpack
 
