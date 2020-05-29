@@ -1,11 +1,13 @@
-colpack (1.0.10-5) UNRELEASED; urgency=medium
+colpack (1.0.10-5) unstable; urgency=medium
 
-  * Bump debhelper from old 11 to 12.
+  * Bump debhelper from old 11 to 13.
   * Set debhelper-compat version in Build-Depends.
   * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
     Repository-Browse.
+  * Bump policy.
+  * Update some URLs.
 
- -- Barak A. Pearlmutter <bap@debian.org>  Tue, 21 Jan 2020 17:41:28 +0000
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 29 May 2020 10:14:51 +0100
 
 colpack (1.0.10-4) unstable; urgency=medium
 
