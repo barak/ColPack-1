@@ -1,0 +1,6 @@
+usr/lib/*/*.la
+usr/examples/Basic/color_bipartite_graph_using_BipartiteGraphBicoloringInterface
+usr/examples/Basic/color_bipartite_graph_using_BipartiteGraphPartialColoringInterface
+usr/examples/Basic/color_graph_using_GraphColoringInterface
+usr/examples/Basic/Generate_seed_matrix_for_Hessian
+usr/examples/Basic/Generate_seed_matrix_for_Jacobian
